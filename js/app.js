@@ -3,7 +3,10 @@ const BNET = 'https://www.bungie.net';
 const $app = document.getElementById('app');
 const S = { profile: null };
 const cache = {};
-const load = name => cache[name] ||= fetch(`data/${name}.json`).then(r => r.json());
+let routeSeq = 0;
+// Settles only while the page that asked is still the one showing, so a slow page you've left never draws over the next one.
+const live = async promise => { const seq = routeSeq, v = await promise; if (seq !== routeSeq) await new Promise(() => {}); return v; };
+const load = name => live(cache[name] ||= fetch(`data/${name}.json`).then(r => r.json()));
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const img = (path, cls = '') => path ? `<img class="${cls}" loading="lazy" src="${BNET}${path}" alt="">` : '';
@@ -31,8 +34,7 @@ const tierBadge = r => r ? `<span class="badge tier tier-${esc(r.t)}">Tier ${esc
 
 async function profile() {
   if (S.profile || !Bungie.token()) return S.profile;
-  S.profile = await Bungie.loadProfile();
-  return S.profile;
+  return live(Bungie.loadProfile().then(p => S.profile = p));
 }
 
 function renderAccount() {
@@ -519,33 +521,52 @@ function parseBuildLink(text) {
   return null;
 }
 
+// Saved builds live in this browser: [{ key, name, cls, shareUrl, saved, sub: { n, i }, icons, loadout }], newest first.
+const savedBuilds = () => Bungie.store.get('d2c_builds') || [];
+
+function showSaved(box) {
+  const list = savedBuilds();
+  box.innerHTML = list.length ? `<section class="panel"><h2>Saved builds <span class="count">${list.length}</span></h2><div class="grid savedgrid">${list.map(b => `<div class="card saved">
+      <span class="icon">${img(b.sub?.i)}</span><div><a href="#/build/${esc(b.key)}"><b>${esc(b.name)}</b></a>
+      <small>${esc([b.cls || 'Any class', b.sub?.n].filter(Boolean).join(' · '))} · saved ${new Date(b.saved).toLocaleDateString()}</small>
+      <small class="minis">${b.icons.map(i => img(i)).join('')}</small></div>
+      <button type="button" data-remove="${esc(b.key)}" aria-label="Remove ${esc(b.name)} from saved builds">Remove</button></div>`).join('')}</div></section>`
+    : '<p class="empty">No saved builds yet. Open a build and press Save build to keep it here.</p>';
+  box.querySelectorAll('[data-remove]').forEach(btn => btn.addEventListener('click', () => {
+    Bungie.store.set('d2c_builds', savedBuilds().filter(b => b.key !== btn.dataset.remove));
+    showSaved(box);
+  }));
+}
+
 async function buildPage(id) {
   $app.innerHTML = `<h1>Builds</h1><p class="muted">Paste a DIM loadout link to see the whole build, check what you own and equip it.</p>
     <form class="filters" id="open"><input type="search" inputmode="url" id="link" aria-label="DIM loadout link" placeholder="https://dim.gg/abc1234/Build-Name">
     <button type="submit" class="primary">Open build</button></form><p class="err" id="linkerr" hidden></p><div id="build"></div>`;
-  const f = sel => $app.querySelector(sel);
+  const f = sel => $app.querySelector(sel), box = f('#build'), link = f('#link');
   f('#open').addEventListener('submit', e => {
     e.preventDefault();
-    const got = parseBuildLink(f('#link').value);
+    const got = parseBuildLink(link.value);
     f('#linkerr').hidden = !!got;
     f('#linkerr').textContent = 'That doesn\'t look like a DIM loadout link. It should start with https://dim.gg/ or https://app.destinyitemmanager.com/loadouts?loadout=';
     if (!got) return;
     if (got.loadout) S.build = got.loadout;
     location.hash = '#/build/' + (got.id || 'link');
   });
-  if (!id) return;
-  const box = f('#build');
-  let loadout = id === 'link' ? S.build : null, shareUrl = '';
-  if (id !== 'link') {
+  if (!id) return showSaved(box);
+  const saved = savedBuilds().find(b => b.key === id), isShare = /^[a-z0-9]{7}$/.test(id);
+  let loadout = saved?.loadout || (id === 'link' ? S.build : null), shareUrl = saved?.shareUrl || '';
+  if (!loadout && isShare) {
     box.innerHTML = '<p class="muted">Loading the build from DIM…</p>';
     const r = await fetch(DIM_SHARE + encodeURIComponent(id)).catch(() => null);
     if (!r) { box.innerHTML = '<p class="empty">Couldn\'t reach DIM. Check your connection and try again.</p>'; return; }
     if (r.status === 404) { box.innerHTML = '<p class="empty">DIM has no build with that link. It may have been deleted.</p>'; return; }
     if (!r.ok) { box.innerHTML = `<p class="empty">DIM didn't answer (error ${r.status}). Try again in a minute.</p>`; return; }
     ({ loadout, shareUrl } = await r.json());
-    f('#link').value = shareUrl;
   }
-  if (!loadout) return;  // a pasted full link lives only in memory, so a reload lands here
+  link.value = shareUrl;
+  // a pasted full link lives only in memory until it's saved, so a reload lands here
+  if (!loadout) { box.innerHTML = id === 'link' ? '' : '<p class="empty">That build isn\'t saved in this browser. <a href="#/build">See your saved builds</a></p>'; return; }
+  const key = isShare ? id : saved?.key || 'saved-' + String(loadout.id || Date.now().toString(36)).replace(/[^a-z0-9]/gi, '').slice(0, 16).toLowerCase();
   box.innerHTML = '<p class="muted">Looking up the build\'s items…</p>';
 
   const [d, a] = await Promise.all([data(), armorData()]);
@@ -586,8 +607,8 @@ async function buildPage(id) {
         ${loadout.notes ? `<p class="lore">${esc(loadout.notes)}</p>` : ''}
         <p class="muted">${p ? `You have ${have} of ${gear.length} pieces of gear.` : 'Sign in with Bungie to see which pieces you have and equip them.'}
         <a href="${esc(shareUrl || 'https://app.destinyitemmanager.com/loadouts?' + new URLSearchParams({ loadout: JSON.stringify(loadout) }))}" target="_blank" rel="noopener">Open in DIM</a></p>
-        ${chars.length ? `<div class="acts">${chars.map(c => `<button type="button" class="primary" data-equip="${c.id}">Equip on ${esc(c.cls)}</button>`).join('')}</div>
-          <p class="muted"><small>Moves and equips the weapons and armor you have. Set the subclass and mods in game.</small></p>` : ''}
+        <div class="acts"><button type="button" data-save>${savedBuilds().some(b => b.key === key) ? 'Remove from saved' : 'Save build'}</button>${chars.map(c => `<button type="button" class="primary" data-equip="${c.id}">Equip on ${esc(c.cls)}</button>`).join('')}</div>
+        ${chars.length ? '<p class="muted"><small>Equip moves and equips the weapons and armor you have. Set the subclass and mods in game.</small></p>' : ''}
         ${status ? `<p class="${/^Done/.test(status) ? 'muted' : 'err'}" aria-live="polite">${esc(status)}</p>` : ''}</section>
       ${subclass ? `<section class="panel"><h2>Subclass</h2><p>${chip(subclass.hash)}</p>${subParts.map(([k, hs]) => `<div class="eg"><span class="muted">${k}</span><div class="chips">${hs.map(h => chip(h)).join('')}</div></div>`).join('')}</section>` : ''}
       ${['weapon', 'armor'].map(k => { const list = gear.filter(it => !!d.byHash[it.hash] === (k === 'weapon'));
@@ -596,6 +617,14 @@ async function buildPage(id) {
       ${P.mods?.length ? `<section class="panel"><h2>Armor mods</h2><div class="chips">${counted(P.mods)}</div></section>` : ''}
       ${stats.length || sets.length ? `<section class="panel"><h2>Stat targets and set bonuses</h2><div class="perks">${stats.join('')}${sets.join('')}</div></section>` : ''}
       ${P.artifactUnlocks?.unlockedItemHashes?.length ? `<section class="panel"><h2>Artifact perks</h2><div class="chips">${P.artifactUnlocks.unlockedItemHashes.map(h => chip(h)).join('')}</div></section>` : ''}`;
+    box.querySelector('[data-save]').addEventListener('click', () => {
+      const rest = savedBuilds().filter(b => b.key !== key), adding = rest.length === savedBuilds().length;
+      const sub = subclass && defs[subclass.hash];
+      Bungie.store.set('d2c_builds', adding ? [{ key, name: loadout.name || 'Untitled build', cls, shareUrl, saved: Date.now(), sub: sub ? { n: sub.n, i: sub.i } : null,
+        icons: gear.filter(it => d.byHash[it.hash]).map(it => d.byHash[it.hash].i).slice(0, 3), loadout }, ...rest] : rest);
+      if (adding && id === 'link') history.replaceState(null, '', '#/build/' + key);  // so a reload finds it
+      draw(p, status);
+    });
     box.querySelectorAll('[data-equip]').forEach(b => b.addEventListener('click', async () => {
       const c = chars.find(x => x.id === b.dataset.equip);
       box.querySelectorAll('[data-equip]').forEach(x => { x.disabled = true; });
@@ -674,9 +703,8 @@ function images() {
   $app.querySelectorAll('.infographic img').forEach(i => i.addEventListener('click', () => i.classList.toggle('zoom')));
 }
 
-let routeSeq = 0, routeDone = 0;
 async function route() {
-  const seq = ++routeSeq;
+  routeSeq++;
   const [path, query] = (location.hash.slice(1) || '/').split('?');
   const parts = path.split('/').filter(Boolean);
   const params = new URLSearchParams(query);
@@ -698,9 +726,6 @@ async function route() {
     $app.innerHTML = `<p>Something went wrong: ${esc(e.message)}</p>`;
     console.error(e);
   }
-  // a slow page (the first load of the weapon list) can finish after a newer one and draw over it; draw the newer one again
-  if (seq === routeSeq) routeDone = seq;
-  else if (routeDone === routeSeq) route();
 }
 
 window.addEventListener('hashchange', route);

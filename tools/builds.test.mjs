@@ -22,7 +22,9 @@ const profile = {
 const posts = [];
 const b = await chromium.launch();
 const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+let shareCalls = 0;
 await ctx.route('https://api.destinyitemmanager.com/**', route => {
+  shareCalls++;
   const id = new URL(route.request().url()).searchParams.get('shareId');
   if (id !== 'igeavhy') return route.fulfill({ status: 404, body: '' });
   route.fulfill({ contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ loadout, shareUrl: 'https://dim.gg/igeavhy/The-Build-Of-Spite' }) });
@@ -63,9 +65,27 @@ assert.deepEqual(posts.map(([path, x]) => [path, x.itemId, x.transferToVault, x.
 assert.deepEqual(posts.at(-1)[1].itemIds, ['1', '2', '3']);
 assert.ok((await p.locator('#build').innerText()).includes('Done. Everything you have from this build is equipped on your Hunter.'));
 
-// a full DIM loadouts link carries the build in the URL
+// save it, find it in the saved list, and reopen it without asking DIM again
+await p.click('[data-save]');
+assert.equal(await p.textContent('[data-save]'), 'Remove from saved');
+await p.goto('http://localhost:8765/#/build'); await p.waitForSelector('.card.saved');
+assert.ok((await p.textContent('.card.saved')).includes('The Build Of Spite'));
+assert.ok((await p.textContent('.card.saved')).includes('Hunter · Prismatic Hunter'));
+const dimCalls = shareCalls;
+await p.click('.card.saved a'); await p.waitForSelector('.buildhead');
+assert.equal(new URL(p.url()).hash, '#/build/igeavhy');
+assert.equal(shareCalls, dimCalls);
+await p.goto('http://localhost:8765/#/build'); await p.waitForSelector('.card.saved');
+await p.click('[data-remove="igeavhy"]');
+assert.ok((await p.textContent('#build')).includes('No saved builds yet'));
+
+// a full DIM loadouts link carries the build in the URL; saving it gives it an address that survives a reload
 await open('https://app.destinyitemmanager.com/loadouts?' + new URLSearchParams({ loadout: JSON.stringify(loadout) }));
 assert.equal(new URL(p.url()).hash, '#/build/link');
+assert.ok((await p.locator('#build').innerText()).includes('THE BUILD OF SPITE'));
+await p.click('[data-save]');
+assert.equal(new URL(p.url()).hash, '#/build/saved-x');
+await p.reload(); await p.waitForSelector('.buildhead');
 assert.ok((await p.locator('#build').innerText()).includes('THE BUILD OF SPITE'));
 
 // bad and unknown links explain themselves
