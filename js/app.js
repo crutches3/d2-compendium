@@ -9,7 +9,12 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const img = (path, cls = '') => path ? `<img class="${cls}" loading="lazy" src="${BNET}${path}" alt="">` : '';
 const icon = w => `<span class="icon">${img(w.i)}${img(w.wm, 'wm')}</span>`;
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
-const card = (w, sub) => `<a class="card" href="#/weapon/${w.h}">${icon(w)}<div><b>${esc(w.n)}</b>${sub}</div></a>`;
+const card = (w, sub, kind = 'weapon') => `<a class="card" href="#/${kind}/${w.h}">${icon(w)}<div><b>${esc(w.n)}</b>${sub}</div></a>`;
+const select = (id, label, vals, cur = '') => `<select id="${id}" aria-label="${label}"><option value="">${label}</option>${vals.map(v => {
+  const [val, text] = Array.isArray(v) ? v : [v, v];
+  return `<option value="${esc(val)}"${String(val) === cur ? ' selected' : ''}>${esc(text)}</option>`; }).join('')}</select>`;
+const hero = (x, badges) => `<div class="hero" style="background-image:url('${BNET}${x.ss}')"><div class="shade">${icon(x)}<div>
+  <h1>${esc(x.n)}</h1><div>${badges}</div>${x.fl ? `<p class="flavor">${esc(x.fl)}</p>` : ''}</div></div></div>`;
 
 async function data() {
   const [w, plugs, gr] = await Promise.all([load('weapons'), load('plugs'), load('godrolls')]);
@@ -47,9 +52,9 @@ async function sheets() {
   const tabs = await load('tabs');
   if (!sheetIndex) {
     sheetIndex = new Map();
-    tabs.forEach((t, ti) => t.rows.forEach((r, ri) => r.forEach(c => {
+    tabs.forEach((t, ti) => t.rows.forEach((r, ri) => r.forEach((c, ci) => {
       const k = c.split('\n')[0].replace(/^↑/, '').trim().toLowerCase();
-      if (k && k.length < 60) { if (!sheetIndex.has(k)) sheetIndex.set(k, []); sheetIndex.get(k).push([ti, ri]); }
+      if (k && k.length < 60) { if (!sheetIndex.has(k)) sheetIndex.set(k, []); sheetIndex.get(k).push([ti, ri, ci]); }
     })));
   }
   return tabs;
@@ -88,12 +93,19 @@ function headerRow(t) {
 async function sheetRows(key, filter = () => true) {
   const tabs = await sheets();
   const hits = (sheetIndex.get(key.toLowerCase()) || []).filter(([ti, ri]) => filter(tabs[ti], tabs[ti].rows[ri]));
-  return [...new Map(hits.map(h => [h.join(), h])).values()].map(([ti, ri]) => ({ tab: tabs[ti], row: tabs[ti].rows[ri] }));
+  return [...new Map(hits.map(h => [h[0] + ',' + h[1], h])).values()].map(([ti, ri, ci]) => {
+    const tab = tabs[ti], head = headerRow(tab);
+    // tabs like Exotic Armors repeat a column block per class ("Armor, Icon, Notes" x3): keep only the matched item's block
+    let [from, to] = [0, head.length];
+    if (head[ci] && head.indexOf(head[ci]) !== head.lastIndexOf(head[ci])) {
+      from = ci; const next = head.indexOf(head[ci], ci + 1); to = next < 0 ? head.length : next;
+    }
+    return { tab, row: tab.rows[ri].slice(from, to), head: head.slice(from, to) };
+  });
 }
 
 function rowTable(hits) {
-  return hits.map(({ tab, row }) => {
-    const head = headerRow(tab);
+  return hits.map(({ tab, row, head }) => {
     const label = i => head[i] && head[i] !== row[i] ? head[i].replace(/\s*\n\s*/g, ' ') : '';
     const cells = row.map((c, i) => c && !['/', '-', 'N/A'].includes(c) ? `<tr><td class="muted">${esc(label(i))}</td><td>${esc(c)}</td></tr>` : '').join('');
     return `<div class="roll"><b>${esc(tab.source)}</b> · ${esc(tab.tab)}<div class="tablewrap"><table class="sheet">${cells}</table></div></div>`;
@@ -104,10 +116,9 @@ function rowTable(hits) {
 async function weaponList(params) {
   const d = await data();
   const uniq = (k) => [...new Set(d.weapons.map(w => w[k]).filter(Boolean))].sort();
-  const sel = (id, label, vals) => `<select id="${id}"><option value="">${label}</option>${vals.map(v => `<option>${esc(v)}</option>`).join('')}</select>`;
   $app.innerHTML = `<h1>Weapons</h1><p class="muted">Every weapon in the game, with perks, stats, community god rolls and what your sheets say about it.</p><div class="filters">
     <input type="search" id="q" aria-label="Search weapons" placeholder="Search weapons, perks or sources" value="${esc(params.get('q') || '')}">
-    ${sel('ty', 'All types', uniq('ty'))}${sel('dm', 'All elements', uniq('dm'))}${sel('am', 'All ammo', uniq('am'))}${sel('ti', 'All rarities', uniq('ti'))}
+    ${select('ty', 'All types', uniq('ty'))}${select('dm', 'All elements', uniq('dm'))}${select('am', 'All ammo', uniq('am'))}${select('ti', 'All rarities', uniq('ti'))}
     <label class="check"><input type="checkbox" id="gr"> Has god roll</label></div><p id="count" class="muted"></p><div class="grid" id="list"></div>`;
   const f = id => $app.querySelector('#' + id);
   const draw = () => {
@@ -146,9 +157,7 @@ async function weaponPage(hash) {
   const mods = w.cols.filter(c => c.c === 'Weapon Mods');
   const maxStat = Math.max(100, ...w.st.filter(s => !s[2]).map(s => s[1]));
   $app.innerHTML = `
-    <div class="hero" style="background-image:url('${BNET}${w.ss}')"><div class="shade">${icon(w)}<div>
-      <h1>${esc(w.n)}</h1><div><span class="badge">${esc(w.ti)}</span><span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span><span class="badge">${esc(w.ty)}</span><span class="badge">${esc(w.sl)} · ${esc(w.am)}</span>${rolls.length ? '<span class="badge good">God rolls</span>' : ''}</div>
-      <p class="flavor">${esc(w.fl)}</p></div></div></div>
+    ${hero(w, `<span class="badge">${esc(w.ti)}</span><span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span><span class="badge">${esc(w.ty)}</span><span class="badge">${esc(w.sl)} · ${esc(w.am)}</span>${rolls.length ? '<span class="badge good">God rolls</span>' : ''}`)}
     ${same.length ? `<p class="versions">Other versions: ${same.map((x, i) => `<a href="#/weapon/${x.h}">${esc(bungieSource(x) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
     <section class="panel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In a community god roll <span class="key cur"></span> Curated roll</p>
       <div class="perkcols">${perkCols(w.cols.filter(c => c.c !== 'Weapon Mods'))}</div>
@@ -213,6 +222,119 @@ function rollGroups(d, rolls) {
     ${rs.slice(0, 6).map(r => `<div class="perks">${combo(r)}</div>`).join('')}${rs.length > 6 ? `<small class="muted">and ${rs.length - 6} more combinations</small>` : ''}</details>`).join('');
 }
 
+// ---------- armor ----------
+async function armorData() {
+  const a = await load('armor');
+  a.byHash ||= Object.fromEntries(a.armor.map(x => [x.h, x]));
+  return a;
+}
+// "Warlock Bond" already names the class, "Helmet" does not
+const slotLabel = x => x.ty.startsWith(x.cl) ? x.ty : `${x.cl} ${x.ty}`;
+const archetypeOf = (a, item) => [...item.plugs].map(h => a.archetypes[h]).find(Boolean);
+const statTotal = (a, item) => Object.keys(a.stats).reduce((t, h) => t + (item.stats[h] || 0), 0);
+// "Primary Stat: Super Secondary Stat: Melee" -> ['Super', 'Melee']
+const archetypeStats = d => [/Primary Stat:\s*(\w+)/, /Secondary Stat:\s*(\w+)/].map(re => d.match(re)?.[1] || '');
+async function armorSource(a, x) {
+  const monu = await monumentSources(), set = a.sets[x.set];
+  return monu.get(x.n.toLowerCase()) || (set && monu.get(`${set.n} armor`.toLowerCase())) || [bungieSource(x)].filter(Boolean);
+}
+const setBonus = set => set.perks.map(([n, name, desc, ic]) => `<div class="bonus">${ic ? `<img src="${BNET}${ic}" alt="">` : ''}<div><b>${n}-piece: ${esc(name)}</b><br><span class="muted">${esc(desc)}</span></div></div>`).join('');
+
+async function armorList(params) {
+  const a = await armorData();
+  const uniq = k => [...new Set(a.armor.map(x => x[k]).filter(Boolean))].sort();
+  const sets = Object.entries(a.sets).map(([h, st]) => [h, st.n]).sort((x, y) => x[1].localeCompare(y[1]));
+  $app.innerHTML = `<h1>Armor</h1><p class="muted">Every armor piece, with set bonuses, archetypes, exotic perks and where it drops.</p><div class="filters">
+    <input type="search" id="q" aria-label="Search armor" placeholder="Search armor, sets or exotic perks" value="${esc(params.get('q') || '')}">
+    ${select('cl', 'All classes', ['Titan', 'Hunter', 'Warlock'])}${select('ty', 'All slots', uniq('ty'))}${select('ti', 'All rarities', uniq('ti'))}${select('set', 'All sets', sets, params.get('set') || '')}
+    <label class="check"><input type="checkbox" id="cur" checked> Current armor only</label></div><p id="count" class="muted"></p><div class="grid" id="list"></div>`;
+  const f = id => $app.querySelector('#' + id);
+  const draw = () => {
+    const q = f('q').value.trim().toLowerCase();
+    const list = a.armor.filter(x => (!q || x.n.toLowerCase().includes(q) || a.sets[x.set]?.n.toLowerCase().includes(q) || x.ex?.[0].toLowerCase().includes(q))
+      && ['cl', 'ty', 'ti', 'set'].every(k => !f(k).value || x[k] === f(k).value) && (!f('cur').checked || x.a3));
+    // older copies of a piece share its name; list each name once and link the rest from its page
+    const byName = new Map();
+    list.forEach(x => byName.has(x.n + x.cl) ? byName.get(x.n + x.cl).count++ : byName.set(x.n + x.cl, { x, count: 1 }));
+    const names = [...byName.values()];
+    f('count').textContent = plural(names.length, 'piece') + (names.length > 300 ? ', showing the first 300' : '');
+    f('list').innerHTML = names.slice(0, 300).map(({ x, count }) => card(x, `<small>${esc(slotLabel(x))}${x.ex ? ` · ${esc(x.ex[0])}` : ''}</small>
+      <small>${esc(a.sets[x.set]?.n || bungieSource(x))}${count > 1 ? ` · ${count} versions` : ''}</small>`, 'armor')).join('')
+      || '<p class="empty">No armor matches. Try a shorter search, clear a filter, or untick "Current armor only".</p>';
+  };
+  $app.querySelectorAll('input,select').forEach(el => el.addEventListener('input', draw));
+  draw();
+}
+
+async function armorPage(hash) {
+  const a = await armorData();
+  const x = a.byHash[hash];
+  if (!x) { $app.innerHTML = '<p class="empty">Armor piece not found. <a href="#/armor">Back to armor</a></p>'; return; }
+  const set = a.sets[x.set];
+  const same = a.armor.filter(y => y.n === x.n && y.cl === x.cl && y.h !== x.h);
+  $app.innerHTML = `
+    ${hero(x, `<span class="badge">${esc(x.ti)}</span><span class="badge">${esc(x.cl)}</span><span class="badge">${esc(x.ty)}</span>${set ? `<span class="badge">${esc(set.n)} set</span>` : ''}${x.a3 ? '' : '<span class="badge">Legacy armor</span>'}`)}
+    ${same.length ? `<p class="versions">Other versions: ${same.map((y, i) => `<a href="#/armor/${y.h}">${esc(bungieSource(y) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
+    <div class="cols2"><div>
+      ${x.ex ? `<section class="panel"><h2>Exotic perk</h2><div class="bonus">${x.ex[2] ? `<img src="${BNET}${x.ex[2]}" alt="">` : ''}<div><b>${esc(x.ex[0])}</b><br><span class="muted">${esc(x.ex[1])}</span></div></div></section>` : ''}
+      ${set ? `<section class="panel"><h2>Set bonus</h2>${setBonus(set)}<p class="muted"><a href="#/armor?set=${x.set}">See every ${esc(set.n)} piece</a></p></section>` : ''}
+      <section class="panel"><h2>Source</h2><p id="farmsrc">${esc(bungieSource(x) || 'Unknown')}</p><div id="sheetsrc" class="muted">Looking up community sheets…</div></section>
+    </div><div>
+      <section class="panel" id="mine"><h2>Your copies</h2><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies, their tier, archetype and stats.'}</p></section>
+      ${x.a3 ? `<section class="panel"><h2>Archetypes</h2><p class="muted">Every current armor piece can drop as any of these. The archetype sets its two highest stats.</p>
+        <table class="sheet"><tr><td class="muted">Archetype</td><td class="muted">Primary stat</td><td class="muted">Secondary stat</td></tr>
+        ${Object.values(Object.fromEntries(Object.values(a.archetypes).map(t => [t.n, t]))).sort((p, q) => p.n.localeCompare(q.n)).map(t => `<tr><td>${esc(t.n)}</td>${archetypeStats(t.d).map(v => `<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</table></section>` : ''}
+    </div></div>`;
+
+  const hits = [...await sheetRows(x.n), ...(set ? await sheetRows(`${set.n} Armor`) : [])];
+  document.getElementById('farmsrc').textContent = (await armorSource(a, x)).join(' · also: ') || 'Unknown';
+  document.getElementById('sheetsrc').innerHTML = hits.length ? rowTable(hits) : 'Not mentioned in the community sheets.';
+
+  if (Bungie.token()) {
+    try {
+      const prof = await profile(); renderAccount();
+      const mine = prof.items.filter(i => i.itemHash === x.h);
+      document.querySelector('#mine').innerHTML = `<h2>Your copies</h2>` + (mine.length ? mine.map(i => armorCopy(a, i)).join('') : '<p class="muted">You don\'t own this version.</p>');
+    } catch (e) { document.querySelector('#mine').innerHTML = `<h2>Your copies</h2><p>${esc(e.message)}</p>`; }
+  }
+}
+
+function armorCopy(a, i) {
+  const arch = archetypeOf(a, i);
+  return `<div class="roll">${i.tier ? `<span class="badge${i.tier === 5 ? ' good' : ''}">Tier ${i.tier}</span>` : ''}${arch ? `<span class="badge mode">${esc(arch.n)}</span>` : ''} ${esc(i.location)} · ${statTotal(a, i)} total
+    ${Object.entries(a.stats).map(([h, n]) => `<div class="stat"><span class="muted">${esc(n)}</span><div class="bar"><span style="width:${Math.min(100, (i.stats[h] || 0) / 45 * 100)}%"></span></div><b>${i.stats[h] || 0}</b></div>`).join('')}</div>`;
+}
+
+async function setsPage() {
+  const a = await armorData();
+  const p = Bungie.token() ? await needProfile() : null;
+  // what you own of each set, per class: distinct slots and best tier
+  const owned = {};
+  for (const i of p?.items || []) {
+    const x = a.byHash[i.itemHash];
+    if (!x?.set) continue;
+    const o = ((owned[x.set] ||= {})[x.cl] ||= { slots: new Set(), tier: 0 });
+    o.slots.add(x.ty); o.tier = Math.max(o.tier, i.tier);
+  }
+  const sets = await Promise.all(Object.entries(a.sets).map(async ([h, st]) => {
+    const first = a.armor.find(x => x.set === h);
+    return { h, ...st, src: first ? (await armorSource(a, first))[0] || '' : '' };
+  }));
+  sets.sort((x, y) => x.n.localeCompare(y.n));
+  $app.innerHTML = `<h1>Armor sets</h1><p class="muted">Every armor set and its 2- and 4-piece bonuses${p ? ', with what you own of each' : ''}. ${p ? '' : 'Sign in to see which pieces you have.'}</p>
+    <div class="filters"><input type="search" id="q" aria-label="Filter sets" placeholder="Filter by set, bonus or source (e.g. grenade, Iron Banner)"></div><div id="list"></div>`;
+  const draw = () => {
+    const q = $app.querySelector('#q').value.toLowerCase();
+    $app.querySelector('#list').innerHTML = sets.filter(st => !q || [st.n, st.src, ...st.perks.flatMap(pk => [pk[1], pk[2]])].some(t => t.toLowerCase().includes(q)))
+      .map(st => `<section class="panel"><h2><a href="#/armor?set=${st.h}">${esc(st.n)}</a></h2>${st.src ? `<p class="muted">${esc(st.src)}</p>` : ''}${setBonus(st)}
+        ${p ? `<p class="owned">${['Titan', 'Hunter', 'Warlock'].map(cl => { const o = owned[st.h]?.[cl];
+          return `<span class="badge${o?.slots.size === 5 ? ' good' : ''}">${cl}: ${o ? `${o.slots.size}/5 pieces${o.tier ? `, best Tier ${o.tier}` : ''}` : 'none'}</span>`; }).join('')}</p>` : ''}</section>`).join('')
+      || '<p class="empty">No set matches this filter.</p>';
+  };
+  $app.querySelector('#q').addEventListener('input', draw);
+  draw();
+}
+
 async function needProfile() {
   if (!Bungie.token()) {
     $app.innerHTML = `<h1>Sign in</h1><p>Sign in with your Bungie account to load your vault and characters. Your login stays in this browser.</p><button class="primary" id="go">Sign in with Bungie</button>`;
@@ -224,7 +346,10 @@ async function needProfile() {
   return p;
 }
 
-async function inventory() {
+const gearTabs = on => `<div class="tabs gear">${[['', 'Weapons'], ['/armor', 'Armor']].map(([path, label]) => `<a href="#/inventory${path}"${label === on ? ' class="on" aria-current="page"' : ''}>${label}</a>`).join('')}</div>`;
+
+async function inventory(tab) {
+  if (tab === 'armor') return armorInventory();
   const d = await data();
   const p = await needProfile(); if (!p) return;
   const owned = p.items.filter(i => d.byHash[i.itemHash]);
@@ -233,7 +358,7 @@ async function inventory() {
     const w = d.byHash[h], rolls = d.rolls[h] || [];
     return { w, list, god: list.filter(i => rolls.some(r => rollMatches(r, i.plugs))).length, hasRolls: rolls.length > 0 };
   }).sort((a, b) => b.god - a.god || a.w.n.localeCompare(b.w.n));
-  $app.innerHTML = `<h1>My gear</h1><p class="muted">${plural(owned.length, 'weapon')}, ${plural(rows.reduce((s, r) => s + r.god, 0), 'god roll')}, ${plural(rows.filter(r => r.list.length > 1).length, 'weapon')} with duplicates.</p>
+  $app.innerHTML = `<h1>My gear</h1>${gearTabs('Weapons')}<p class="muted">${plural(owned.length, 'weapon')}, ${plural(rows.reduce((s, r) => s + r.god, 0), 'god roll')}, ${plural(rows.filter(r => r.list.length > 1).length, 'weapon')} with duplicates.</p>
     <div class="filters"><input type="search" id="q" aria-label="Filter your weapons" placeholder="Filter by name"><select id="show" aria-label="Show"><option value="">Everything</option><option value="god">God rolls</option><option value="nogod">Has a god roll I don't own yet</option><option value="dupe">Duplicates</option></select></div>
     <div class="grid" id="list"></div>`;
   const draw = () => {
@@ -242,6 +367,30 @@ async function inventory() {
         (!show || show === 'god' && r.god || show === 'nogod' && r.hasRolls && !r.god || show === 'dupe' && r.list.length > 1))
       .map(r => card(r.w, `<small>${esc(r.w.ty)} · owned ×${r.list.length}</small>
         <small>${r.god ? `<span class="badge good">${plural(r.god, 'god roll')}</span>` : r.hasRolls ? '<span class="badge">No god roll yet</span>' : ''}</small>`)).join('')
+      || '<p class="empty">Nothing matches this filter.</p>';
+  };
+  $app.querySelectorAll('input,select').forEach(el => el.addEventListener('input', draw));
+  draw();
+}
+
+async function armorInventory() {
+  const a = await armorData();
+  const p = await needProfile(); if (!p) return;
+  const owned = p.items.filter(i => a.byHash[i.itemHash]).map(i => ({ i, x: a.byHash[i.itemHash], total: statTotal(a, i), arch: archetypeOf(a, i)?.n || '' }));
+  const uniq = f => [...new Set(owned.map(f).filter(Boolean))].sort();
+  $app.innerHTML = `<h1>My gear</h1>${gearTabs('Armor')}<p class="muted">${plural(owned.length, 'armor piece')}, ${owned.filter(o => o.i.tier === 5).length} at Tier 5.</p>
+    <div class="filters"><input type="search" id="q" aria-label="Filter your armor" placeholder="Filter by name or set">
+    ${select('cl', 'All classes', ['Titan', 'Hunter', 'Warlock'])}${select('ty', 'All slots', uniq(o => o.x.ty))}${select('arch', 'All archetypes', uniq(o => o.arch))}
+    <select id="sort" aria-label="Sort"><option value="tier">Best tier first</option><option value="total">Highest stats first</option><option value="name">Name</option></select></div>
+    <div class="grid" id="list"></div>`;
+  const f = id => $app.querySelector('#' + id);
+  const draw = () => {
+    const q = f('q').value.toLowerCase(), by = f('sort').value;
+    const list = owned.filter(o => (!q || o.x.n.toLowerCase().includes(q) || a.sets[o.x.set]?.n.toLowerCase().includes(q))
+        && (!f('cl').value || o.x.cl === f('cl').value) && (!f('ty').value || o.x.ty === f('ty').value) && (!f('arch').value || o.arch === f('arch').value))
+      .sort((m, n) => by === 'name' ? m.x.n.localeCompare(n.x.n) : by === 'total' ? n.total - m.total : n.i.tier - m.i.tier || n.total - m.total);
+    f('list').innerHTML = list.map(({ i, x, total, arch }) => card(x, `<small>${esc(slotLabel(x))}${a.sets[x.set] ? ` · ${esc(a.sets[x.set].n)}` : ''}</small>
+      <small>${i.tier ? `<span class="badge${i.tier === 5 ? ' good' : ''}">Tier ${i.tier}</span>` : ''}${arch ? `<span class="badge">${esc(arch)}</span>` : ''}${total} total</small>`, 'armor')).join('')
       || '<p class="empty">Nothing matches this filter.</p>';
   };
   $app.querySelectorAll('input,select').forEach(el => el.addEventListener('input', draw));
@@ -312,7 +461,9 @@ async function route() {
   try {
     if (!parts[0] || parts[0] === 'weapons') await weaponList(params);
     else if (parts[0] === 'weapon') await weaponPage(+parts[1]);
-    else if (parts[0] === 'inventory') await inventory();
+    else if (parts[0] === 'inventory') await inventory(parts[1]);
+    else if (parts[0] === 'armor') await (parts[1] ? armorPage(+parts[1]) : armorList(params));
+    else if (parts[0] === 'sets') await setsPage();
     else if (parts[0] === 'farm') await farm();
     else if (parts[0] === 'ref') await reference(parts[1] ? +parts[1] : -1);
     else if (parts[0] === 'images') images();

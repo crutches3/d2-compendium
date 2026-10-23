@@ -127,3 +127,10 @@ table.sheet td.muted { width: 30%; }
 .infographic img.zoom { max-width: none; cursor: zoom-out; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* armor */
+.bonus { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; margin-bottom: 10px; }
+.bonus img { width: 32px; height: 32px; border-radius: 4px; flex: none; background: var(--panel2); }
+.owned { margin: 8px 0 0; }
+.tabs.gear { margin: 8px 0 4px; }
+section.panel h2 a { color: var(--text); }

@@ -48,25 +48,29 @@ const Bungie = (() => {
     return j.Response;
   }
 
-  // Returns { name, items: [{ itemHash, instanceId, location, plugs: Set<plugHash>, power }] } for every weapon-ish instance.
+  // Returns { name, items: [{ itemHash, instanceId, location, plugs: Set<plugHash>, power, tier, stats: {statHash: value} }] } for every instanced item.
   async function loadProfile() {
     const m = await call('/User/GetMembershipsForCurrentUser/');
     const primary = m.primaryMembershipId;
     const dm = m.destinyMemberships.find(x => x.membershipId === primary) || m.destinyMemberships[0];
     if (!dm) throw new Error('No Destiny account found on this Bungie profile.');
-    const p = await call(`/Destiny2/${dm.membershipType}/Profile/${dm.membershipId}/?components=102,201,205,300,305,310`);
+    const p = await call(`/Destiny2/${dm.membershipType}/Profile/${dm.membershipId}/?components=102,200,201,205,300,304,305,310`);
     const items = [];
     const push = (list, where) => list.forEach(i => i.itemInstanceId && items.push({ itemHash: i.itemHash, instanceId: i.itemInstanceId, location: where }));
     push(p.profileInventory.data.items, 'Vault');
-    for (const [cid, inv] of Object.entries(p.characterInventories.data || {})) push(inv.items, 'Character ' + cid.slice(-4));
-    for (const [cid, eq] of Object.entries(p.characterEquipment.data || {})) push(eq.items, 'Equipped ' + cid.slice(-4));
+    const charName = cid => ['Titan', 'Hunter', 'Warlock'][p.characters?.data?.[cid]?.classType] || 'Character ' + cid.slice(-4);
+    for (const [cid, inv] of Object.entries(p.characterInventories.data || {})) push(inv.items, charName(cid));
+    for (const [cid, eq] of Object.entries(p.characterEquipment.data || {})) push(eq.items, charName(cid) + ' (equipped)');
     const sockets = p.itemComponents.sockets.data || {}, reusable = p.itemComponents.reusablePlugs.data || {}, inst = p.itemComponents.instances.data || {};
+    const stats = p.itemComponents.stats?.data || {};
     for (const it of items) {
       const plugs = new Set();
       (sockets[it.instanceId]?.sockets || []).forEach(s => s.plugHash && plugs.add(s.plugHash));
       Object.values(reusable[it.instanceId]?.plugs || {}).forEach(col => col.forEach(pl => plugs.add(pl.plugItemHash)));
       it.plugs = plugs;
       it.power = inst[it.instanceId]?.primaryStat?.value || 0;
+      it.tier = inst[it.instanceId]?.gearTier || 0;
+      it.stats = Object.fromEntries(Object.entries(stats[it.instanceId]?.stats || {}).map(([h, s]) => [h, s.value]));
     }
     return { name: m.bungieNetUser.uniqueName || m.bungieNetUser.displayName, items };
   }
