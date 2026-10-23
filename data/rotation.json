@@ -1,0 +1,1581 @@
+{
+"always": [
+"Desert Perpetual",
+"Equilibrium"
+],
+"weeks": [
+{
+"start": "2026-06-09",
+"week": 1,
+"gm": "Warden of Nothing",
+"gmWeapons": [
+"Ouster Engine",
+"D.F.A."
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Vow of the Disciple",
+"Last Wish"
+],
+"dungeons": [
+"Duality",
+"Shattered Throne"
+],
+"pantheon": [],
+"master": [
+"Vow of the Disciple"
+]
+},
+{
+"start": "2026-06-16",
+"week": 2,
+"gm": "Birthplace of the Vile",
+"gmWeapons": [
+"Whatchamacallit",
+"Mint Retrograde"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"King's Fall",
+"Garden of Salvation"
+],
+"dungeons": [
+"Spire of the Watcher",
+"Pit of Heresy"
+],
+"pantheon": [
+"Gahlran",
+"Consecrated Mind"
+],
+"master": [
+"King's Fall",
+"Spire of the Watcher"
+]
+},
+{
+"start": "2026-06-23",
+"week": 3,
+"gm": "Defiant BG: EDZ",
+"gmWeapons": [
+"Salvager's Salvo",
+"The Hothead"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Root of Nightmares",
+"Deep Stone Crypt"
+],
+"dungeons": [
+"Ghosts of the Deep",
+"Prophecy"
+],
+"pantheon": [
+"Calus",
+"Morgeth"
+],
+"master": [
+"Root of Nightmares",
+"Ghosts of the Deep"
+]
+},
+{
+"start": "2026-06-30",
+"week": 4,
+"gm": "The Sunless Cell",
+"gmWeapons": [
+"Null Composure",
+"Lotus-Eater"
+],
+"pvp": "Iron Banner",
+"raids": [
+"Crota's End",
+"Vault of Glass"
+],
+"dungeons": [
+"Warlord's Ruin",
+"Grasp of Avarice"
+],
+"pantheon": [
+"Argos",
+"Insurrection Prime"
+],
+"master": [
+"Crota's End",
+"Vault of Glass",
+"Warlord's Ruin",
+"Grasp of Avarice"
+]
+},
+{
+"start": "2026-07-07",
+"week": 5,
+"gm": "Exodus Crash",
+"gmWeapons": [
+"Adored",
+"Adored"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Salvation's Edge",
+"Vow of the Disciple"
+],
+"dungeons": [
+"Vesper's Host",
+"Duality"
+],
+"pantheon": [
+"Gahlran",
+"Warpriest"
+],
+"master": [
+"Salvation's Edge",
+"Vow of the Disciple",
+"Vesper's Host",
+"Duality"
+]
+},
+{
+"start": "2026-07-14",
+"week": 6,
+"gm": "The Arms Dealer",
+"gmWeapons": [
+"Mint Retrograde",
+"The Slammer"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"King's Fall",
+"Last Wish"
+],
+"dungeons": [
+"Sundered Doctrine",
+"Spire of the Watcher"
+],
+"pantheon": [
+"Calus",
+"Consecrated Mind"
+],
+"master": [
+"King's Fall",
+"Sundered Doctrine",
+"Spire of the Watcher"
+]
+},
+{
+"start": "2026-07-21",
+"week": 7,
+"gm": "Warden of Nothing",
+"gmWeapons": [
+"The Palindrome",
+"Ouster Engine"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Root of Nightmares",
+"Garden of Salvation"
+],
+"dungeons": [
+"Shattered Throne",
+"Ghosts of the Deep"
+],
+"pantheon": [
+"Argos",
+"Morgeth"
+],
+"master": [
+"Root of Nightmares",
+"Ghosts of the Deep"
+]
+},
+{
+"start": "2026-07-28",
+"week": 8,
+"gm": "Birthplace of the Vile",
+"gmWeapons": [
+"Lotus-Eater",
+"Whatchamacallit"
+],
+"pvp": "Iron Banner",
+"raids": [
+"Crota's End",
+"Deep Stone Crypt"
+],
+"dungeons": [
+"Warlord's Ruin",
+"Pit of Heresy"
+],
+"pantheon": [
+"Gahlran",
+"Insurrection Prime"
+],
+"master": [
+"Crota's End",
+"Warlord's Ruin"
+]
+},
+{
+"start": "2026-08-04",
+"week": 9,
+"gm": "Defiant BG: EDZ",
+"gmWeapons": [
+"The Slammer",
+"Null Composure"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Salvation's Edge",
+"Vault of Glass"
+],
+"dungeons": [
+"Vesper's Host",
+"Prophecy"
+],
+"pantheon": [
+"Calus",
+"Warpriest"
+],
+"master": [
+"Salvation's Edge",
+"Vault of Glass",
+"Vesper's Host"
+]
+},
+{
+"start": "2026-08-11",
+"week": 10,
+"gm": "The Sunless Cell",
+"gmWeapons": [
+"D.F.A.",
+"Salvager's Salvo"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Vow of the Disciple",
+"Last Wish"
+],
+"dungeons": [
+"Sundered Doctrine",
+"Grasp of Avarice"
+],
+"pantheon": [
+"Argos",
+"Consecrated Mind"
+],
+"master": [
+"Vow of the Disciple",
+"Sundered Doctrine",
+"Grasp of Avarice"
+]
+},
+{
+"start": "2026-08-18",
+"week": 11,
+"gm": "Exodus Crash",
+"gmWeapons": [
+"The Hothead",
+"The Palindrome"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"King's Fall",
+"Garden of Salvation"
+],
+"dungeons": [
+"Duality",
+"Shattered Throne"
+],
+"pantheon": [
+"Gahlran",
+"Morgeth"
+],
+"master": [
+"King's Fall",
+"Duality"
+]
+},
+{
+"start": "2026-08-25",
+"week": 12,
+"gm": "The Arms Dealer",
+"gmWeapons": [
+"Ouster Engine",
+"D.F.A."
+],
+"pvp": "Iron Banner",
+"raids": [
+"Root of Nightmares",
+"Deep Stone Crypt"
+],
+"dungeons": [
+"Spire of the Watcher",
+"Pit of Heresy"
+],
+"pantheon": [
+"Calus",
+"Insurrection Prime"
+],
+"master": [
+"Root of Nightmares",
+"Spire of the Watcher"
+]
+},
+{
+"start": "2026-09-01",
+"week": 13,
+"gm": "Warden of Nothing",
+"gmWeapons": [
+"Whatchamacallit",
+"Mint Retrograde"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Crota's End",
+"Vault of Glass"
+],
+"dungeons": [
+"Ghosts of the Deep",
+"Prophecy"
+],
+"pantheon": [
+"Argos",
+"Warpriest"
+],
+"master": [
+"Crota's End",
+"Vault of Glass",
+"Ghosts of the Deep"
+]
+},
+{
+"start": "2026-09-08",
+"week": 14,
+"gm": "Birthplace of the Vile",
+"gmWeapons": [
+"Salvager's Salvo",
+"The Hothead"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Salvation's Edge",
+"Vow of the Disciple"
+],
+"dungeons": [
+"Warlord's Ruin",
+"Grasp of Avarice"
+],
+"pantheon": [
+"Gahlran",
+"Consecrated Mind"
+],
+"master": [
+"Salvation's Edge",
+"Vow of the Disciple",
+"Warlord's Ruin",
+"Grasp of Avarice"
+]
+},
+{
+"start": "2026-09-15",
+"week": 15,
+"gm": "Defiant BG: EDZ",
+"gmWeapons": [
+"Null Composure",
+"Lotus-Eater"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"King's Fall",
+"Last Wish"
+],
+"dungeons": [
+"Vesper's Host",
+"Duality"
+],
+"pantheon": [
+"Calus",
+"Morgeth"
+],
+"master": [
+"King's Fall",
+"Vesper's Host",
+"Duality"
+]
+},
+{
+"start": "2026-09-22",
+"week": 16,
+"gm": "The Sunless Cell",
+"gmWeapons": [
+"Adored",
+"Adored"
+],
+"pvp": "Iron Banner",
+"raids": [
+"Root of Nightmares",
+"Garden of Salvation"
+],
+"dungeons": [
+"Sundered Doctrine",
+"Spire of the Watcher"
+],
+"pantheon": [
+"Argos",
+"Insurrection Prime"
+],
+"master": [
+"Root of Nightmares",
+"Sundered Doctrine",
+"Spire of the Watcher"
+]
+},
+{
+"start": "2026-09-29",
+"week": 17,
+"gm": "Exodus Crash",
+"gmWeapons": [
+"Mint Retrograde",
+"The Slammer"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Crota's End",
+"Deep Stone Crypt"
+],
+"dungeons": [
+"Shattered Throne",
+"Ghosts of the Deep"
+],
+"pantheon": [
+"Gahlran",
+"Warpriest"
+],
+"master": [
+"Crota's End",
+"Ghosts of the Deep"
+]
+},
+{
+"start": "2026-10-06",
+"week": 18,
+"gm": "The Arms Dealer",
+"gmWeapons": [
+"The Palindrome",
+"Ouster Engine"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Salvation's Edge",
+"Vault of Glass"
+],
+"dungeons": [
+"Warlord's Ruin",
+"Pit of Heresy"
+],
+"pantheon": [
+"Calus",
+"Consecrated Mind"
+],
+"master": [
+"Salvation's Edge",
+"Vault of Glass",
+"Warlord's Ruin"
+]
+},
+{
+"start": "2026-10-13",
+"week": 19,
+"gm": "Warden of Nothing",
+"gmWeapons": [
+"Lotus-Eater",
+"Whatchamacallit"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Vow of the Disciple",
+"Last Wish"
+],
+"dungeons": [
+"Vesper's Host",
+"Prophecy"
+],
+"pantheon": [
+"Argos",
+"Morgeth"
+],
+"master": [
+"Vow of the Disciple",
+"Vesper's Host"
+]
+},
+{
+"start": "2026-10-20",
+"week": 20,
+"gm": "Birthplace of the Vile",
+"gmWeapons": [
+"The Slammer",
+"Null Composure"
+],
+"pvp": "Iron Banner",
+"raids": [
+"King's Fall",
+"Garden of Salvation"
+],
+"dungeons": [
+"Sundered Doctrine",
+"Grasp of Avarice"
+],
+"pantheon": [
+"Gahlran",
+"Insurrection Prime"
+],
+"master": [
+"King's Fall",
+"Sundered Doctrine",
+"Grasp of Avarice"
+]
+},
+{
+"start": "2026-10-27",
+"week": 21,
+"gm": "Defiant BG: EDZ",
+"gmWeapons": [
+"D.F.A.",
+"Salvager's Salvo"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Root of Nightmares",
+"Deep Stone Crypt"
+],
+"dungeons": [
+"Duality",
+"Shattered Throne"
+],
+"pantheon": [
+"Calus",
+"Warpriest"
+],
+"master": [
+"Root of Nightmares",
+"Duality"
+]
+},
+{
+"start": "2026-11-03",
+"week": 22,
+"gm": "The Sunless Cell",
+"gmWeapons": [
+"The Hothead",
+"The Palindrome"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Crota's End",
+"Vault of Glass"
+],
+"dungeons": [
+"Spire of the Watcher",
+"Pit of Heresy"
+],
+"pantheon": [
+"Argos",
+"Consecrated Mind"
+],
+"master": [
+"Crota's End",
+"Vault of Glass",
+"Spire of the Watcher"
+]
+},
+{
+"start": "2026-11-10",
+"week": 23,
+"gm": "Exodus Crash",
+"gmWeapons": [
+"Ouster Engine",
+"D.F.A."
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Salvation's Edge",
+"Vow of the Disciple"
+],
+"dungeons": [
+"Ghosts of the Deep",
+"Prophecy"
+],
+"pantheon": [
+"Gahlran",
+"Morgeth"
+],
+"master": [
+"Salvation's Edge",
+"Vow of the Disciple",
+"Ghosts of the Deep"
+]
+},
+{
+"start": "2026-11-17",
+"week": 24,
+"gm": "The Arms Dealer",
+"gmWeapons": [
+"Whatchamacallit",
+"Mint Retrograde"
+],
+"pvp": "Iron Banner",
+"raids": [
+"King's Fall",
+"Last Wish"
+],
+"dungeons": [
+"Warlord's Ruin",
+"Grasp of Avarice"
+],
+"pantheon": [
+"Calus",
+"Insurrection Prime"
+],
+"master": [
+"King's Fall",
+"Warlord's Ruin",
+"Grasp of Avarice"
+]
+},
+{
+"start": "2026-11-24",
+"week": 25,
+"gm": "Warden of Nothing",
+"gmWeapons": [
+"Salvager's Salvo",
+"The Hothead"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Root of Nightmares",
+"Garden of Salvation"
+],
+"dungeons": [
+"Vesper's Host",
+"Duality"
+],
+"pantheon": [
+"Argos",
+"Warpriest"
+],
+"master": [
+"Root of Nightmares",
+"Vesper's Host",
+"Duality"
+]
+},
+{
+"start": "2026-12-01",
+"week": 26,
+"gm": "Birthplace of the Vile",
+"gmWeapons": [
+"Null Composure",
+"Lotus-Eater"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Crota's End",
+"Deep Stone Crypt"
+],
+"dungeons": [
+"Sundered Doctrine",
+"Spire of the Watcher"
+],
+"pantheon": [
+"Gahlran",
+"Consecrated Mind"
+],
+"master": [
+"Crota's End",
+"Sundered Doctrine",
+"Spire of the Watcher"
+]
+},
+{
+"start": "2026-12-08",
+"week": 27,
+"gm": "Defiant BG: EDZ",
+"gmWeapons": [
+"Adored",
+"Adored"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Salvation's Edge",
+"Vault of Glass"
+],
+"dungeons": [
+"Shattered Throne",
+"Ghosts of the Deep"
+],
+"pantheon": [
+"Calus",
+"Morgeth"
+],
+"master": [
+"Salvation's Edge",
+"Vault of Glass",
+"Ghosts of the Deep"
+]
+},
+{
+"start": "2026-12-15",
+"week": 28,
+"gm": "The Sunless Cell",
+"gmWeapons": [
+"Mint Retrograde",
+"The Slammer"
+],
+"pvp": "Iron Banner",
+"raids": [
+"Vow of the Disciple",
+"Last Wish"
+],
+"dungeons": [
+"Warlord's Ruin",
+"Pit of Heresy"
+],
+"pantheon": [
+"Argos",
+"Insurrection Prime"
+],
+"master": [
+"Vow of the Disciple",
+"Warlord's Ruin"
+]
+},
+{
+"start": "2026-12-22",
+"week": 29,
+"gm": "Exodus Crash",
+"gmWeapons": [
+"The Palindrome",
+"Ouster Engine"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"King's Fall",
+"Garden of Salvation"
+],
+"dungeons": [
+"Vesper's Host",
+"Prophecy"
+],
+"pantheon": [
+"Gahlran",
+"Warpriest"
+],
+"master": [
+"King's Fall",
+"Vesper's Host"
+]
+},
+{
+"start": "2026-12-29",
+"week": 30,
+"gm": "The Arms Dealer",
+"gmWeapons": [
+"Lotus-Eater",
+"Whatchamacallit"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Root of Nightmares",
+"Deep Stone Crypt"
+],
+"dungeons": [
+"Sundered Doctrine",
+"Grasp of Avarice"
+],
+"pantheon": [
+"Calus",
+"Consecrated Mind"
+],
+"master": [
+"Root of Nightmares",
+"Sundered Doctrine",
+"Grasp of Avarice"
+]
+},
+{
+"start": "2027-01-05",
+"week": 31,
+"gm": "Warden of Nothing",
+"gmWeapons": [
+"The Slammer",
+"Null Composure"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Crota's End",
+"Vault of Glass"
+],
+"dungeons": [
+"Duality",
+"Shattered Throne"
+],
+"pantheon": [
+"Argos",
+"Morgeth"
+],
+"master": [
+"Crota's End",
+"Vault of Glass",
+"Duality"
+]
+},
+{
+"start": "2027-01-12",
+"week": 32,
+"gm": "Birthplace of the Vile",
+"gmWeapons": [
+"D.F.A.",
+"Salvager's Salvo"
+],
+"pvp": "Iron Banner",
+"raids": [
+"Salvation's Edge",
+"Vow of the Disciple"
+],
+"dungeons": [
+"Spire of the Watcher",
+"Pit of Heresy"
+],
+"pantheon": [
+"Gahlran",
+"Insurrection Prime"
+],
+"master": [
+"Salvation's Edge",
+"Vow of the Disciple",
+"Spire of the Watcher"
+]
+},
+{
+"start": "2027-01-19",
+"week": 33,
+"gm": "Defiant BG: EDZ",
+"gmWeapons": [
+"The Hothead",
+"The Palindrome"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"King's Fall",
+"Last Wish"
+],
+"dungeons": [
+"Ghosts of the Deep",
+"Prophecy"
+],
+"pantheon": [
+"Calus",
+"Warpriest"
+],
+"master": [
+"King's Fall",
+"Ghosts of the Deep"
+]
+},
+{
+"start": "2027-01-26",
+"week": 34,
+"gm": "The Sunless Cell",
+"gmWeapons": [
+"Ouster Engine",
+"D.F.A."
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Root of Nightmares",
+"Garden of Salvation"
+],
+"dungeons": [
+"Warlord's Ruin",
+"Grasp of Avarice"
+],
+"pantheon": [
+"Argos",
+"Consecrated Mind"
+],
+"master": [
+"Root of Nightmares",
+"Warlord's Ruin",
+"Grasp of Avarice"
+]
+},
+{
+"start": "2027-02-02",
+"week": 35,
+"gm": "Exodus Crash",
+"gmWeapons": [
+"Whatchamacallit",
+"Mint Retrograde"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Crota's End",
+"Deep Stone Crypt"
+],
+"dungeons": [
+"Vesper's Host",
+"Duality"
+],
+"pantheon": [
+"Gahlran",
+"Morgeth"
+],
+"master": [
+"Crota's End",
+"Vesper's Host",
+"Duality"
+]
+},
+{
+"start": "2027-02-09",
+"week": 36,
+"gm": "The Arms Dealer",
+"gmWeapons": [
+"Salvager's Salvo",
+"The Hothead"
+],
+"pvp": "Iron Banner",
+"raids": [
+"Salvation's Edge",
+"Vault of Glass"
+],
+"dungeons": [
+"Sundered Doctrine",
+"Spire of the Watcher"
+],
+"pantheon": [
+"Calus",
+"Insurrection Prime"
+],
+"master": [
+"Salvation's Edge",
+"Vault of Glass",
+"Sundered Doctrine",
+"Spire of the Watcher"
+]
+},
+{
+"start": "2027-02-16",
+"week": 37,
+"gm": "Warden of Nothing",
+"gmWeapons": [
+"Null Composure",
+"Lotus-Eater"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Vow of the Disciple",
+"Last Wish"
+],
+"dungeons": [
+"Shattered Throne",
+"Ghosts of the Deep"
+],
+"pantheon": [
+"Argos",
+"Warpriest"
+],
+"master": [
+"Vow of the Disciple",
+"Ghosts of the Deep"
+]
+},
+{
+"start": "2027-02-23",
+"week": 38,
+"gm": "Birthplace of the Vile",
+"gmWeapons": [
+"Adored",
+"Adored"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"King's Fall",
+"Garden of Salvation"
+],
+"dungeons": [
+"Warlord's Ruin",
+"Pit of Heresy"
+],
+"pantheon": [
+"Gahlran",
+"Consecrated Mind"
+],
+"master": [
+"King's Fall",
+"Warlord's Ruin"
+]
+},
+{
+"start": "2027-03-02",
+"week": 39,
+"gm": "Defiant BG: EDZ",
+"gmWeapons": [
+"Mint Retrograde",
+"The Slammer"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Root of Nightmares",
+"Deep Stone Crypt"
+],
+"dungeons": [
+"Vesper's Host",
+"Prophecy"
+],
+"pantheon": [
+"Calus",
+"Morgeth"
+],
+"master": [
+"Root of Nightmares",
+"Vesper's Host"
+]
+},
+{
+"start": "2027-03-09",
+"week": 40,
+"gm": "The Sunless Cell",
+"gmWeapons": [
+"The Palindrome",
+"Ouster Engine"
+],
+"pvp": "Iron Banner",
+"raids": [
+"Crota's End",
+"Vault of Glass"
+],
+"dungeons": [
+"Sundered Doctrine",
+"Grasp of Avarice"
+],
+"pantheon": [
+"Argos",
+"Insurrection Prime"
+],
+"master": [
+"Crota's End",
+"Vault of Glass",
+"Sundered Doctrine",
+"Grasp of Avarice"
+]
+},
+{
+"start": "2027-03-16",
+"week": 41,
+"gm": "Exodus Crash",
+"gmWeapons": [
+"Lotus-Eater",
+"Whatchamacallit"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Salvation's Edge",
+"Vow of the Disciple"
+],
+"dungeons": [
+"Duality",
+"Shattered Throne"
+],
+"pantheon": [
+"Gahlran",
+"Warpriest"
+],
+"master": [
+"Salvation's Edge",
+"Vow of the Disciple",
+"Duality"
+]
+},
+{
+"start": "2027-03-23",
+"week": 42,
+"gm": "The Arms Dealer",
+"gmWeapons": [
+"The Slammer",
+"Null Composure"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"King's Fall",
+"Last Wish"
+],
+"dungeons": [
+"Spire of the Watcher",
+"Pit of Heresy"
+],
+"pantheon": [
+"Calus",
+"Consecrated Mind"
+],
+"master": [
+"King's Fall",
+"Spire of the Watcher"
+]
+},
+{
+"start": "2027-03-30",
+"week": 43,
+"gm": "Warden of Nothing",
+"gmWeapons": [
+"D.F.A.",
+"Salvager's Salvo"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Root of Nightmares",
+"Garden of Salvation"
+],
+"dungeons": [
+"Ghosts of the Deep",
+"Prophecy"
+],
+"pantheon": [
+"Argos",
+"Morgeth"
+],
+"master": [
+"Root of Nightmares",
+"Ghosts of the Deep"
+]
+},
+{
+"start": "2027-04-06",
+"week": 44,
+"gm": "Birthplace of the Vile",
+"gmWeapons": [
+"The Hothead",
+"The Palindrome"
+],
+"pvp": "Iron Banner",
+"raids": [
+"Crota's End",
+"Deep Stone Crypt"
+],
+"dungeons": [
+"Warlord's Ruin",
+"Grasp of Avarice"
+],
+"pantheon": [
+"Gahlran",
+"Insurrection Prime"
+],
+"master": [
+"Crota's End",
+"Warlord's Ruin",
+"Grasp of Avarice"
+]
+},
+{
+"start": "2027-04-13",
+"week": 45,
+"gm": "Defiant BG: EDZ",
+"gmWeapons": [
+"Ouster Engine",
+"D.F.A."
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Salvation's Edge",
+"Vault of Glass"
+],
+"dungeons": [
+"Vesper's Host",
+"Duality"
+],
+"pantheon": [
+"Calus",
+"Warpriest"
+],
+"master": [
+"Salvation's Edge",
+"Vault of Glass",
+"Vesper's Host",
+"Duality"
+]
+},
+{
+"start": "2027-04-20",
+"week": 46,
+"gm": "The Sunless Cell",
+"gmWeapons": [
+"Whatchamacallit",
+"Mint Retrograde"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Vow of the Disciple",
+"Last Wish"
+],
+"dungeons": [
+"Sundered Doctrine",
+"Spire of the Watcher"
+],
+"pantheon": [
+"Argos",
+"Consecrated Mind"
+],
+"master": [
+"Vow of the Disciple",
+"Sundered Doctrine",
+"Spire of the Watcher"
+]
+},
+{
+"start": "2027-04-27",
+"week": 47,
+"gm": "Exodus Crash",
+"gmWeapons": [
+"Salvager's Salvo",
+"The Hothead"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"King's Fall",
+"Garden of Salvation"
+],
+"dungeons": [
+"Shattered Throne",
+"Ghosts of the Deep"
+],
+"pantheon": [
+"Gahlran",
+"Morgeth"
+],
+"master": [
+"King's Fall",
+"Ghosts of the Deep"
+]
+},
+{
+"start": "2027-05-04",
+"week": 48,
+"gm": "The Arms Dealer",
+"gmWeapons": [
+"Null Composure",
+"Lotus-Eater"
+],
+"pvp": "Iron Banner",
+"raids": [
+"Root of Nightmares",
+"Deep Stone Crypt"
+],
+"dungeons": [
+"Warlord's Ruin",
+"Pit of Heresy"
+],
+"pantheon": [
+"Calus",
+"Insurrection Prime"
+],
+"master": [
+"Root of Nightmares",
+"Warlord's Ruin"
+]
+},
+{
+"start": "2027-05-11",
+"week": 49,
+"gm": "Warden of Nothing",
+"gmWeapons": [
+"Adored",
+"Adored"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Crota's End",
+"Vault of Glass"
+],
+"dungeons": [
+"Vesper's Host",
+"Prophecy"
+],
+"pantheon": [
+"Argos",
+"Warpriest"
+],
+"master": [
+"Crota's End",
+"Vault of Glass",
+"Vesper's Host"
+]
+},
+{
+"start": "2027-05-18",
+"week": 50,
+"gm": "Birthplace of the Vile",
+"gmWeapons": [
+"Mint Retrograde",
+"The Slammer"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Salvation's Edge",
+"Vow of the Disciple"
+],
+"dungeons": [
+"Sundered Doctrine",
+"Grasp of Avarice"
+],
+"pantheon": [
+"Gahlran",
+"Consecrated Mind"
+],
+"master": [
+"Salvation's Edge",
+"Vow of the Disciple",
+"Sundered Doctrine",
+"Grasp of Avarice"
+]
+},
+{
+"start": "2027-05-25",
+"week": 51,
+"gm": "Defiant BG: EDZ",
+"gmWeapons": [
+"The Palindrome",
+"Ouster Engine"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"King's Fall",
+"Last Wish"
+],
+"dungeons": [
+"Duality",
+"Shattered Throne"
+],
+"pantheon": [
+"Calus",
+"Morgeth"
+],
+"master": [
+"King's Fall",
+"Duality"
+]
+},
+{
+"start": "2027-06-01",
+"week": 52,
+"gm": "The Sunless Cell",
+"gmWeapons": [
+"Lotus-Eater",
+"Whatchamacallit"
+],
+"pvp": "Iron Banner",
+"raids": [
+"Root of Nightmares",
+"Garden of Salvation"
+],
+"dungeons": [
+"Spire of the Watcher",
+"Pit of Heresy"
+],
+"pantheon": [
+"Argos",
+"Insurrection Prime"
+],
+"master": [
+"Root of Nightmares",
+"Spire of the Watcher"
+]
+},
+{
+"start": "2027-06-08",
+"week": 53,
+"gm": "Exodus Crash",
+"gmWeapons": [
+"The Slammer",
+"Null Composure"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Crota's End",
+"Deep Stone Crypt"
+],
+"dungeons": [
+"Ghosts of the Deep",
+"Prophecy"
+],
+"pantheon": [
+"Gahlran",
+"Warpriest"
+],
+"master": [
+"Crota's End",
+"Ghosts of the Deep"
+]
+},
+{
+"start": "2027-06-15",
+"week": 54,
+"gm": "The Arms Dealer",
+"gmWeapons": [
+"D.F.A.",
+"Salvager's Salvo"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Salvation's Edge",
+"Vault of Glass"
+],
+"dungeons": [
+"Warlord's Ruin",
+"Grasp of Avarice"
+],
+"pantheon": [
+"Calus",
+"Consecrated Mind"
+],
+"master": [
+"Salvation's Edge",
+"Vault of Glass",
+"Warlord's Ruin",
+"Grasp of Avarice"
+]
+},
+{
+"start": "2027-06-22",
+"week": 55,
+"gm": "Warden of Nothing",
+"gmWeapons": [
+"The Hothead",
+"The Palindrome"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Vow of the Disciple",
+"Last Wish"
+],
+"dungeons": [
+"Vesper's Host",
+"Duality"
+],
+"pantheon": [
+"Argos",
+"Morgeth"
+],
+"master": [
+"Vow of the Disciple",
+"Vesper's Host",
+"Duality"
+]
+},
+{
+"start": "2027-06-29",
+"week": 56,
+"gm": "Birthplace of the Vile",
+"gmWeapons": [
+"Ouster Engine",
+"D.F.A."
+],
+"pvp": "Iron Banner",
+"raids": [
+"King's Fall",
+"Garden of Salvation"
+],
+"dungeons": [
+"Sundered Doctrine",
+"Spire of the Watcher"
+],
+"pantheon": [
+"Gahlran",
+"Insurrection Prime"
+],
+"master": [
+"King's Fall",
+"Sundered Doctrine",
+"Spire of the Watcher"
+]
+},
+{
+"start": "2027-07-06",
+"week": 57,
+"gm": "Defiant BG: EDZ",
+"gmWeapons": [
+"Whatchamacallit",
+"Mint Retrograde"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Root of Nightmares",
+"Deep Stone Crypt"
+],
+"dungeons": [
+"Shattered Throne",
+"Ghosts of the Deep"
+],
+"pantheon": [
+"Calus",
+"Warpriest"
+],
+"master": [
+"Root of Nightmares",
+"Ghosts of the Deep"
+]
+},
+{
+"start": "2027-07-13",
+"week": 58,
+"gm": "The Sunless Cell",
+"gmWeapons": [
+"Salvager's Salvo",
+"The Hothead"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Crota's End",
+"Vault of Glass"
+],
+"dungeons": [
+"Warlord's Ruin",
+"Pit of Heresy"
+],
+"pantheon": [
+"Argos",
+"Consecrated Mind"
+],
+"master": [
+"Crota's End",
+"Vault of Glass",
+"Warlord's Ruin"
+]
+},
+{
+"start": "2027-07-20",
+"week": 59,
+"gm": "Exodus Crash",
+"gmWeapons": [
+"Null Composure",
+"Lotus-Eater"
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Salvation's Edge",
+"Vow of the Disciple"
+],
+"dungeons": [
+"Vesper's Host",
+"Prophecy"
+],
+"pantheon": [
+"Gahlran",
+"Morgeth"
+],
+"master": [
+"Salvation's Edge",
+"Vow of the Disciple",
+"Vesper's Host"
+]
+}
+]
+}

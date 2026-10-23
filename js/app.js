@@ -168,7 +168,7 @@ async function weaponPage(hash) {
       <div class="perkinfo" id="perkinfo" aria-live="polite"><span class="muted">Select a perk to see what it does.</span></div></section>
     <div class="cols2"><div>
       <section class="panel"><h2>Stats</h2>${w.st.map(([n, v, num]) => `<div class="stat"><span class="muted">${esc(n)}</span>${num ? '<span></span>' : `<div class="bar"><span style="width:${Math.min(100, v / maxStat * 100)}%"></span></div>`}<b>${v}</b></div>`).join('')}</section>
-      <section class="panel"><h2>Source</h2><p id="farmsrc">${esc(bungieSource(w) || 'Unknown')}</p><div id="sheetsrc" class="muted">Looking up community sheets…</div></section>
+      <section class="panel"><h2>Source</h2><p id="farmsrc">${esc(bungieSource(w) || 'Unknown')}</p><div id="sheetsrc" class="muted">Looking up community sheets…</div><p>${farmButton(w.h)}</p></section>
     </div><div>
       <section class="panel"><h2>Endgame Analysis</h2>${endgamePanel(d, er)}</section>
     </div></div>
@@ -190,6 +190,7 @@ async function weaponPage(hash) {
     el.setAttribute('aria-pressed', 'true');
   }));
 
+  wireFarmButton();
   if (Bungie.token()) showCopies(d, w, er, mw.p.filter(h => godNames.has(d.plugs[h].n)).map(h => d.plugs[h].n));  // runs alongside the slower sheet lookups below
 
   // Community sheet rows mentioning this weapon by name, or its frame for the same weapon type.
@@ -311,7 +312,7 @@ async function armorPage(hash) {
     <div class="cols2"><div>
       ${x.ex ? `<section class="panel"><h2>Exotic perk</h2><div class="bonus">${x.ex[2] ? `<img src="${BNET}${x.ex[2]}" alt="">` : ''}<div><b>${esc(x.ex[0])}</b><br><span class="muted">${esc(x.ex[1])}</span></div></div></section>` : ''}
       ${set ? `<section class="panel"><h2>Set bonus</h2>${setBonus(set)}<p class="muted"><a href="#/armor?set=${x.set}">See every ${esc(set.n)} piece</a></p></section>` : ''}
-      <section class="panel"><h2>Source</h2><p id="farmsrc">${esc(bungieSource(x) || 'Unknown')}</p><div id="sheetsrc" class="muted">Looking up community sheets…</div></section>
+      <section class="panel"><h2>Source</h2><p id="farmsrc">${esc(bungieSource(x) || 'Unknown')}</p><div id="sheetsrc" class="muted">Looking up community sheets…</div><p>${farmButton(x.h)}</p></section>
     </div><div>
       <section class="panel" id="mine"><h2>Your copies</h2><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies, their tier, archetype and stats.'}</p></section>
       ${x.a3 ? `<section class="panel"><h2>Archetypes</h2><p class="muted">Every current armor piece can drop as any of these. The archetype sets its two highest stats.</p>
@@ -319,6 +320,7 @@ async function armorPage(hash) {
         ${Object.values(Object.fromEntries(Object.values(a.archetypes).map(t => [t.n, t]))).sort((p, q) => p.n.localeCompare(q.n)).map(t => `<tr><td>${esc(t.n)}</td>${archetypeStats(t.d).map(v => `<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</table></section>` : ''}
     </div></div>`;
 
+  wireFarmButton();
   const hits = [...await sheetRows(x.n), ...(set ? await sheetRows(`${set.n} Armor`) : [])];
   document.getElementById('farmsrc').textContent = (await armorSource(a, x)).join(' · also: ') || 'Unknown';
   document.getElementById('sheetsrc').innerHTML = hits.length ? rowTable(hits) : 'Not mentioned in the community sheets.';
@@ -611,7 +613,7 @@ async function buildPage(id) {
         ${loadout.notes ? `<p class="lore">${esc(loadout.notes)}</p>` : ''}
         <p class="muted">${p ? `You have ${have} of ${gear.length} pieces of gear.` : 'Sign in with Bungie to see which pieces you have and equip them.'}
         <a href="${esc(shareUrl || 'https://app.destinyitemmanager.com/loadouts?' + new URLSearchParams({ loadout: JSON.stringify(loadout) }))}" target="_blank" rel="noopener">Open in DIM</a></p>
-        <div class="acts"><button type="button" data-save>${savedBuilds().some(b => b.key === key) ? 'Remove from saved' : 'Save build'}</button>${chars.map(c => `<button type="button" class="primary" data-equip="${c.id}">Equip on ${esc(c.cls)}</button>`).join('')}</div>
+        <div class="acts"><button type="button" data-save>${savedBuilds().some(b => b.key === key) ? 'Remove from saved' : 'Save build'}</button><button type="button" data-farmbuild>${inFarm('builds', key) && savedBuilds().some(b => b.key === key) ? 'Stop farming this build' : 'Farm this build'}</button>${chars.map(c => `<button type="button" class="primary" data-equip="${c.id}">Equip on ${esc(c.cls)}</button>`).join('')}</div>
         ${chars.length ? '<p class="muted"><small>Equip moves and equips the weapons and armor you have. Set the subclass and mods in game.</small></p>' : ''}
         ${status ? `<p class="${/^Done/.test(status) ? 'muted' : 'err'}" aria-live="polite">${esc(status)}</p>` : ''}</section>
       ${subclass ? `<section class="panel"><h2>Subclass</h2><p>${chip(subclass.hash)}</p>${subParts.map(([k, hs]) => `<div class="eg"><span class="muted">${k}</span><div class="chips">${hs.map(h => chip(h)).join('')}</div></div>`).join('')}</section>` : ''}
@@ -621,13 +623,20 @@ async function buildPage(id) {
       ${P.mods?.length ? `<section class="panel"><h2>Armor mods</h2><div class="chips">${counted(P.mods)}</div></section>` : ''}
       ${stats.length || sets.length ? `<section class="panel"><h2>Stat targets and set bonuses</h2><div class="perks">${stats.join('')}${sets.join('')}</div></section>` : ''}
       ${P.artifactUnlocks?.unlockedItemHashes?.length ? `<section class="panel"><h2>Artifact perks</h2><div class="chips">${P.artifactUnlocks.unlockedItemHashes.map(h => chip(h)).join('')}</div></section>` : ''}`;
-    box.querySelector('[data-save]').addEventListener('click', () => {
+    const toggleSave = () => {
       const rest = savedBuilds().filter(b => b.key !== key), adding = rest.length === savedBuilds().length;
       const sub = subclass && defs[subclass.hash];
       Bungie.store.set('d2c_builds', adding ? [{ key, name: loadout.name || 'Untitled build', cls, shareUrl, saved: Date.now(), sub: sub ? { n: sub.n, i: sub.i } : null,
         icons: gear.filter(it => d.byHash[it.hash]).map(it => d.byHash[it.hash].i).slice(0, 3), loadout }, ...rest] : rest);
       if (adding && id === 'link') history.replaceState(null, '', '#/build/' + key);  // so a reload finds it
       bar.innerHTML = savedBar(key);
+    };
+    box.querySelector('[data-save]').addEventListener('click', () => { toggleSave(); draw(p, status); });
+    // farming a build saves it too, since the farming plan reads saved builds
+    box.querySelector('[data-farmbuild]').addEventListener('click', () => {
+      const saved = savedBuilds().some(b => b.key === key), want = !(saved && inFarm('builds', key));
+      if (!saved) toggleSave();
+      if (inFarm('builds', key) !== want) toggleFarm('builds', key);
       draw(p, status);
     });
     box.querySelectorAll('[data-equip]').forEach(b => b.addEventListener('click', async () => {
@@ -653,32 +662,127 @@ async function buildPage(id) {
   renderAccount();
 }
 
-async function farm() {
-  const d = await data();
-  const p = Bungie.token() ? await needProfile() : null;
-  const haveGod = new Set((p?.items || []).filter(i => rollMatches(d.rolls[i.itemHash], i.plugs)).map(i => d.byHash[i.itemHash]?.n));
-  // one entry per weapon name, sourced from Monument of Triumph first, then Bungie's collection text
-  const chase = new Map();
-  for (const w of d.weapons.filter(w => d.rolls[w.h]?.c?.length && !haveGod.has(w.n))) {
-    const src = (await whereToFarm(w))[0];
-    if (src && (!chase.has(w.n) || !chase.get(w.n).src)) chase.set(w.n, { ...w, src, r: d.rolls[w.h] }); // keep a version with a known source
-    else if (!chase.has(w.n)) chase.set(w.n, { ...w, src: 'Unknown source', r: d.rolls[w.h] });
-  }
-  const bySource = Object.groupBy([...chase.values()], w => w.src);
-  $app.innerHTML = `<h1>Farming plan</h1>
-    <p class="muted">${p ? `Endgame Analysis god rolls you don't own yet` : 'Every weapon with an Endgame Analysis roll'}, grouped by where it drops, best tier first. ${p ? '' : 'Sign in to hide the ones you already have.'}</p>
-    <div class="filters"><input type="search" id="q" aria-label="Filter the farming plan" placeholder="Filter by source or weapon (e.g. Zavala, Nightfall, Last Wish)">
-    <select id="best" aria-label="Tiers to show">${TIERS.slice(0, -1).map(t => `<option value="${t}"${t === 'A' ? ' selected' : ''}>Tier ${t}${t === 'S' ? ' only' : ' and up'}</option>`).join('')}<option value="F">Every tier</option></select></div><div id="list"></div>`;
-  const draw = () => {
-    const q = $app.querySelector('#q').value.toLowerCase(), best = TIERS.indexOf($app.querySelector('#best').value);
-    $app.querySelector('#list').innerHTML = Object.keys(bySource)
-      .map(s => [s, bySource[s].filter(w => TIERS.indexOf(w.r.t) <= best && (!q || s.toLowerCase().includes(q) || w.n.toLowerCase().includes(q))).sort((a, b) => tierOrder(a.r) - tierOrder(b.r))])
-      .filter(([, ws]) => ws.length).sort((a, b) => b[1].length - a[1].length)
-      .map(([s, ws]) => `<section class="panel"><h2>${esc(s)} <span class="count">${ws.length}</span></h2><div class="grid">${ws.map(w => card(w, `<small>${tierBadge(w.r)}${esc(w.ty)} · <span class="dmg-${esc(w.dm)}">${esc(w.dm)}</span></small>`)).join('')}</div></section>`)
-      .join('') || '<p class="empty">Nothing matches this filter.</p>';
+// ---------- farming ----------
+// What you're farming for, kept in this browser. tier: '' (off) or the lowest Endgame Analysis tier to chase; lists hold strings.
+const farmPrefs = () => ({ tier: 'S', exoticWeapons: false, exoticArmor: false, sets: [], builds: [], items: [], ...Bungie.store.get('d2c_farm') });
+const inFarm = (key, value) => farmPrefs()[key].includes(String(value));
+const toggleFarm = (key, value) => { const f = farmPrefs(), v = String(value); f[key] = f[key].includes(v) ? f[key].filter(x => x !== v) : [...f[key], v]; Bungie.store.set('d2c_farm', f); };
+const farmLabel = h => inFarm('items', h) ? 'Remove from farming plan' : 'Add to farming plan';
+const farmButton = h => `<button type="button" data-farm="${h}">${farmLabel(h)}</button>`;
+const wireFarmButton = () => $app.querySelector('[data-farm]').addEventListener('click', e => { toggleFarm('items', e.target.dataset.farm); e.target.textContent = farmLabel(e.target.dataset.farm); });
+
+// Everything you've asked to farm, one entry per item name: { x, kind, r (rating), need: 'god roll' | 'item', reasons }.
+// Adept, Timelost and Harrowed copies are the same weapon for farming: a god roll on either counts
+const baseName = n => n.replace(/\s*\((Adept|Timelost|Harrowed)\)$/, '');
+function farmTargets(d, a, p, f) {
+  const nameOf = h => d.byHash[h] ? baseName(d.byHash[h].n) : a.byHash[h] && a.byHash[h].n + a.byHash[h].cl;
+  const owned = new Set((p?.items || []).map(i => nameOf(i.itemHash)).filter(Boolean));
+  const haveGod = new Set((p?.items || []).filter(i => rollMatches(d.rolls[i.itemHash], i.plugs)).map(i => nameOf(i.itemHash)));
+  const classes = p ? new Set(p.chars.map(c => c.cls)) : null;
+  const targets = new Map();
+  const add = (x, kind, reason) => {
+    const r = kind === 'weapon' ? d.rolls[x.h] : null;
+    // weapons with an Endgame Analysis roll are done once you own that roll; anything else once you own it
+    const n = kind === 'weapon' ? baseName(x.n) : x.n + x.cl;
+    const need = r?.c?.length && !haveGod.has(n) ? 'god roll' : owned.has(n) ? '' : 'item';
+    if (!need) return;
+    const t = targets.get(n) || targets.set(n, { x, kind, r, need, owned: owned.has(n), reasons: [] }).get(n);
+    if (!t.reasons.includes(reason)) t.reasons.push(reason);
   };
-  $app.querySelectorAll('.filters input,.filters select').forEach(el => el.addEventListener('input', draw));
-  draw();
+  // the version to farm for a name: the newest one Aegis rated, else the newest
+  const weaponByName = new Map();
+  d.weapons.forEach(w => { const cur = weaponByName.get(baseName(w.n)); if (!cur || (!d.rolls[cur.h]?.c?.length && d.rolls[w.h]?.c?.length)) weaponByName.set(baseName(w.n), w); });
+  // one piece per name and class, the current (Armor 3.0) version winning over legacy ones
+  const armorFor = list => [...new Map(list.filter(x => !classes || classes.has(x.cl)).sort((m, n) => m.a3 - n.a3).map(x => [x.n + x.cl, x])).values()];
+  if (f.tier) weaponByName.forEach(w => { const r = d.rolls[w.h]; if (r?.c?.length && TIERS.includes(r.t) && TIERS.indexOf(r.t) <= TIERS.indexOf(f.tier)) add(w, 'weapon', `Tier ${r.t} god roll`); });
+  if (f.exoticWeapons) weaponByName.forEach(w => w.ti === 'Exotic' && add(w, 'weapon', 'Missing exotic'));
+  if (f.exoticArmor) armorFor(a.armor.filter(x => x.ti === 'Exotic')).forEach(x => add(x, 'armor', 'Missing exotic'));
+  f.sets.forEach(h => a.sets[h] && armorFor(a.armor.filter(x => x.set === h && x.a3)).forEach(x => add(x, 'armor', `${a.sets[h].n} set`)));
+  const addHash = (h, reason) => { const w = d.byHash[h], x = w || a.byHash[h]; if (x) add(w ? weaponByName.get(baseName(w.n)) : x, w ? 'weapon' : 'armor', reason); };
+  savedBuilds().filter(b => f.builds.includes(b.key)).forEach(b => [...b.loadout.equipped, ...(b.loadout.unequipped || []), { hash: b.loadout.parameters?.exoticArmorHash }]
+    .forEach(it => addHash(it.hash, `Build: ${b.name}`)));
+  f.items.forEach(h => addHash(h, 'Added by you'));
+  return [...targets.values()];
+}
+
+async function farm() {
+  const [d, a, rot] = await Promise.all([data(), armorData(), load('rotation')]);
+  const p = Bungie.token() ? await needProfile() : null;
+  // the week runs from Tuesday's 17:00 UTC reset
+  const resetDay = new Date(Date.now() - 17 * 3600e3).toISOString().slice(0, 10);
+  const weeks = rot.weeks, cur = weeks.filter(w => w.start <= resetDay).at(-1) || weeks[0];
+  const featured = w => [...w.raids, ...w.dungeons, ...w.pantheon, ...rot.always];
+  const activities = [...new Set(weeks.flatMap(featured))];
+  const pvpAlias = { 'Iron Banner': ['iron banner', 'saladin'], 'Trials of Osiris': ['trials', 'saint-14'] };
+  const fmtDate = s => new Date(s + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const sets = Object.entries(a.sets).sort((x, y) => x[1].n.localeCompare(y[1].n));
+  const builds = savedBuilds();
+
+  $app.innerHTML = `<h1>Farming plan</h1><p class="muted">Week ${cur.week ?? ''} · ${fmtDate(cur.start)} reset. ${p ? '' : 'Sign in with Bungie so the plan skips what you already own.'}</p>
+    <section class="panel"><h2>This week</h2><div class="eg"><span class="muted">Raids</span><div class="perks">${[...cur.raids, rot.always[0]].map(n => `<span class="badge${cur.master.includes(n) ? ' good' : ''}">${esc(n)}${cur.master.includes(n) ? ' · Master' : ''}</span>`).join('')}</div></div>
+      <div class="eg"><span class="muted">Dungeons</span><div class="perks">${[...cur.dungeons, rot.always[1]].map(n => `<span class="badge${cur.master.includes(n) ? ' good' : ''}">${esc(n)}${cur.master.includes(n) ? ' · Master' : ''}</span>`).join('')}</div></div>
+      <div class="eg"><span class="muted">Pantheon</span><div class="perks">${cur.pantheon.map(n => `<span class="badge">${esc(n)}</span>`).join('')}</div></div>
+      <div class="eg"><span class="muted">Grandmaster</span><div class="perks"><span class="badge">${esc(cur.gm)}</span>${cur.gmWeapons.map(n => `<span class="badge">${esc(n)}</span>`).join('')}</div></div>
+      <div class="eg"><span class="muted">PvP</span><div class="perks"><span class="badge">${esc(cur.pvp)}</span></div></div></section>
+    <section class="panel"><details class="farmprefs" id="prefs"><summary>What you're farming for</summary>
+      <div class="eg"><span class="muted">God rolls</span><div><select id="tier" aria-label="God rolls to chase"><option value="">Off</option>${TIERS.slice(0, 4).map(t => `<option value="${t}">Tier ${t}${t === 'S' ? '' : ' and up'}</option>`).join('')}</select>
+        <small class="muted">Endgame Analysis rolls you don't own yet</small></div></div>
+      <div class="eg"><span class="muted">Exotics</span><div class="perks"><label class="check"><input type="checkbox" id="exoticWeapons"> Weapons I don't have</label><label class="check"><input type="checkbox" id="exoticArmor"> Armor I don't have</label></div></div>
+      <div class="eg"><span class="muted">Saved builds</span><div class="perks">${builds.length ? builds.map(b => `<label class="check"><input type="checkbox" data-build="${esc(b.key)}"> ${esc(b.name)}</label>`).join('') : '<small class="muted">Save a build on the <a href="#/build">Builds</a> tab to farm what it needs, including better rolls of weapons you already have.</small>'}</div></div>
+      <div class="eg"><span class="muted">Armor sets</span><div class="setpick">${sets.map(([h, x]) => `<label class="check"><input type="checkbox" data-set="${h}"> ${esc(x.n)}</label>`).join('')}</div></div>
+      <div class="eg"><span class="muted">Single items</span><div class="chips" id="items"></div></div></details></section>
+    <div id="plan"><p class="muted">Working out where everything drops…</p></div>`;
+  const $ = sel => $app.querySelector(sel), plan = $('#plan');
+
+  const draw = async () => {
+    const f = farmPrefs();
+    $('#tier').value = f.tier; $('#exoticWeapons').checked = f.exoticWeapons; $('#exoticArmor').checked = f.exoticArmor;
+    $app.querySelectorAll('[data-build]').forEach(c => { c.checked = f.builds.includes(c.dataset.build); });
+    $app.querySelectorAll('[data-set]').forEach(c => { c.checked = f.sets.includes(c.dataset.set); });
+    $('#items').innerHTML = f.items.map(h => d.byHash[h] || a.byHash[h]).filter(Boolean).map(x => `<span class="chip"><a href="#/${d.byHash[x.h] ? 'weapon' : 'armor'}/${x.h}">${esc(x.n)}</a>
+      <button type="button" class="x" data-unfarm="${x.h}" aria-label="Stop farming ${esc(x.n)}">×</button></span>`).join('')
+      || '<small class="muted">Use "Add to farming plan" on any weapon or armor page.</small>';
+    $('#items').querySelectorAll('[data-unfarm]').forEach(b => b.addEventListener('click', () => { toggleFarm('items', b.dataset.unfarm); draw(); }));
+    const targets = farmTargets(d, a, p, f);
+    $('#prefs summary').textContent = `What you're farming for · ${plural(targets.length, 'item')} to get`;
+    if (!targets.length) { plan.innerHTML = '<p class="empty">Nothing to farm yet. Pick what you\'re after above.</p>'; $('#prefs').open = true; return; }
+
+    // file each target under this week's featured activity, the next week it's featured, or its usual source
+    const now = new Map(), later = new Map(), any = new Map();
+    const push = (m, k, t, extra) => { if (!m.has(k)) m.set(k, { items: [], ...extra }); m.get(k).items.push(t); };
+    for (const t of targets) {
+      const srcs = t.kind === 'weapon' ? await whereToFarm(t.x) : await armorSource(a, t.x);
+      const low = srcs.map(s => s.toLowerCase());
+      const acts = activities.filter(n => low.some(s => s.includes(n.toLowerCase())));
+      const live = acts.find(n => featured(cur).includes(n));
+      if (cur.gmWeapons.includes(t.x.n)) push(now, `Grandmaster: ${cur.gm}`, t, { kind: 'Featured Grandmaster', rank: 1 });
+      else if (live) push(now, live, t, rot.always.includes(live) ? { kind: 'Always featured', rank: 2 }
+        : { kind: cur.raids.includes(live) ? 'Featured raid' : cur.pantheon.includes(live) ? 'Featured Pantheon encounter' : 'Featured dungeon', rank: cur.pantheon.includes(live) ? 1 : 0, master: cur.master.includes(live) });
+      else if ((pvpAlias[cur.pvp] || []).some(k => low.some(s => s.includes(k)))) push(now, cur.pvp, t, { kind: 'This week\'s PvP event', rank: 1 });
+      else if (acts.length) {
+        const next = weeks.find(w => w.start > cur.start && acts.some(n => featured(w).includes(n)));
+        const n = next && acts.find(x => featured(next).includes(x));
+        if (next) push(later, `${n}`, t, { when: next.start }); else push(any, srcs[0], t);
+      } else push(any, srcs[0] || 'Unknown source', t);
+    }
+    const score = g => g.items.reduce((s, t) => s + (t.r ? 4 - Math.min(3, TIERS.indexOf(t.r.t)) : 2) + t.reasons.length, 0);
+    const byScore = m => [...m.entries()].sort((x, y) => score(y[1]) - score(x[1]));
+    const cards = items => `<div class="grid">${items.sort((m, n) => tierOrder(m.r) - tierOrder(n.r)).map(t => card(t.x, `<small>${tierBadge(t.r)}${t.owned ? 'You have it, not the god roll' : 'Not owned'}</small>
+      <small>${t.reasons.map(esc).join(' · ')}</small>`, t.kind)).join('')}</div>`;
+    const group = ([name, g], top) => `<section class="panel${top ? ' priority' : ''}"><h2>${top ? 'Priority farm: ' : ''}${esc(name)} <span class="count">${g.kind || (g.when ? 'featured ' + fmtDate(g.when) : '')}${g.master ? ' · Master available' : ''} · ${plural(g.items.length, 'item')}</span></h2>${cards(g.items)}</section>`;
+    // the priority farm is this week's best rotating raid or dungeon; Pantheon, GM, PvP and always-featured come after
+    const nowList = byScore(now).sort((x, y) => x[1].rank - y[1].rank), laterList = [...later.entries()].sort((x, y) => x[1].when.localeCompare(y[1].when) || score(y[1]) - score(x[1]));
+    plan.innerHTML = (nowList.length ? nowList.map((g, i) => group(g, i === 0 && !g[1].rank)).join('') : '<p class="muted">None of your targets drop from this week\'s featured activities.</p>')
+      + (laterList.length ? `<h2 class="sub">Coming up</h2>${laterList.map(g => group(g)).join('')}` : '')
+      + (any.size ? `<h2 class="sub">Any time</h2>${byScore(any).map(g => group(g)).join('')}` : '');
+  };
+  const save = (k, v) => { Bungie.store.set('d2c_farm', { ...farmPrefs(), [k]: v }); draw(); };
+  $('#tier').addEventListener('change', e => save('tier', e.target.value));
+  $('#exoticWeapons').addEventListener('change', e => save('exoticWeapons', e.target.checked));
+  $('#exoticArmor').addEventListener('change', e => save('exoticArmor', e.target.checked));
+  $app.querySelectorAll('[data-build]').forEach(c => c.addEventListener('change', () => { toggleFarm('builds', c.dataset.build); draw(); }));
+  $app.querySelectorAll('[data-set]').forEach(c => c.addEventListener('change', () => { toggleFarm('sets', c.dataset.set); draw(); }));
+  await draw();
 }
 
 async function reference(idx) {

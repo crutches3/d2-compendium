@@ -87,8 +87,12 @@ assert.ok((await p.textContent('#build')).includes('No saved builds yet'));
 await open('https://app.destinyitemmanager.com/loadouts?' + new URLSearchParams({ loadout: JSON.stringify(loadout) }));
 assert.equal(new URL(p.url()).hash, '#/build/link');
 assert.ok((await p.locator('#build').innerText()).includes('THE BUILD OF SPITE'));
-await p.click('[data-save]');
+// farming a build saves it first, since the farming plan reads saved builds
+await p.click('[data-farmbuild]');
 assert.equal(new URL(p.url()).hash, '#/build/saved-x');
+assert.equal(await p.textContent('[data-save]'), 'Remove from saved');
+assert.equal(await p.textContent('[data-farmbuild]'), 'Stop farming this build');
+assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('d2c_farm')).builds), ['saved-x']);
 await p.reload(); await p.waitForSelector('.buildhead');
 assert.ok((await p.locator('#build').innerText()).includes('THE BUILD OF SPITE'));
 
