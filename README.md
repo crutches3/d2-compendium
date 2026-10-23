@@ -1,6 +1,6 @@
 # D2 Compendium
 
-A Destiny 2 compendium in one static site: light.gg-style weapon and armor pages, armor set bonuses, community reference sheets, and Bungie sign-in to check your vault for god rolls and plan what to farm next.
+A Destiny 2 compendium in one static site: light.gg-style weapon and armor pages, armor set bonuses, community reference sheets, Bungie sign-in to check your vault for god rolls and plan what to farm next, and a Builds page that opens DIM loadout links (dim.gg) through DIM's public share API.
 
 Live at https://crutches3.github.io/d2-compendium/
 

@@ -109,5 +109,16 @@ const Bungie = (() => {
     it.equipped = true; locate(p, it);
   }
 
-  return { token, signIn, signOut, handleRedirect, loadProfile, move, equip, locate, store };
+  // Equips several items on one character in one call, so exotic swaps resolve together. Returns the items that failed.
+  async function equipAll(p, items, characterId) {
+    if (!items.length) return [];
+    const r = await call('/Destiny2/Actions/Items/EquipItems/', { itemIds: items.map(i => i.instanceId), characterId, membershipType: p.membershipType });
+    const failed = new Set(r.equipResults.filter(x => x.equipStatus !== 1).map(x => x.itemInstanceId));
+    return items.filter(i => failed.has(i.instanceId));
+  }
+
+  // One DestinyInventoryItemDefinition, for hashes the site's data files don't cover (subclasses, mods, artifact perks).
+  const item = hash => call(`/Destiny2/Manifest/DestinyInventoryItemDefinition/${hash}/`);
+
+  return { token, signIn, signOut, handleRedirect, loadProfile, move, equip, equipAll, item, locate, store };
 })();

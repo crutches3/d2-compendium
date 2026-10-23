@@ -506,6 +506,119 @@ async function transferPage() {
   draw();
 }
 
+// ---------- builds ----------
+// DIM's share API is public (any origin, no key): dim.gg/<shareId>/<name> resolves to { loadout, shareUrl }.
+const DIM_SHARE = 'https://api.destinyitemmanager.com/loadout_share?shareId=';
+
+// A dim.gg link (or bare share id) gives a share id; a full DIM loadouts link carries the build itself as JSON.
+function parseBuildLink(text) {
+  const t = text.trim();
+  const id = t.match(/^(?:https?:\/\/)?(?:www\.)?dim\.gg\/([a-z0-9]{7})/i)?.[1] || t.match(/^[a-z0-9]{7}$/i)?.[0];
+  if (id) return { id: id.toLowerCase() };
+  try { const json = new URL(t).searchParams.get('loadout'); if (json) return { loadout: JSON.parse(json) }; } catch {}
+  return null;
+}
+
+async function buildPage(id) {
+  $app.innerHTML = `<h1>Builds</h1><p class="muted">Paste a DIM loadout link to see the whole build, check what you own and equip it.</p>
+    <form class="filters" id="open"><input type="search" inputmode="url" id="link" aria-label="DIM loadout link" placeholder="https://dim.gg/abc1234/Build-Name">
+    <button type="submit" class="primary">Open build</button></form><p class="err" id="linkerr" hidden></p><div id="build"></div>`;
+  const f = sel => $app.querySelector(sel);
+  f('#open').addEventListener('submit', e => {
+    e.preventDefault();
+    const got = parseBuildLink(f('#link').value);
+    f('#linkerr').hidden = !!got;
+    f('#linkerr').textContent = 'That doesn\'t look like a DIM loadout link. It should start with https://dim.gg/ or https://app.destinyitemmanager.com/loadouts?loadout=';
+    if (!got) return;
+    if (got.loadout) S.build = got.loadout;
+    location.hash = '#/build/' + (got.id || 'link');
+  });
+  if (!id) return;
+  const box = f('#build');
+  let loadout = id === 'link' ? S.build : null, shareUrl = '';
+  if (id !== 'link') {
+    box.innerHTML = '<p class="muted">Loading the build from DIM…</p>';
+    const r = await fetch(DIM_SHARE + encodeURIComponent(id)).catch(() => null);
+    if (!r) { box.innerHTML = '<p class="empty">Couldn\'t reach DIM. Check your connection and try again.</p>'; return; }
+    if (r.status === 404) { box.innerHTML = '<p class="empty">DIM has no build with that link. It may have been deleted.</p>'; return; }
+    if (!r.ok) { box.innerHTML = `<p class="empty">DIM didn't answer (error ${r.status}). Try again in a minute.</p>`; return; }
+    ({ loadout, shareUrl } = await r.json());
+    f('#link').value = shareUrl;
+  }
+  if (!loadout) return;  // a pasted full link lives only in memory, so a reload lands here
+  box.innerHTML = '<p class="muted">Looking up the build\'s items…</p>';
+
+  const [d, a] = await Promise.all([data(), armorData()]);
+  const P = loadout.parameters || {}, items = [...loadout.equipped, ...(loadout.unequipped || [])];
+  // gear comes from the site's own data; subclass pieces, mods and artifact perks from Bungie's manifest
+  const defs = {};
+  const hashes = new Set([...items.flatMap(i => [i.hash, ...Object.values(i.socketOverrides || {})]), ...(P.mods || []), ...(P.artifactUnlocks?.unlockedItemHashes || []), P.exoticArmorHash].filter(Boolean));
+  await Promise.all([...hashes].map(async h => {
+    defs[h] = d.byHash[h] || a.byHash[h] || d.plugs[h] ||
+      await Bungie.item(h).then(x => ({ n: x.displayProperties.name, i: x.displayProperties.icon, d: x.displayProperties.description, t: x.itemTypeDisplayName, sub: x.itemType === 16 })).catch(() => null);
+  }));
+  const chip = (h, extra = '') => defs[h] ? `<span class="chip" title="${esc([defs[h].t, defs[h].d].filter(Boolean).join(': '))}">${img(defs[h].i)}<span>${esc(defs[h].n)}${extra}</span></span>` : '';
+  const counted = hs => Object.entries(Object.groupBy(hs, h => h)).map(([h, l]) => chip(h, l.length > 1 ? ` ×${l.length}` : '')).join('');
+  const nameOf = h => (d.byHash[h] || a.byHash[h])?.n;
+  const gear = items.filter(i => nameOf(i.hash));
+  const subclass = loadout.equipped.find(i => defs[i.hash]?.sub);
+  const cls = ['Titan', 'Hunter', 'Warlock'][loadout.classType];
+
+  const draw = (p, status = '') => {
+    const chars = p ? p.chars.filter(c => !cls || c.cls === cls) : [];
+    // best copy for a character: this exact version, a god roll, already there, in the vault; never the postmaster
+    const pick = (it, cid) => (p?.items || []).filter(i => !i.postmaster && nameOf(i.itemHash) === nameOf(it.hash))
+      .sort((x, y) => (y.itemHash === it.hash) - (x.itemHash === it.hash) || rollMatches(d.rolls[y.itemHash], y.plugs) - rollMatches(d.rolls[x.itemHash], x.plugs)
+        || (y.owner === cid) - (x.owner === cid) || !y.owner - !x.owner)[0];
+    const owned = it => { const c = pick(it, chars[0]?.id);
+      return !p ? '' : c ? `<span class="badge good">You have it</span>${esc(c.location)}${c.itemHash !== it.hash ? ' · other version' : ''}` : '<span class="badge">Missing</span>'; };
+    const piece = it => { const w = d.byHash[it.hash], x = w || a.byHash[it.hash], perks = Object.values(it.socketOverrides || {}).map(h => defs[h]?.n).filter(Boolean);
+      return card(x, `<small>${w ? tierBadge(d.rolls[w.h]) + esc(w.ty) : esc(slotLabel(x))}${loadout.equipped.includes(it) ? '' : ' · not equipped'}</small>
+        ${perks.length ? `<small>${esc(perks.join(', '))}</small>` : ''}<small>${owned(it)}</small>`, w ? 'weapon' : 'armor'); };
+    const have = gear.filter(it => pick(it)).length;
+    const subParts = Object.entries(Object.groupBy(Object.entries(subclass?.socketOverrides || {}).sort((x, y) => x[0] - y[0]).map(([, h]) => h).filter(h => defs[h] && !/^Empty /.test(defs[h].n)),
+      h => /Aspect/.test(defs[h].t) ? 'Aspects' : /Fragment/.test(defs[h].t) ? 'Fragments' : 'Abilities'));
+    const stats = (P.statConstraints || []).filter(c => a.stats[c.statHash]).map(c => {
+      const min = c.minStat ?? (c.minTier ? c.minTier * 10 : 0), max = c.maxStat ?? (c.maxTier != null && c.maxTier < 10 ? c.maxTier * 10 : null);
+      return `<span class="badge">${esc(a.stats[c.statHash])}${min ? ` ${min}+` : ''}${max != null ? ` up to ${max}` : ''}</span>`; });
+    const sets = Object.entries(P.setBonuses || {}).filter(([h]) => a.sets[h]).map(([h, n]) => `<span class="badge">${esc(a.sets[h].n)} · ${n} pieces</span>`);
+    box.innerHTML = `<section class="panel buildhead"><h2>${esc(loadout.name || 'Untitled build')}${cls ? ` <span class="count">${cls}</span>` : ''}</h2>
+        ${loadout.notes ? `<p class="lore">${esc(loadout.notes)}</p>` : ''}
+        <p class="muted">${p ? `You have ${have} of ${gear.length} pieces of gear.` : 'Sign in with Bungie to see which pieces you have and equip them.'}
+        <a href="${esc(shareUrl || 'https://app.destinyitemmanager.com/loadouts?' + new URLSearchParams({ loadout: JSON.stringify(loadout) }))}" target="_blank" rel="noopener">Open in DIM</a></p>
+        ${chars.length ? `<div class="acts">${chars.map(c => `<button type="button" class="primary" data-equip="${c.id}">Equip on ${esc(c.cls)}</button>`).join('')}</div>
+          <p class="muted"><small>Moves and equips the weapons and armor you have. Set the subclass and mods in game.</small></p>` : ''}
+        ${status ? `<p class="${/^Done/.test(status) ? 'muted' : 'err'}" aria-live="polite">${esc(status)}</p>` : ''}</section>
+      ${subclass ? `<section class="panel"><h2>Subclass</h2><p>${chip(subclass.hash)}</p>${subParts.map(([k, hs]) => `<div class="eg"><span class="muted">${k}</span><div class="chips">${hs.map(h => chip(h)).join('')}</div></div>`).join('')}</section>` : ''}
+      ${['weapon', 'armor'].map(k => { const list = gear.filter(it => !!d.byHash[it.hash] === (k === 'weapon'));
+        return list.length ? `<section class="panel"><h2>${k === 'weapon' ? 'Weapons' : 'Armor'}</h2><div class="grid">${list.map(piece).join('')}</div></section>` : ''; }).join('')}
+      ${P.exoticArmorHash && !gear.some(it => it.hash === P.exoticArmorHash) ? `<section class="panel"><h2>Exotic armor</h2><div class="chips">${chip(P.exoticArmorHash)}</div></section>` : ''}
+      ${P.mods?.length ? `<section class="panel"><h2>Armor mods</h2><div class="chips">${counted(P.mods)}</div></section>` : ''}
+      ${stats.length || sets.length ? `<section class="panel"><h2>Stat targets and set bonuses</h2><div class="perks">${stats.join('')}${sets.join('')}</div></section>` : ''}
+      ${P.artifactUnlocks?.unlockedItemHashes?.length ? `<section class="panel"><h2>Artifact perks</h2><div class="chips">${P.artifactUnlocks.unlockedItemHashes.map(h => chip(h)).join('')}</div></section>` : ''}`;
+    box.querySelectorAll('[data-equip]').forEach(b => b.addEventListener('click', async () => {
+      const c = chars.find(x => x.id === b.dataset.equip);
+      box.querySelectorAll('[data-equip]').forEach(x => { x.disabled = true; });
+      b.textContent = `Equipping on ${c.cls}…`;
+      const want = loadout.equipped.filter(it => nameOf(it.hash)).map(it => pick(it, c.id)).filter(Boolean);
+      // Bungie can't move an item that's equipped on another character
+      const stuck = want.filter(i => i.equipped && i.owner !== c.id);
+      let msg;
+      try {
+        for (const i of want.filter(i => !stuck.includes(i))) await Bungie.move(p, i, c.id);
+        const failed = await Bungie.equipAll(p, want.filter(i => !stuck.includes(i) && !i.equipped), c.id);
+        const left = [...stuck, ...failed].map(i => nameOf(i.itemHash));
+        msg = left.length ? `Done, except: ${left.join(', ')}. ${stuck.length ? 'Unequip those on your other characters first. ' : ''}${failed.length ? 'Bungie wouldn\'t equip some of them (often a second exotic).' : ''}`
+          : `Done. Everything you have from this build is equipped on your ${c.cls}.`;
+      } catch (e) { msg = e.message; }
+      S.profile = null;  // re-read so every location is current
+      draw(await profile().catch(() => null), msg);
+    }));
+  };
+  draw(Bungie.token() ? await profile().catch(() => null) : null);
+  renderAccount();
+}
+
 async function farm() {
   const d = await data();
   const p = Bungie.token() ? await needProfile() : null;
@@ -561,7 +674,9 @@ function images() {
   $app.querySelectorAll('.infographic img').forEach(i => i.addEventListener('click', () => i.classList.toggle('zoom')));
 }
 
+let routeSeq = 0, routeDone = 0;
 async function route() {
+  const seq = ++routeSeq;
   const [path, query] = (location.hash.slice(1) || '/').split('?');
   const parts = path.split('/').filter(Boolean);
   const params = new URLSearchParams(query);
@@ -574,6 +689,7 @@ async function route() {
     else if (parts[0] === 'inventory') await inventory(parts[1]);
     else if (parts[0] === 'armor') await (parts[1] ? armorPage(+parts[1]) : armorList(params));
     else if (parts[0] === 'sets') await setsPage();
+    else if (parts[0] === 'build') await buildPage(parts[1]);
     else if (parts[0] === 'farm') await farm();
     else if (parts[0] === 'ref') await reference(parts[1] ? +parts[1] : -1);
     else if (parts[0] === 'images') images();
@@ -582,6 +698,9 @@ async function route() {
     $app.innerHTML = `<p>Something went wrong: ${esc(e.message)}</p>`;
     console.error(e);
   }
+  // a slow page (the first load of the weapon list) can finish after a newer one and draw over it; draw the newer one again
+  if (seq === routeSeq) routeDone = seq;
+  else if (routeDone === routeSeq) route();
 }
 
 window.addEventListener('hashchange', route);
