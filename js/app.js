@@ -270,6 +270,12 @@ const archetypeOf = (a, item) => [...item.plugs].map(h => a.archetypes[h]).find(
 const statTotal = (a, item) => Object.keys(a.stats).reduce((t, h) => t + (item.stats[h] || 0), 0);
 // "Primary Stat: Super Secondary Stat: Melee" -> ['Super', 'Melee']
 const archetypeStats = d => [/Primary Stat:\s*(\w+)/, /Secondary Stat:\s*(\w+)/].map(re => d.match(re)?.[1] || '');
+// a build's top two stats by name; DIM keeps statConstraints in the order the build ranks them
+const buildTop = (a, loadout) => (loadout.parameters?.statConstraints || []).map(c => a.stats[c.statHash]).filter(Boolean).slice(0, 2);
+// Armor 3.0 rolls a primary, a secondary and a third stat, so a copy fits a build when the build's top two are among its three highest.
+// No archetype covers every pair (none has Weapons + Health), which is why this reads stats rather than archetypes.
+const topStats = (a, item) => Object.keys(a.stats).sort((x, y) => (item.stats[y] || 0) - (item.stats[x] || 0)).slice(0, 3).map(h => a.stats[h]);
+const fitsBuild = (a, item, top) => statTotal(a, item) > 0 && top.every(st => topStats(a, item).includes(st));
 async function armorSource(a, x) {
   const monu = await monumentSources(), set = a.sets[x.set];
   return monu.get(x.n.toLowerCase()) || (set && monu.get(`${set.n} armor`.toLowerCase())) || [bungieSource(x)].filter(Boolean);
@@ -591,16 +597,22 @@ async function buildPage(id) {
   const nameOf = h => (d.byHash[h] || a.byHash[h])?.n;
   const gear = items.filter(i => nameOf(i.hash));
   const subclass = loadout.equipped.find(i => defs[i.hash]?.sub);
-  const cls = ['Titan', 'Hunter', 'Warlock'][loadout.classType];
+  const cls = ['Titan', 'Hunter', 'Warlock'][loadout.classType], top = buildTop(a, loadout);
 
   const draw = (p, status = '') => {
     const chars = p ? p.chars.filter(c => !cls || c.cls === cls) : [];
     // best copy for a character: this exact version, a god roll, already there, in the vault; never the postmaster
+    const fit = i => !!a.byHash[i.itemHash] && top.length > 0 && fitsBuild(a, i, top);
     const pick = (it, cid) => (p?.items || []).filter(i => !i.postmaster && nameOf(i.itemHash) === nameOf(it.hash))
-      .sort((x, y) => (y.itemHash === it.hash) - (x.itemHash === it.hash) || rollMatches(d.rolls[y.itemHash], y.plugs) - rollMatches(d.rolls[x.itemHash], x.plugs)
+      .sort((x, y) => (y.itemHash === it.hash) - (x.itemHash === it.hash) || rollMatches(d.rolls[y.itemHash], y.plugs) - rollMatches(d.rolls[x.itemHash], x.plugs) || fit(y) - fit(x) || y.tier - x.tier
         || (y.owner === cid) - (x.owner === cid) || !y.owner - !x.owner)[0];
     const owned = it => { const c = pick(it, chars[0]?.id);
-      return !p ? '' : c ? `<span class="badge good">You have it</span>${esc(c.location)}${c.itemHash !== it.hash ? ' · other version' : ''}` : '<span class="badge">Missing</span>'; };
+      if (!p) return '';
+      if (!c) return '<span class="badge">Missing</span>';
+      const where = `${esc(c.location)}${c.itemHash !== it.hash ? ' · other version' : ''}`;
+      if (!a.byHash[it.hash] || !top.length) return `<span class="badge good">You have it</span>${where}`;
+      const best = topStats(a, c).map(st => `${st} ${c.stats[Object.keys(a.stats).find(h => a.stats[h] === st)] || 0}`).join(', ');
+      return fit(c) ? `<span class="badge good">Fits</span>${esc(best)}</small><small>${where}` : `<span class="badge">Wrong stats</span>Best copy: ${esc(best)}</small><small>${where}`; };
     const piece = it => { const w = d.byHash[it.hash], x = w || a.byHash[it.hash], perks = Object.values(it.socketOverrides || {}).map(h => defs[h]?.n).filter(Boolean);
       return card(x, `<small>${w ? tierBadge(d.rolls[w.h]) + esc(w.ty) : esc(slotLabel(x))}${loadout.equipped.includes(it) ? '' : ' · not equipped'}</small>
         ${perks.length ? `<small>${esc(perks.join(', '))}</small>` : ''}<small>${owned(it)}</small>`, w ? 'weapon' : 'armor'); };
@@ -609,7 +621,7 @@ async function buildPage(id) {
       h => /Aspect/.test(defs[h].t) ? 'Aspects' : /Fragment/.test(defs[h].t) ? 'Fragments' : 'Abilities'));
     const stats = (P.statConstraints || []).filter(c => a.stats[c.statHash]).map(c => {
       const min = c.minStat ?? (c.minTier ? c.minTier * 10 : 0), max = c.maxStat ?? (c.maxTier != null && c.maxTier < 10 ? c.maxTier * 10 : null);
-      return `<span class="badge">${esc(a.stats[c.statHash])}${min ? ` ${min}+` : ''}${max != null ? ` up to ${max}` : ''}</span>`; });
+      return `<li><b>${esc(a.stats[c.statHash])}</b>${min ? ` ${min}+` : ''}${max != null ? ` up to ${max}` : ''}</li>`; });
     const sets = Object.entries(P.setBonuses || {}).filter(([h]) => a.sets[h]).map(([h, n]) => `<span class="badge">${esc(a.sets[h].n)} · ${n} pieces</span>`);
     box.innerHTML = `<section class="panel buildhead"><h2>${esc(loadout.name || 'Untitled build')}${cls ? ` <span class="count">${cls}</span>` : ''}</h2>
         ${loadout.notes ? `<p class="lore">${esc(loadout.notes)}</p>` : ''}
@@ -619,11 +631,13 @@ async function buildPage(id) {
         ${chars.length ? '<p class="muted"><small>Equip moves and equips the weapons and armor you have. Set the subclass and mods in game.</small></p>' : ''}
         ${status ? `<p class="${/^Done/.test(status) ? 'muted' : 'err'}" aria-live="polite">${esc(status)}</p>` : ''}</section>
       ${subclass ? `<section class="panel"><h2>Subclass</h2><p>${chip(subclass.hash)}</p>${subParts.map(([k, hs]) => `<div class="eg"><span class="muted">${k}</span><div class="chips">${hs.map(h => chip(h)).join('')}</div></div>`).join('')}</section>` : ''}
+      ${stats.length ? `<section class="panel"><h2>Stat priorities</h2><ol class="statrank">${stats.join('')}</ol>
+        ${top.length ? `<p class="muted"><small>An armor piece fits when ${esc(top.join(' and '))} are among its three highest stats.</small></p>` : ''}</section>` : ''}
       ${['weapon', 'armor'].map(k => { const list = gear.filter(it => !!d.byHash[it.hash] === (k === 'weapon'));
         return list.length ? `<section class="panel"><h2>${k === 'weapon' ? 'Weapons' : 'Armor'}</h2><div class="grid">${list.map(piece).join('')}</div></section>` : ''; }).join('')}
       ${P.exoticArmorHash && !gear.some(it => it.hash === P.exoticArmorHash) ? `<section class="panel"><h2>Exotic armor</h2><div class="chips">${chip(P.exoticArmorHash)}</div></section>` : ''}
       ${P.mods?.length ? `<section class="panel"><h2>Armor mods</h2><div class="chips">${counted(P.mods)}</div></section>` : ''}
-      ${stats.length || sets.length ? `<section class="panel"><h2>Stat targets and set bonuses</h2><div class="perks">${stats.join('')}${sets.join('')}</div></section>` : ''}
+      ${sets.length ? `<section class="panel"><h2>Set bonuses</h2><div class="perks">${sets.join('')}</div></section>` : ''}
       ${P.artifactUnlocks?.unlockedItemHashes?.length ? `<section class="panel"><h2>Artifact perks</h2><div class="chips">${P.artifactUnlocks.unlockedItemHashes.map(h => chip(h)).join('')}</div></section>` : ''}`;
     const toggleSave = () => {
       const rest = savedBuilds().filter(b => b.key !== key), adding = rest.length === savedBuilds().length;
@@ -682,13 +696,15 @@ function farmTargets(d, a, p, f) {
   const haveGod = new Set((p?.items || []).filter(i => rollMatches(d.rolls[i.itemHash], i.plugs)).map(i => nameOf(i.itemHash)));
   const classes = p ? new Set(p.chars.map(c => c.cls)) : null;
   const targets = new Map();
-  const add = (x, kind, reason) => {
+  const add = (x, kind, reason, top = []) => {
     const r = kind === 'weapon' ? d.rolls[x.h] : null;
     // weapons with an Endgame Analysis roll are done once you own that roll; anything else once you own it
     const n = kind === 'weapon' ? baseName(x.n) : x.n + x.cl;
-    const need = r?.c?.length && !haveGod.has(n) ? 'god roll' : owned.has(n) ? '' : 'item';
+    const want = kind === 'armor' && top.length && !(p?.items || []).some(i => nameOf(i.itemHash) === n && fitsBuild(a, i, top)) ? top.join(' + ') : '';
+    const need = r?.c?.length && !haveGod.has(n) ? 'god roll' : want ? 'stats' : owned.has(n) ? '' : 'item';
     if (!need) return;
-    const t = targets.get(n) || targets.set(n, { x, kind, r, need, owned: owned.has(n), reasons: [] }).get(n);
+    const t = targets.get(n) || targets.set(n, { x, kind, r, need, want, owned: owned.has(n), reasons: [] }).get(n);
+    t.want ||= want;
     if (!t.reasons.includes(reason)) t.reasons.push(reason);
   };
   // the version to farm for a name: the newest one Aegis rated, else the newest
@@ -700,9 +716,9 @@ function farmTargets(d, a, p, f) {
   if (f.exoticWeapons) weaponByName.forEach(w => w.ti === 'Exotic' && add(w, 'weapon', 'Missing exotic'));
   if (f.exoticArmor) armorFor(a.armor.filter(x => x.ti === 'Exotic')).forEach(x => add(x, 'armor', 'Missing exotic'));
   f.sets.forEach(h => a.sets[h] && armorFor(a.armor.filter(x => x.set === h && x.a3)).forEach(x => add(x, 'armor', `${a.sets[h].n} set`)));
-  const addHash = (h, reason) => { const w = d.byHash[h], x = w || a.byHash[h]; if (x) add(w ? weaponByName.get(baseName(w.n)) : x, w ? 'weapon' : 'armor', reason); };
+  const addHash = (h, reason, top) => { const w = d.byHash[h], x = w || a.byHash[h]; if (x) add(w ? weaponByName.get(baseName(w.n)) : x, w ? 'weapon' : 'armor', reason, top); };
   savedBuilds().filter(b => f.builds.includes(b.key)).forEach(b => [...b.loadout.equipped, ...(b.loadout.unequipped || []), { hash: b.loadout.parameters?.exoticArmorHash }]
-    .forEach(it => addHash(it.hash, `Build: ${b.name}`)));
+    .forEach(it => addHash(it.hash, `Build: ${b.name}`, buildTop(a, b.loadout))));
   f.items.forEach(h => addHash(h, 'Added by you'));
   return [...targets.values()];
 }
@@ -781,7 +797,7 @@ async function farm() {
     // the priority farm is this week's best rotating raid or dungeon
     const top = ['Raids', 'Dungeons'].flatMap(k => [...(plans.now.get(k)?.values() || [])]).filter(g => !g.rank).sort((x, y) => score(y) - score(x))[0];
     const [topType, topName] = top ? [...plans.now].flatMap(([k, acts]) => [...acts].map(([n, g]) => [k, n, g])).find(x => x[2] === top) : [];
-    const cards = items => `<div class="grid">${items.sort((m, n) => tierOrder(m.r) - tierOrder(n.r)).map(t => card(t.x, `<small>${tierBadge(t.r)}${t.owned ? 'You have it, not the god roll' : 'Not owned'}</small>
+    const cards = items => `<div class="grid">${items.sort((m, n) => tierOrder(m.r) - tierOrder(n.r)).map(t => card(t.x, `<small>${tierBadge(t.r)}${t.want ? `${t.owned ? 'You have it, but not with' : 'Not owned · want'} ${esc(t.want)}` : t.owned ? 'You have it, not the god roll' : 'Not owned'}</small>
       <small>${t.reasons.map(esc).join(' · ')}</small>`, t.kind)).join('')}</div>`;
     const group = ([name, g]) => `<section class="panel${g === top ? ' priority' : ''}"><h2>${g === top ? 'Priority farm: ' : ''}${esc(name)} <span class="count">${g.note}${g.master ? ' · Master available' : ''} · ${plural(g.items.length, 'item')}</span></h2>${cards(g.items)}</section>`;
     const TYPES = ['Raids', 'Dungeons', 'Pantheon', 'Grandmaster', 'PvP'], rankType = k => (TYPES.indexOf(k) + 1 || 9);

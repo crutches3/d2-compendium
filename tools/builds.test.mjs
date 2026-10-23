@@ -11,13 +11,14 @@ const defs = { 4282591831: ['Prismatic Hunter', 16, 'Hunter Subclass'], 23702693
   2835214900: ['Stylish Executioner', 19, 'Void Aspect | Light Ability'], 2626922121: ['Facet of Grace', 19, 'Prismatic Fragment'], 1001: ['Heavy Ammo Finder', 19, 'Leg Armor Mod'] };
 const loadout = { id: 'x', name: 'The Build Of Spite', classType: 1, notes: 'Shoot the boss.',
   equipped: [{ hash: 4282591831, socketOverrides: { 2: 2370269390, 7: 2835214900, 9: 2626922121 } }, { hash: fate.h, id: '91' }, { hash: gjally.h, id: '92' }, { hash: helm.h, id: '93' }, { hash: threat.h, id: '94' }],
-  unequipped: [], parameters: { mods: [1001, 1001], statConstraints: [{ statHash: 2996146975, minStat: 100 }] } };
+  unequipped: [], parameters: { mods: [1001, 1001], statConstraints: [{ statHash: 2996146975, minStat: 100 }, { statHash: 392767087 }] } };
 const profile = {
   characters: { data: { H1: { classType: 1, light: 480 }, T1: { classType: 0, light: 481 } } },
   profileInventory: { data: { items: [{ itemHash: fate.h, itemInstanceId: '1', bucketHash: 138197802 }, { itemHash: helm.h, itemInstanceId: '3', bucketHash: 138197802 }] } },
   characterInventories: { data: { T1: { items: [{ itemHash: gjally.h, itemInstanceId: '2', bucketHash: 953998645 }] }, H1: { items: [] } } },
   characterEquipment: { data: { H1: { items: [{ itemHash: ace.h, itemInstanceId: '4', bucketHash: 1498876634 }] }, T1: { items: [] } } },
-  itemComponents: { sockets: { data: {} }, reusablePlugs: { data: {} }, instances: { data: {} }, stats: { data: {} } },
+  itemComponents: { sockets: { data: {} }, reusablePlugs: { data: {} }, instances: { data: {} },
+    stats: { data: { 3: { stats: { 2996146975: { value: 30 }, 1735777505: { value: 25 }, 392767087: { value: 20 }, 1943323491: { value: 5 }, 144602215: { value: 5 }, 4244567218: { value: 5 } } } } } },
 };
 const posts = [];
 const b = await chromium.launch();
@@ -53,7 +54,9 @@ assert.equal(new URL(p.url()).hash, '#/build/igeavhy');
 const text = await p.locator('#build').innerText();
 for (const s of ['THE BUILD OF SPITE', 'Shoot the boss.', 'Prismatic Hunter', 'Golden Gun: Marksman', 'Stylish Executioner', 'Facet of Grace', 'Heavy Ammo Finder ×2', 'You have 3 of 4 pieces of gear.'])
   assert.ok(text.includes(s), 'missing: ' + s);
-assert.ok(/Weapons 100\+/i.test(text));
+// stat priorities in the build's order, and the helmet you own is checked against the top two
+assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Weapons 100+', 'Health']);
+assert.ok(text.includes('Fits') && text.includes('Weapons 30, Grenade 25, Health 20'));
 assert.ok(text.includes('Missing'), 'Threat Level should be missing');
 // only the build's class can equip it
 assert.deepEqual(await p.$$eval('[data-equip]', bs => bs.map(x => x.textContent)), ['Equip on Hunter']);

@@ -8,13 +8,17 @@ const R = JSON.parse(fs.readFileSync('data/godrolls.json')).rolls;
 const A = JSON.parse(fs.readFileSync('data/armor.json'));
 const rated = n => W.find(w => w.n === n && R[w.h]?.c?.length);
 const doom = rated('Doom of Chelchis'), zaouli = rated("Zaouli's Bane"), fate = W.find(w => w.n === 'Fatebringer');
+const helm = A.armor.find(x => x.a3 && x.cl === 'Hunter' && x.ty === 'Helmet' && x.ti !== 'Exotic');
 const [setHash, set] = Object.entries(A.sets).find(([h]) => A.armor.some(x => x.set === h && x.a3 && x.cl === 'Hunter'));
 const profile = {
   characters: { data: { H1: { classType: 1, light: 480 } } },
-  profileInventory: { data: { items: [{ itemHash: doom.h, itemInstanceId: '1', bucketHash: 138197802 }, { itemHash: zaouli.h, itemInstanceId: '2', bucketHash: 138197802 }] } },
+  profileInventory: { data: { items: [{ itemHash: doom.h, itemInstanceId: '1', bucketHash: 138197802 }, { itemHash: zaouli.h, itemInstanceId: '2', bucketHash: 138197802 },
+    { itemHash: helm.h, itemInstanceId: '3', bucketHash: 138197802 }] } },
   characterInventories: { data: { H1: { items: [] } } }, characterEquipment: { data: { H1: { items: [] } } },
   // Doom of Chelchis has a Perk 1 and a Perk 2 pick; Zaouli's Bane has neither
-  itemComponents: { sockets: { data: { 1: { sockets: R[doom.h].c.map(col => ({ plugHash: col[0] })) }, 2: { sockets: [] } } }, reusablePlugs: { data: {} }, instances: { data: {} }, stats: { data: {} } },
+  itemComponents: { sockets: { data: { 1: { sockets: R[doom.h].c.map(col => ({ plugHash: col[0] })) }, 2: { sockets: [] } } }, reusablePlugs: { data: {} }, instances: { data: {} },
+    // the helmet rolled Health, Class and Super, so it doesn't fit a Weapons + Health build
+    stats: { data: { 3: { stats: { 392767087: { value: 30 }, 1943323491: { value: 25 }, 144602215: { value: 20 }, 2996146975: { value: 5 } } } } } },
 };
 const b = await chromium.launch();
 const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
@@ -92,14 +96,16 @@ await p.click('#prefs summary'); await p.click('[data-unfarm]');
 assert.ok(!(await p.textContent('#items')).includes('Fatebringer'));
 
 // a saved build's weapons count, including better rolls of ones you own
-await p.evaluate(([z]) => { localStorage.setItem('d2c_builds', JSON.stringify([{ key: 'b1', name: 'Spite', loadout: { name: 'Spite', equipped: [{ hash: z }], parameters: {} } }]));
-  localStorage.setItem('d2c_farm', JSON.stringify({ tier: '' })); }, [zaouli.h]);  // god-roll targets and the set off, so only the build counts
+await p.evaluate(([z, h]) => { localStorage.setItem('d2c_builds', JSON.stringify([{ key: 'b1', name: 'Spite', loadout: { name: 'Spite', equipped: [{ hash: z }, { hash: h }], parameters: { statConstraints: [{ statHash: 2996146975 }, { statHash: 392767087 }] } } }]));
+  localStorage.setItem('d2c_farm', JSON.stringify({ tier: '' })); }, [zaouli.h, helm.h]);  // god-roll targets and the set off, so only the build counts
 await p.reload(); await p.waitForSelector('#plan');
 assert.ok((await plan()).includes('Nothing to farm'), await plan());
 await p.check('[data-build="b1"]');
 const kf2 = await section('Raids', "King's Fall");
 assert.ok(kf2.includes("Zaouli's Bane") && kf2.includes('Build: Spite'));
 assert.ok(await p.isChecked('[data-build="b1"]'));
+// a build's armor stays on the list until you own a copy with its top two stats
+assert.ok((await allText()).includes(`${helm.n}\nYou have it, but not with Weapons + Health\nBuild: Spite`));
 
 assert.deepEqual(errs, []);
 assert.deepEqual(unversioned, []);

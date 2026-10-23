@@ -219,3 +219,7 @@ section.panel.priority h2 { color: var(--text); }
 .tabs.act button { font-size: 12px; padding: 3px 10px; }
 .linkbtn { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; }
 .linkbtn:hover { text-decoration: underline; }
+.statrank { margin: 0; padding-left: 22px; display: flex; flex-wrap: wrap; gap: 4px 28px; }
+.statrank li { color: var(--muted); }
+.statrank li::marker { color: var(--accent); font-weight: 600; }
+.statrank b { color: var(--text); font-weight: 600; }
