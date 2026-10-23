@@ -32,7 +32,15 @@ assert.ok((await p.innerText('#app')).includes('Sign in with Bungie so the plan 
 assert.match(await p.innerText('#plan section.priority h2'), /^PRIORITY FARM: (KING'S FALL|SUNDERED DOCTRINE|GRASP OF AVARICE|GARDEN OF SALVATION) /);
 assert.ok((await section("King's Fall")).includes('Doom of Chelchis'));
 assert.ok(!(await plan()).includes('Doom of Chelchis (Harrowed)'), 'Harrowed copies merge into the base weapon');
-assert.ok((await plan()).includes('COMING UP') || (await plan()).includes('Coming up'));
+// grouped by activity type, then activity; future rotations sit behind their own button
+const types = () => p.$$eval('#plan h2.sub', hs => hs.map(h => h.firstChild.textContent.trim()));
+assert.deepEqual((await types()).slice(0, 5), ['Raids', 'Dungeons', 'Pantheon', 'Grandmaster', 'PvP']);
+assert.equal(await p.getAttribute('[data-view="now"]', 'aria-pressed'), 'true');
+assert.ok(!(await plan()).includes('Deep Stone Crypt'));
+await p.click('[data-view="later"]');
+assert.deepEqual(await types(), ['Raids', 'Dungeons']);
+assert.ok((await section('Deep Stone Crypt')).includes('Featured Oct 27'.toUpperCase()));
+await p.click('[data-view="now"]');
 
 // signed in: a god roll you own drops off, a copy without it stays
 await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', expires_at: Date.now() + 3e6 })));
@@ -57,7 +65,8 @@ await p.click('[data-farm]');
 assert.equal(await p.textContent('[data-farm]'), 'Remove from farming plan');
 await p.goto('http://localhost:8765/#/farm'); await p.waitForSelector('#plan section');
 assert.ok((await p.textContent('#items')).includes('Fatebringer'));
-assert.ok((await plan()).includes('Added by you'));
+await p.click('[data-view="later"]');  // Fatebringer is a Vault of Glass drop, which isn't featured this week
+assert.ok((await section('Vault of Glass')).includes('Added by you'));
 await p.click('#prefs summary'); await p.click('[data-unfarm]');
 assert.ok(!(await p.textContent('#items')).includes('Fatebringer'));
 

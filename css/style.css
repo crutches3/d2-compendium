@@ -209,3 +209,6 @@ p.err { color: #ff8a80; }
 section.panel.priority { border-color: var(--accent); }
 section.panel.priority h2 { color: var(--text); }
 h2.sub { font-size: 18px; margin: 32px 0 0; }
+.farmview { margin: 20px 0 0; }
+.farmtop { margin: 12px 0 0; }
+.farmtop b { color: var(--text); }

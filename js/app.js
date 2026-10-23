@@ -710,8 +710,11 @@ async function farm() {
   const p = Bungie.token() ? await needProfile() : null;
   // the week runs from Tuesday's 17:00 UTC reset
   const resetDay = new Date(Date.now() - 17 * 3600e3).toISOString().slice(0, 10);
-  const weeks = rot.weeks, cur = weeks.filter(w => w.start <= resetDay).at(-1) || weeks[0];
-  const featured = w => [...w.raids, ...w.dungeons, ...w.pantheon, ...rot.always];
+  // Desert Perpetual and Equilibrium are featured every week, so fold them into each week's raids and dungeons
+  const weeks = rot.weeks.map(w => ({ ...w, raids: [...w.raids, ...rot.always.raids], dungeons: [...w.dungeons, ...rot.always.dungeons] }));
+  const cur = weeks.filter(w => w.start <= resetDay).at(-1) || weeks[0];
+  const always = [...rot.always.raids, ...rot.always.dungeons];
+  const featured = w => [...w.raids, ...w.dungeons, ...w.pantheon];
   const activities = [...new Set(weeks.flatMap(featured))];
   const pvpAlias = { 'Iron Banner': ['iron banner', 'saladin'], 'Trials of Osiris': ['trials', 'saint-14'] };
   const fmtDate = s => new Date(s + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -719,8 +722,8 @@ async function farm() {
   const builds = savedBuilds();
 
   $app.innerHTML = `<h1>Farming plan</h1><p class="muted">Week ${cur.week ?? ''} · ${fmtDate(cur.start)} reset. ${p ? '' : 'Sign in with Bungie so the plan skips what you already own.'}</p>
-    <section class="panel"><h2>This week</h2><div class="eg"><span class="muted">Raids</span><div class="perks">${[...cur.raids, rot.always[0]].map(n => `<span class="badge${cur.master.includes(n) ? ' good' : ''}">${esc(n)}${cur.master.includes(n) ? ' · Master' : ''}</span>`).join('')}</div></div>
-      <div class="eg"><span class="muted">Dungeons</span><div class="perks">${[...cur.dungeons, rot.always[1]].map(n => `<span class="badge${cur.master.includes(n) ? ' good' : ''}">${esc(n)}${cur.master.includes(n) ? ' · Master' : ''}</span>`).join('')}</div></div>
+    <section class="panel"><h2>This week</h2><div class="eg"><span class="muted">Raids</span><div class="perks">${cur.raids.map(n => `<span class="badge${cur.master.includes(n) ? ' good' : ''}">${esc(n)}${cur.master.includes(n) ? ' · Master' : ''}</span>`).join('')}</div></div>
+      <div class="eg"><span class="muted">Dungeons</span><div class="perks">${cur.dungeons.map(n => `<span class="badge${cur.master.includes(n) ? ' good' : ''}">${esc(n)}${cur.master.includes(n) ? ' · Master' : ''}</span>`).join('')}</div></div>
       <div class="eg"><span class="muted">Pantheon</span><div class="perks">${cur.pantheon.map(n => `<span class="badge">${esc(n)}</span>`).join('')}</div></div>
       <div class="eg"><span class="muted">Grandmaster</span><div class="perks"><span class="badge">${esc(cur.gm)}</span>${cur.gmWeapons.map(n => `<span class="badge">${esc(n)}</span>`).join('')}</div></div>
       <div class="eg"><span class="muted">PvP</span><div class="perks"><span class="badge">${esc(cur.pvp)}</span></div></div></section>
@@ -733,6 +736,7 @@ async function farm() {
       <div class="eg"><span class="muted">Single items</span><div class="chips" id="items"></div></div></details></section>
     <div id="plan"><p class="muted">Working out where everything drops…</p></div>`;
   const $ = sel => $app.querySelector(sel), plan = $('#plan');
+  let view = 'now';  // 'now' (this week) or 'later' (coming up)
 
   const draw = async () => {
     const f = farmPrefs();
@@ -747,34 +751,50 @@ async function farm() {
     $('#prefs summary').textContent = `What you're farming for · ${plural(targets.length, 'item')} to get`;
     if (!targets.length) { plan.innerHTML = '<p class="empty">Nothing to farm yet. Pick what you\'re after above.</p>'; $('#prefs').open = true; return; }
 
-    // file each target under this week's featured activity, the next week it's featured, or its usual source
-    const now = new Map(), later = new Map(), any = new Map();
-    const push = (m, k, t, extra) => { if (!m.has(k)) m.set(k, { items: [], ...extra }); m.get(k).items.push(t); };
+    // file each target by activity type, then activity: under this week's featured activity, the next week it's featured ('later'), or its usual source
+    const plans = { now: new Map(), later: new Map() };
+    const file = (view, type, act, t, extra) => {
+      const types = plans[view], acts = types.get(type) || types.set(type, new Map()).get(type);
+      (acts.get(act) || acts.set(act, { items: [], ...extra }).get(act)).items.push(t);
+    };
     for (const t of targets) {
       const srcs = t.kind === 'weapon' ? await whereToFarm(t.x) : await armorSource(a, t.x);
       const low = srcs.map(s => s.toLowerCase());
       const acts = activities.filter(n => low.some(s => s.includes(n.toLowerCase())));
+      const typeOf = (w, n) => w.raids.includes(n) ? 'Raids' : w.dungeons.includes(n) ? 'Dungeons' : 'Pantheon';
       const live = acts.find(n => featured(cur).includes(n));
-      if (cur.gmWeapons.includes(t.x.n)) push(now, `Grandmaster: ${cur.gm}`, t, { kind: 'Featured Grandmaster', rank: 1 });
-      else if (live) push(now, live, t, rot.always.includes(live) ? { kind: 'Always featured', rank: 2 }
-        : { kind: cur.raids.includes(live) ? 'Featured raid' : cur.pantheon.includes(live) ? 'Featured Pantheon encounter' : 'Featured dungeon', rank: cur.pantheon.includes(live) ? 1 : 0, master: cur.master.includes(live) });
-      else if ((pvpAlias[cur.pvp] || []).some(k => low.some(s => s.includes(k)))) push(now, cur.pvp, t, { kind: 'This week\'s PvP event', rank: 1 });
-      else if (acts.length) {
-        const next = weeks.find(w => w.start > cur.start && acts.some(n => featured(w).includes(n)));
-        const n = next && acts.find(x => featured(next).includes(x));
-        if (next) push(later, `${n}`, t, { when: next.start }); else push(any, srcs[0], t);
-      } else push(any, srcs[0] || 'Unknown source', t);
+      const next = !live && weeks.find(w => w.start > cur.start && acts.some(n => featured(w).includes(n)));
+      if (cur.gmWeapons.includes(t.x.n)) file('now', 'Grandmaster', cur.gm, t, { note: 'Featured this week', rank: 1 });
+      else if (live) file('now', typeOf(cur, live), live, t, always.includes(live) ? { note: 'Always featured', rank: 2 }
+        : { note: 'Featured this week', rank: cur.pantheon.includes(live) ? 1 : 0, master: cur.master.includes(live) });
+      else if ((pvpAlias[cur.pvp] || []).some(k => low.some(s => s.includes(k)))) file('now', 'PvP', cur.pvp, t, { note: 'This week\'s event', rank: 1 });
+      else if (next) { const n = acts.find(x => featured(next).includes(x)); file('later', typeOf(next, n), n, t, { note: 'Featured ' + fmtDate(next.start), when: next.start }); }
+      else {
+        const src = srcs[0] || '', cut = src.indexOf(' · ');
+        file('now', cut > 0 ? src.slice(0, cut) : 'Other sources', cut > 0 ? src.slice(cut + 3).replace(/\s*\(.*\)$/, '') : src || 'Unknown source', t, { note: 'Any time', rank: 3 });
+      }
     }
     const score = g => g.items.reduce((s, t) => s + (t.r ? 4 - Math.min(3, TIERS.indexOf(t.r.t)) : 2) + t.reasons.length, 0);
-    const byScore = m => [...m.entries()].sort((x, y) => score(y[1]) - score(x[1]));
+    const count = acts => [...acts.values()].reduce((n, g) => n + g.items.length, 0);
+    // the priority farm is this week's best rotating raid or dungeon
+    const top = ['Raids', 'Dungeons'].flatMap(k => [...(plans.now.get(k)?.values() || [])]).filter(g => !g.rank).sort((x, y) => score(y) - score(x))[0];
+    const topName = top && [...plans.now.values()].flatMap(acts => [...acts]).find(([, g]) => g === top)[0];
     const cards = items => `<div class="grid">${items.sort((m, n) => tierOrder(m.r) - tierOrder(n.r)).map(t => card(t.x, `<small>${tierBadge(t.r)}${t.owned ? 'You have it, not the god roll' : 'Not owned'}</small>
       <small>${t.reasons.map(esc).join(' · ')}</small>`, t.kind)).join('')}</div>`;
-    const group = ([name, g], top) => `<section class="panel${top ? ' priority' : ''}"><h2>${top ? 'Priority farm: ' : ''}${esc(name)} <span class="count">${g.kind || (g.when ? 'featured ' + fmtDate(g.when) : '')}${g.master ? ' · Master available' : ''} · ${plural(g.items.length, 'item')}</span></h2>${cards(g.items)}</section>`;
-    // the priority farm is this week's best rotating raid or dungeon; Pantheon, GM, PvP and always-featured come after
-    const nowList = byScore(now).sort((x, y) => x[1].rank - y[1].rank), laterList = [...later.entries()].sort((x, y) => x[1].when.localeCompare(y[1].when) || score(y[1]) - score(x[1]));
-    plan.innerHTML = (nowList.length ? nowList.map((g, i) => group(g, i === 0 && !g[1].rank)).join('') : '<p class="muted">None of your targets drop from this week\'s featured activities.</p>')
-      + (laterList.length ? `<h2 class="sub">Coming up</h2>${laterList.map(g => group(g)).join('')}` : '')
-      + (any.size ? `<h2 class="sub">Any time</h2>${byScore(any).map(g => group(g)).join('')}` : '');
+    const group = ([name, g]) => `<section class="panel${g === top ? ' priority' : ''}"><h2>${g === top ? 'Priority farm: ' : ''}${esc(name)} <span class="count">${g.note}${g.master ? ' · Master available' : ''} · ${plural(g.items.length, 'item')}</span></h2>${cards(g.items)}</section>`;
+    const TYPES = ['Raids', 'Dungeons', 'Pantheon', 'Grandmaster', 'PvP'], rankType = k => (TYPES.indexOf(k) + 1 || 9);
+    const show = which => [...plans[which]].sort((x, y) => rankType(x[0]) - rankType(y[0]) || (x[0] === 'Other sources') - (y[0] === 'Other sources') || count(y[1]) - count(x[1]))
+      .map(([type, acts]) => `<h2 class="sub">${esc(type)} <span class="count">${plural(count(acts), 'item')}</span></h2>${[...acts]
+        .sort((x, y) => which === 'later' ? x[1].when.localeCompare(y[1].when) || score(y[1]) - score(x[1]) : x[1].rank - y[1].rank || score(y[1]) - score(x[1])).map(group).join('')}`).join('')
+      || `<p class="empty">${which === 'later' ? 'Nothing you\'re after is waiting on a future rotation.' : 'Nothing you\'re after drops this week. Check Coming up.'}</p>`;
+    const total = which => [...plans[which].values()].reduce((n, acts) => n + count(acts), 0);
+    plan.innerHTML = `<div class="tabs charpick farmview">${[['now', 'This week'], ['later', 'Coming up']].map(([k, label]) => `<button type="button" data-view="${k}"${k === view ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${label} · ${total(k)}</button>`).join('')}</div>
+      ${top ? `<p class="muted farmtop">Priority farm this week: <b>${esc(topName)}</b>, ${plural(top.items.length, 'item')} you're after${top.master ? ', Master available' : ''}.</p>` : ''}<div id="planbody">${show(view)}</div>`;
+    plan.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
+      view = b.dataset.view;
+      plan.querySelectorAll('[data-view]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', String(x === b)); });
+      $('#planbody').innerHTML = show(view);
+    }));
   };
   const save = (k, v) => { Bungie.store.set('d2c_farm', { ...farmPrefs(), [k]: v }); draw(); };
   $('#tier').addEventListener('change', e => save('tier', e.target.value));

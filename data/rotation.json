@@ -1,8 +1,12 @@
 {
-"always": [
-"Desert Perpetual",
-"Equilibrium"
+"always": {
+"raids": [
+"Desert Perpetual"
 ],
+"dungeons": [
+"Equilibrium"
+]
+},
 "weeks": [
 {
 "start": "2026-06-09",

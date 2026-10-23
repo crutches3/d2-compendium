@@ -7,7 +7,7 @@ import csv, io, json, os, re, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 URL = 'https://docs.google.com/spreadsheets/d/1_rsLAIFeGL3idS6b12zpBcLWu-9Er0slMjraNT8k4xI/gviz/tq?tqx=out:csv&gid=1728967379'
-ALWAYS = ['Desert Perpetual', 'Equilibrium']  # shortcut: hand-kept from the sheet's header note; update when a new raid or dungeon launches
+ALWAYS = {'raids': ['Desert Perpetual'], 'dungeons': ['Equilibrium']}  # shortcut: hand-kept from the sheet's header note; update when a new raid or dungeon launches
 COLUMNS = {'gm': 'Featured Grandmaster', 'shiny': 'Shiny', 'focus': 'Bonus Focus', 'pvp': 'PvP Event', 'raid1': 'Raid 1', 'raid2': 'Raid 2',
            'dungeon1': 'Dungeon 1', 'dungeon2': 'Dungeon 2', 'reprise': 'Reprise', 'encore': 'Encore'}
 
