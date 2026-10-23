@@ -70,10 +70,10 @@ assert.equal(await p.getAttribute('.typetabs [data-type="Raids"]', 'aria-pressed
 // roll grades: every column is a perfect roll, both main perks a god roll, one main perk partial; a build's own perks grade the same way
 const grades = await p.evaluate(() => {
   const d = { plugs: { 1: { n: 'Barrel' }, 2: { n: 'Mag' }, 3: { n: 'P1' }, 4: { n: 'P2' } } };
-  const roll = { p: { Barrel: ['Barrel'], Magazine: ['Mag'], 'Perk 1': ['P1', 'other'], 'Perk 2': ['P2'] } }, build = { p: { P1: ['P1'], P2: ['P2'] } };
+  const roll = { p: { Barrel: ['Barrel'], Magazine: ['Mag'], 'Perk 1': ['P1', 'other'], 'Perk 2': ['P2'] } }, build = { p: { 'Perk 1': ['P1'], 'Perk 2': ['P2'] }, build: true };
   return [[1, 2, 3, 4], [3, 4], [1, 2, 3], [1, 2], []].map(hs => rollFit(d, roll, new Set(hs)).grade).concat([[3], [3, 4]].map(hs => rollFit(d, build, new Set(hs)).grade));
 });
-assert.deepEqual(grades, ['perfect', 'god', 'half', 'none', 'none', 'half', 'perfect']);
+assert.deepEqual(grades, ['perfect', 'god', 'half', 'none', 'none', 'buildpart', 'build']);
 
 // signed in: a god roll you own drops off, a copy without it stays
 await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', expires_at: Date.now() + 3e6 })));
@@ -114,6 +114,23 @@ assert.ok(kf2.includes("Zaouli's Bane") && kf2.includes('Build: Spite'));
 assert.ok(await p.isChecked('[data-build="b1"]'));
 // a build's armor stays on the list until you own a copy with its top two stats
 assert.ok((await allText()).includes(`${helm.n}\nYou have it, but not with Weapons + Health\nBuild: Spite`));
+
+// build roll: pick the build on the weapon page, click a perk to make it the goal, and it's saved with the build
+await p.goto(`http://localhost:8765/#/weapon/${zaouli.h}`); await p.waitForSelector('.copy');
+await p.selectOption('#goal', 'b1');
+assert.ok((await p.textContent('#goalhint')).includes('no perks'));
+await p.click('#editgoal');
+const goalPerk = p.locator('.perk[data-col="Perk 1"]').first(), goalName = await goalPerk.locator('span').first().textContent();
+await goalPerk.click(); await p.click('#editgoal');
+assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('d2c_builds'))[0].rolls), { "Zaouli's Bane": { 'Perk 1': [goalName] } });
+assert.ok(await goalPerk.evaluate(el => el.classList.contains('goal')));
+assert.equal(await p.textContent('.copy .pips.g-buildpart b'), 'Build roll 0/1');  // your copy doesn't have it
+await p.reload(); await p.waitForSelector('.copy');
+assert.equal(await p.inputValue('#goal'), 'b1');
+assert.ok(await p.locator('.perk.goal').count() === 1);
+// the farming plan now wants that roll from the build
+await p.goto('http://localhost:8765/#/farm'); await p.waitForSelector('#plan section');
+assert.ok((await section('Raids', "King's Fall")).includes('Build roll 0/1'));
 
 assert.deepEqual(errs, []);
 assert.deepEqual(unversioned, []);

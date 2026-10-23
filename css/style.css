@@ -235,3 +235,14 @@ section.panel.priority h2 { color: var(--text); }
 .pips.g-half b { color: var(--partial); }
 .pipkey .pips { margin: 0; }
 .pipkey .pips b { margin: 0; }
+:root { --build: #b99cf0; }
+.pips.g-build i.on, .pips.g-buildpart i.on { background: var(--build); border-color: var(--build); color: var(--bg); }
+.pips.g-build b, .pips.g-buildpart b { color: var(--build); }
+.key.goal { box-shadow: inset 0 0 0 2px var(--build); }
+.perk.goal { box-shadow: inset 0 0 0 2px var(--build); }
+.perkcols.showing .perk.goal:not(.have) { opacity: .9; }
+.perkcols.editing .perk[data-col] { cursor: copy; }
+.perkcols.editing .perk:not([data-col]) { opacity: .4; }
+.goalbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: -4px 0 12px; font-size: 13px; color: var(--muted); }
+.goalbar select, .goalbar button { padding: 4px 8px; font-size: 13px; }
+.goalbar button[aria-pressed="true"] { border-color: var(--build); color: var(--build); }

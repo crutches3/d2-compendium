@@ -29,26 +29,39 @@ async function data() {
 
 // d.rolls[hash] is Aegis's Endgame Analysis rating; exotics are rated but have no roll to match.
 // How a copy lines up with a recommended roll, column by column: the Endgame Analysis Barrel, Magazine, Perk 1 and Perk 2, or a build's
-// own perks. grade: 'perfect' (every column), 'god' (Perk 1 and Perk 2), 'half' (one of them, or some of a build's perks), 'none'.
+// own picks (roll.build). grade: 'build' (every build pick) or 'buildpart'; for the tier list 'perfect' (every column),
+// 'god' (Perk 1 and Perk 2), 'half' (one of them) or 'none'.
 function rollFit(d, roll, plugs) {
   const names = new Set([...plugs].map(h => d.plugs[h]?.n));
   const cols = Object.entries(roll?.p || {}).filter(([, v]) => v.length).map(([c, v]) => ({ c, ok: v.some(n => names.has(n)) }));
   if (!cols.length) return null;
+  if (roll.build) return { cols, grade: cols.every(x => x.ok) ? 'build' : 'buildpart' };
   const main = cols.filter(x => /^Perk \d$/.test(x.c));
   const grade = cols.every(x => x.ok) ? 'perfect' : main.length && main.every(x => x.ok) ? 'god' : (main.length ? main : cols).some(x => x.ok) ? 'half' : 'none';
   return { cols, grade };
 }
-const GRADES = { perfect: 'Perfect roll', god: 'God roll', half: 'Partial', none: 'No match' };
+const GRADES = { build: 'Build roll', perfect: 'Perfect roll', god: 'God roll', half: 'Partial', buildpart: 'Build roll', none: 'No match' };
 const isGod = f => f?.grade === 'perfect' || f?.grade === 'god';
 const gradeRank = f => f ? Object.keys(GRADES).indexOf(f.grade) * 10 - f.cols.filter(x => x.ok).length : 99;  // lower is better
 const bestFit = fits => fits.filter(Boolean).sort((x, y) => gradeRank(x) - gradeRank(y))[0];
-// one lettered pip per column (B, M, 1, 2 for the tier list; a perk's first letter for a build's own picks), lit in the grade's color
+// one lettered pip per column (B, M, 1, 2), lit in the grade's color
 const rollPips = f => { if (!f) return '';
-  const label = `${GRADES[f.grade]}: ${f.cols.filter(x => x.ok).length} of ${f.cols.length} match (${f.cols.map(x => `${x.c} ${x.ok ? 'yes' : 'no'}`).join(', ')})`;
-  return `<span class="pips g-${f.grade}" role="img" aria-label="${esc(label)}" title="${esc(label)}">${f.cols.map(x => `<i${x.ok ? ' class="on"' : ''}>${esc(/^Perk \d$/.test(x.c) ? x.c.slice(-1) : x.c[0])}</i>`).join('')}<b>${GRADES[f.grade]}</b></span>`; };
-const rollLegend = '<small class="muted pipkey">B, M, 1, 2: the tier list\'s Barrel, Magazine, Perk 1 and Perk 2. <span class="pips g-perfect"><b>Gold</b></span> all four, <span class="pips g-god"><b>green</b></span> both main perks (god roll), <span class="pips g-half"><b>orange</b></span> one main perk.</small>';
-// a build's own perks for a weapon (DIM socketOverrides) as a roll to match; null when the build didn't pick any
-const buildRoll = (d, it) => { const ns = Object.values(it.socketOverrides || {}).map(h => d.plugs[h]?.n).filter(Boolean); return ns.length ? { p: Object.fromEntries(ns.map(n => [n, [n]])) } : null; };
+  const hits = f.cols.filter(x => x.ok).length, name = f.grade === 'buildpart' ? `Build roll ${hits}/${f.cols.length}` : GRADES[f.grade];
+  const label = `${name}: ${hits} of ${f.cols.length} match (${f.cols.map(x => `${x.c} ${x.ok ? 'yes' : 'no'}`).join(', ')})`;
+  return `<span class="pips g-${f.grade}" role="img" aria-label="${esc(label)}" title="${esc(label)}">${f.cols.map(x => `<i${x.ok ? ' class="on"' : ''}>${esc(/^Perk \d$/.test(x.c) ? x.c.slice(-1) : x.c[0])}</i>`).join('')}<b>${name}</b></span>`; };
+const rollLegend = '<small class="muted pipkey">B, M, 1, 2: the tier list\'s Barrel, Magazine, Perk 1 and Perk 2. <span class="pips g-perfect"><b>Gold</b></span> all four, <span class="pips g-god"><b>green</b></span> both main perks (god roll), <span class="pips g-half"><b>orange</b></span> one main perk, <span class="pips g-build"><b>purple</b></span> every perk of a build roll you picked.</small>';
+// A saved build's goal roll for a weapon, shaped like a tier-list roll: perks picked on the weapon page (b.rolls), else the
+// DIM link's own (socketOverrides). Null when the build has none.
+const PERK_COLS = ['Barrel', 'Magazine', 'Perk 1', 'Perk 2'];
+const perkCol = (w, h) => PERK_COLS[w.cols.filter(c => c.c === 'Weapon Perks').findIndex(c => c.p.includes(h))];
+function buildRoll(d, b, w) {
+  const picked = b.rolls?.[baseName(w.n)];
+  if (picked) return Object.values(picked).some(v => v.length) ? { p: picked, build: true } : null;
+  const it = [...b.loadout.equipped, ...(b.loadout.unequipped || [])].find(i => d.byHash[i.hash] && baseName(d.byHash[i.hash].n) === baseName(w.n)), p = {};
+  Object.values(it?.socketOverrides || {}).forEach(h => { const k = perkCol(w, h); if (k) (p[k] ||= []).push(d.plugs[h].n); });
+  return Object.keys(p).length ? { p, build: true } : null;
+}
+const usesWeapon = (d, b, w) => [...b.loadout.equipped, ...(b.loadout.unequipped || [])].some(i => d.byHash[i.hash] && baseName(d.byHash[i.hash].n) === baseName(w.n));
 const TIERS = ['S', 'A', 'B', 'C', 'D', 'E', 'F'];
 const tierOrder = r => r ? (TIERS.indexOf(r.t) + 1 || 9) * 1000 + r.r : 1e5;
 const tierBadge = r => r ? `<span class="badge tier tier-${esc(r.t)}">Tier ${esc(r.t)}</span>` : '';
@@ -173,17 +186,23 @@ async function weaponPage(hash) {
   const mwPicks = (er?.mw || '').toLowerCase().split(' or ').filter(Boolean);  // "Handling or Reload"
   mw.p.forEach(h => mwPicks.some(x => mwName(h).toLowerCase().startsWith(x)) && godNames.add(d.plugs[h].n));
   const perk = (h, col) => { const p = d.plugs[h];
-    return `<button type="button" class="perk${godNames.has(p.n) ? ' god' : ''}${col.cur === h ? ' cur' : ''}" data-h="${h}">${img(p.i)}<span>${esc(mwName(h) || p.n)}${p.e ? ' <span class="enh">enhanced</span>' : ''}</span></button>`; };
+    return `<button type="button" class="perk${godNames.has(p.n) ? ' god' : ''}${col.cur === h ? ' cur' : ''}" data-h="${h}"${perkCol(w, h) && col.c === 'Weapon Perks' ? ` data-col="${perkCol(w, h)}"` : ''}>${img(p.i)}<span>${esc(mwName(h) || p.n)}${p.e ? ' <span class="enh">enhanced</span>' : ''}</span></button>`; };
   // enhanced versions share a name with the base perk, so show one entry per name (the first, usually the base);
   // "Empty ... Socket" plugs are placeholders, not choices
   const dedupe = hs => hs.filter((h, i) => d.plugs[h] && !/^Empty .*Socket$/.test(d.plugs[h].n) && hs.findIndex(x => d.plugs[x]?.n === d.plugs[h].n) === i);
   const perkCols = cols => cols.map(c => [c, dedupe(c.p)]).filter(([, hs]) => hs.length)
     .map(([c, hs]) => `<div class="perkcol"><h3>${esc(d.plugs[c.p[0]]?.t || c.c)}</h3>${hs.map(h => perk(h, c)).join('')}</div>`).join('');
   const maxStat = Math.max(100, ...w.st.filter(s => !s[2]).map(s => s[1]));
+  // build roll: pick a saved build that uses this weapon and its perks become the goal; "Pick perks" sets them on the grid
+  const goalBuilds = savedBuilds().filter(b => usesWeapon(d, b, w));
+  let goalKey = goalBuilds.some(b => b.key === Bungie.store.get('d2c_goal')?.[baseName(w.n)]) ? Bungie.store.get('d2c_goal')[baseName(w.n)] : '', editing = false;
+  const goal = () => { const b = savedBuilds().find(x => x.key === goalKey); return b ? buildRoll(d, b, w) : null; };
   $app.innerHTML = `
     ${hero(w, `<span class="badge">${esc(w.ti)}</span><span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span><span class="badge">${esc(w.ty)}</span><span class="badge">${esc(w.sl)} · ${esc(w.am)}</span>${tierBadge(er)}`)}
     ${same.length ? `<p class="versions">Other versions: ${same.map((x, i) => `<a href="#/weapon/${x.h}">${esc(bungieSource(x) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
-    <section class="panel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll <span class="key cur"></span> Curated roll</p>
+    <section class="panel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll <span class="key cur"></span> Curated roll${goalBuilds.length ? ' <span class="key goal"></span> Build roll' : ''}</p>
+      ${goalBuilds.length ? `<div class="goalbar"><label for="goal">Build roll</label><select id="goal"><option value="">None</option>${goalBuilds.map(b => `<option value="${esc(b.key)}"${b.key === goalKey ? ' selected' : ''}>${esc(b.name)}</option>`).join('')}</select>
+        <button type="button" id="editgoal"${goalKey ? '' : ' hidden'}>Pick perks</button><small class="muted" id="goalhint"></small></div>` : ''}
       <div class="perkwrap"><div class="perkcols">${perkCols([...w.cols.filter(c => c.c !== 'Weapon Mods'), mw])}</div>
       <aside class="copies" id="mine"><h3>Your copies</h3><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies here.'}</p></aside></div>
       <div class="perkinfo" id="perkinfo" aria-live="polite"><span class="muted">Select a perk to see what it does.</span></div></section>
@@ -195,7 +214,35 @@ async function weaponPage(hash) {
     </div></div>
     ${w.lore ? `<section class="panel"><h2>Lore</h2><div class="lore">${esc(w.lore)}</div></section>` : ''}`;
 
+  const grid = $app.querySelector('.perkcols'), copiesBox = $app.querySelector('#mine');
+  const drawGoal = () => {
+    const g = goal(), names = new Set(Object.values(g?.p || {}).flat());
+    grid.querySelectorAll('.perk').forEach(el => el.classList.toggle('goal', names.has(d.plugs[el.dataset.h].n)));
+    grid.classList.toggle('editing', editing);
+    const btn = $app.querySelector('#editgoal'), hint = $app.querySelector('#goalhint');
+    if (!btn) return;
+    btn.hidden = !goalKey; btn.textContent = editing ? 'Done' : 'Pick perks'; btn.setAttribute('aria-pressed', String(editing));
+    hint.textContent = editing ? 'Click Barrel, Magazine and trait perks to add or remove them.' : goalKey && !g ? 'This build has no perks for this weapon yet.' : '';
+    copiesBox.dispatchEvent(new Event('goal'));
+  };
+  $app.querySelector('#goal')?.addEventListener('change', e => {
+    goalKey = e.target.value; editing = false;
+    Bungie.store.set('d2c_goal', { ...Bungie.store.get('d2c_goal'), [baseName(w.n)]: goalKey });
+    drawGoal();
+  });
+  $app.querySelector('#editgoal')?.addEventListener('click', () => { editing = !editing; drawGoal(); });
+  // while picking, a perk click adds it to or removes it from the build's roll, saved with the build
+  const toggleGoalPerk = el => {
+    const builds = savedBuilds(), b = builds.find(x => x.key === goalKey), col = el.dataset.col, n = d.plugs[el.dataset.h].n;
+    const cur = buildRoll(d, b, w)?.p || {}, list = cur[col] || [];
+    b.rolls = { ...b.rolls, [baseName(w.n)]: { ...cur, [col]: list.includes(n) ? list.filter(x => x !== n) : [...list, n] } };
+    Bungie.store.set('d2c_builds', builds);
+    drawGoal();
+  };
+  drawGoal();
+
   $app.querySelectorAll('.perk').forEach(el => el.addEventListener('click', async () => {
+    if (editing) { if (el.dataset.col) toggleGoalPerk(el); return; }
     const info = document.getElementById('perkinfo');
     const wasOn = el.classList.contains('sel');
     $app.querySelectorAll('.perk.sel').forEach(x => { x.classList.remove('sel'); x.removeAttribute('aria-pressed'); });
@@ -212,7 +259,7 @@ async function weaponPage(hash) {
   }));
 
   wireFarmButton();
-  if (Bungie.token()) showCopies(d, w, er, mw.p.filter(h => godNames.has(d.plugs[h].n)).map(h => d.plugs[h].n));  // runs alongside the slower sheet lookups below
+  if (Bungie.token()) showCopies(d, w, er, mw.p.filter(h => godNames.has(d.plugs[h].n)).map(h => d.plugs[h].n), goal);  // runs alongside the slower sheet lookups below
 
   // Community sheet rows mentioning this weapon by name, or its frame for the same weapon type.
   const frame = w.cols.find(c => c.c === 'Intrinsic Traits');
@@ -225,7 +272,7 @@ async function weaponPage(hash) {
 
 // Copies of this weapon (any version) beside the perk grid. Hovering or tapping one lights up its perks in the grid:
 // filled = on this copy, dashed outline = a recommended perk it's missing.
-async function showCopies(d, w, er, mwPicks) {
+async function showCopies(d, w, er, mwPicks, goal) {  // goal(): the selected build roll, or null
   const box = document.querySelector('#mine'), grid = $app.querySelector('.perkcols');
   try {
     const prof = await profile(); renderAccount();
@@ -241,14 +288,22 @@ async function showCopies(d, w, er, mwPicks) {
       // the perk showing in each column, as icons
       const shown = traitCols.map(ns => [...i.socketed].map(h => d.plugs[h]).find(p => p && ns.has(p.n))).filter(Boolean);
       return { i, n, missing, fit: rollFit(d, er, i.plugs), shown };
-    }).sort((a, b) => gradeRank(a.fit) - gradeRank(b.fit) || a.missing.length - b.missing.length);
+    });
     if (!mine.length) { box.innerHTML = '<h3>Your copies</h3><p class="muted">You don\'t own this weapon.</p>'; return; }
-    box.innerHTML = `<h3>Your copies <span class="count">${mine.length}</span></h3>${mine.map((c, k) => `<button type="button" class="copy" data-k="${k}" aria-pressed="false">
-      <span class="where">${rollPips(c.fit)}${esc(c.i.location)}${c.i.power ? ` · ${c.i.power}` : ''}${c.i.itemHash !== w.h ? ' · other version' : ''}</span>
-      <span class="minis">${c.shown.map(p => `<img src="${BNET}${p.i}" alt="${esc(p.n)}" title="${esc(p.n)}">`).join('')}</span>
-      ${er?.p ? `<small class="${c.missing.length ? 'miss' : 'full'}">${c.missing.length ? 'Missing: ' + esc(c.missing.join(', ')) : 'Has every recommended pick'}</small>` : ''}</button>`).join('')}
-      <p class="muted hint">Hover or tap a copy to see its perks in the grid. A dashed outline is a recommended perk it doesn't have.</p>${er?.p ? `<p class="hint">${rollLegend}</p>` : ''}`;
     let pinned = null;
+    const render = () => {
+      const g = goal();
+      mine.forEach(c => { c.gfit = g && rollFit(d, g, c.i.plugs); });
+      mine.sort((a, b) => gradeRank(a.gfit) - gradeRank(b.gfit) || gradeRank(a.fit) - gradeRank(b.fit) || a.missing.length - b.missing.length);
+      pinned = null;
+      box.innerHTML = `<h3>Your copies <span class="count">${mine.length}</span></h3>${mine.map((c, k) => `<button type="button" class="copy" data-k="${k}" aria-pressed="false">
+        <span class="where">${c.gfit ? rollPips(c.gfit) : ''}${rollPips(c.fit)}${esc(c.i.location)}${c.i.power ? ` · ${c.i.power}` : ''}${c.i.itemHash !== w.h ? ' · other version' : ''}</span>
+        <span class="minis">${c.shown.map(p => `<img src="${BNET}${p.i}" alt="${esc(p.n)}" title="${esc(p.n)}">`).join('')}</span>
+        ${er?.p ? `<small class="${c.missing.length ? 'miss' : 'full'}">${c.missing.length ? 'Missing: ' + esc(c.missing.join(', ')) : 'Has every recommended pick'}</small>` : ''}</button>`).join('')}
+        <p class="muted hint">Hover or tap a copy to see its perks in the grid. A dashed outline is a recommended perk it doesn't have.</p>${er?.p || g ? `<p class="hint">${rollLegend}</p>` : ''}`;
+    };
+    render();
+    box.addEventListener('goal', render);
     const show = k => {
       const n = k == null ? null : mine[k].n;
       grid.classList.toggle('showing', !!n);
@@ -622,18 +677,20 @@ async function buildPage(id) {
     const chars = p ? p.chars.filter(c => !cls || c.cls === cls) : [];
     // best copy for a character: this exact version, a god roll, already there, in the vault; never the postmaster
     const fit = i => !!a.byHash[i.itemHash] && top.length > 0 && fitsBuild(a, i, top);
+    // a weapon's build roll, from this build as saved (perks picked on the weapon page) or as linked
+    const goalOf = it => d.byHash[it.hash] && buildRoll(d, savedBuilds().find(b => b.key === key) || { loadout }, d.byHash[it.hash]);
     const pick = (it, cid) => (p?.items || []).filter(i => !i.postmaster && nameOf(i.itemHash) === nameOf(it.hash))
-      .sort((x, y) => (y.itemHash === it.hash) - (x.itemHash === it.hash) || gradeRank(rollFit(d, buildRoll(d, it) || d.rolls[x.itemHash], x.plugs)) - gradeRank(rollFit(d, buildRoll(d, it) || d.rolls[y.itemHash], y.plugs)) || fit(y) - fit(x) || y.tier - x.tier
+      .sort((x, y) => (y.itemHash === it.hash) - (x.itemHash === it.hash) || gradeRank(rollFit(d, goalOf(it) || d.rolls[x.itemHash], x.plugs)) - gradeRank(rollFit(d, goalOf(it) || d.rolls[y.itemHash], y.plugs)) || fit(y) - fit(x) || y.tier - x.tier
         || (y.owner === cid) - (x.owner === cid) || !y.owner - !x.owner)[0];
     const owned = it => { const c = pick(it, chars[0]?.id);
       if (!p) return '';
       if (!c) return '<span class="badge">Missing</span>';
       const where = `${esc(c.location)}${c.itemHash !== it.hash ? ' · other version' : ''}`;
-      if (d.byHash[it.hash]) { const f = rollFit(d, buildRoll(d, it) || d.rolls[c.itemHash], c.plugs); return f ? `${rollPips(f)}</small><small>${where}` : `<span class="badge good">You have it</span>${where}`; }
+      if (d.byHash[it.hash]) { const f = rollFit(d, goalOf(it) || d.rolls[c.itemHash], c.plugs); return f ? `${rollPips(f)}</small><small>${where}` : `<span class="badge good">You have it</span>${where}`; }
       if (!top.length) return `<span class="badge good">You have it</span>${where}`;
       const best = topStats(a, c).map(st => `${st} ${c.stats[Object.keys(a.stats).find(h => a.stats[h] === st)] || 0}`).join(', ');
       return fit(c) ? `<span class="badge good">Fits</span>${esc(best)}</small><small>${where}` : `<span class="badge">Wrong stats</span>Best copy: ${esc(best)}</small><small>${where}`; };
-    const piece = it => { const w = d.byHash[it.hash], x = w || a.byHash[it.hash], perks = Object.values(it.socketOverrides || {}).map(h => defs[h]?.n).filter(Boolean);
+    const piece = it => { const w = d.byHash[it.hash], x = w || a.byHash[it.hash], perks = w ? Object.values(goalOf(it)?.p || {}).flat() : Object.values(it.socketOverrides || {}).map(h => defs[h]?.n).filter(Boolean);
       return card(x, `<small>${w ? tierBadge(d.rolls[w.h]) + esc(w.ty) : esc(slotLabel(x))}${loadout.equipped.includes(it) ? '' : ' · not equipped'}</small>
         ${perks.length ? `<small>${esc(perks.join(', '))}</small>` : ''}<small>${owned(it)}</small>`, w ? 'weapon' : 'armor'); };
     const have = gear.filter(it => pick(it)).length;
@@ -716,14 +773,15 @@ function farmTargets(d, a, p, f) {
   const haveGod = new Set((p?.items || []).filter(i => isGod(rollFit(d, d.rolls[i.itemHash], i.plugs))).map(i => nameOf(i.itemHash)));
   const classes = p ? new Set(p.chars.map(c => c.cls)) : null;
   const targets = new Map();
-  const add = (x, kind, reason, top = []) => {
+  const add = (x, kind, reason, top = [], broll = null) => {
     const r = kind === 'weapon' ? d.rolls[x.h] : null;
     // weapons with an Endgame Analysis roll are done once you own that roll; anything else once you own it
     const n = kind === 'weapon' ? baseName(x.n) : x.n + x.cl;
     const want = kind === 'armor' && top.length && !(p?.items || []).some(i => nameOf(i.itemHash) === n && fitsBuild(a, i, top)) ? top.join(' + ') : '';
-    const need = r?.c?.length && !haveGod.has(n) ? 'god roll' : want ? 'stats' : owned.has(n) ? '' : 'item';
+    const bfit = broll && bestFit((p?.items || []).filter(i => nameOf(i.itemHash) === n).map(i => rollFit(d, broll, i.plugs)));
+    const need = broll ? (bfit?.grade === 'build' ? '' : 'build roll') : r?.c?.length && !haveGod.has(n) ? 'god roll' : want ? 'stats' : owned.has(n) ? '' : 'item';
     if (!need) return;
-    const best = kind === 'weapon' && r && bestFit((p?.items || []).filter(i => nameOf(i.itemHash) === n).map(i => rollFit(d, d.rolls[i.itemHash] || r, i.plugs)));
+    const best = bfit || kind === 'weapon' && r && bestFit((p?.items || []).filter(i => nameOf(i.itemHash) === n).map(i => rollFit(d, d.rolls[i.itemHash] || r, i.plugs)));
     const t = targets.get(n) || targets.set(n, { x, kind, r, need, want, best, owned: owned.has(n), reasons: [] }).get(n);
     t.want ||= want;
     if (!t.reasons.includes(reason)) t.reasons.push(reason);
@@ -737,9 +795,9 @@ function farmTargets(d, a, p, f) {
   if (f.exoticWeapons) weaponByName.forEach(w => w.ti === 'Exotic' && add(w, 'weapon', 'Missing exotic'));
   if (f.exoticArmor) armorFor(a.armor.filter(x => x.ti === 'Exotic')).forEach(x => add(x, 'armor', 'Missing exotic'));
   f.sets.forEach(h => a.sets[h] && armorFor(a.armor.filter(x => x.set === h && x.a3)).forEach(x => add(x, 'armor', `${a.sets[h].n} set`)));
-  const addHash = (h, reason, top) => { const w = d.byHash[h], x = w || a.byHash[h]; if (x) add(w ? weaponByName.get(baseName(w.n)) : x, w ? 'weapon' : 'armor', reason, top); };
+  const addHash = (h, reason, top, b) => { const w = d.byHash[h], x = w || a.byHash[h]; if (x) add(w ? weaponByName.get(baseName(w.n)) : x, w ? 'weapon' : 'armor', reason, top, w && b && buildRoll(d, b, w)); };
   savedBuilds().filter(b => f.builds.includes(b.key)).forEach(b => [...b.loadout.equipped, ...(b.loadout.unequipped || []), { hash: b.loadout.parameters?.exoticArmorHash }]
-    .forEach(it => addHash(it.hash, `Build: ${b.name}`, buildTop(a, b.loadout))));
+    .forEach(it => addHash(it.hash, `Build: ${b.name}`, buildTop(a, b.loadout), b)));
   f.items.forEach(h => addHash(h, 'Added by you'));
   return [...targets.values()];
 }
