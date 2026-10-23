@@ -1040,24 +1040,61 @@ async function farm() {
   await draw();
 }
 
+// The sheet tabs worth reading on their own, by topic. Landing pages, link lists, empty tabs and raw graph data are left out, and so are
+// loot sources, the weekly reset, set bonuses and artifact perks, which Weapons, Farming, Armor sets and Builds already show.
+const REF_TOPICS = {
+  Weapons: { 'Weapon Perks': 'Weapon perks', 'Exotic Weapons': 'Exotic weapons' },
+  Armor: { 'Armor Mods': 'Armor mods', 'Exotic Armors': 'Exotic armor', 'Exotic Class': 'Exotic class items', 'Armor Archetypes': 'Armor archetypes' },
+  Subclasses: { Arc: 'Arc', Solar: 'Solar', Void: 'Void', Stasis: 'Stasis', Strand: 'Strand', Prismatic: 'Prismatic', 'Class Abilities': 'Class abilities' },
+  Damage: { 'STACKING GUIDE': 'Damage stacking', Weapons: 'Weapon damage', Abilties: 'Ability damage', Sustained: 'Sustained damage', Swap: 'Swap damage', Bosses: 'Boss health' },
+  Mechanics: { 'Game Mechanics': 'Game mechanics', 'CHAMP COUNTERS LIST': 'Champion counters' },
+};
+// sheet navigation and promo cells, image-only columns, stray one-letter cells, and whole-page dumps from merged cells
+const junkCell = c => /^(go back to the top!?|support the data compendium|click here (to|for)\b[\s\S]*|↺ return to orbit|llama's (youtube|twitch|discord)|icon|🖼️|[-–])$/i.test(c.trim())
+  || /^(like these guides|patreon|court's\s+(website|discord)|questions\? want to use|find this and other|spreadsheet made by|check out llama|sourced via)/i.test(c.trim()) || /^[a-z]$/.test(c.trim()) || c.length > 3000;
+// Game Mechanics opens with a banner of merged intro text that reads as nonsense once flattened
+const REF_BANNER = new Set(['Game Mechanics']);
+// laid out as infographics, so they only make sense in the original sheet
+const REF_EXTERNAL = new Set(['STACKING GUIDE', 'CHAMP COUNTERS LIST']);
+// whole numbers lose the sheet's ".0", long decimals keep two places
+const tidyCell = c => junkCell(c) ? '' : c.replace(/^(-?\d+)\.0+$/, '$1').replace(/^-?\d+\.\d{4,}$/, n => (+n).toFixed(2));
+const refRows = new Map();
+function cleanRows(t) {
+  if (refRows.has(t)) return refRows.get(t);
+  const rows = t.rows.slice(REF_BANNER.has(t.tab) ? 1 : 0).map(r => r.map(tidyCell)).filter(r => r.some(Boolean));
+  // a column with nothing below the title rows is a section link or a lost image, not data
+  const body = rows.length > 3 ? rows.slice(3) : rows, cols = [...Array(Math.max(0, ...rows.map(r => r.length))).keys()].filter(i => body.some(r => r[i]));
+  const out = rows.map(r => cols.map(i => r[i] || ''));
+  refRows.set(t, out);
+  return out;
+}
+const sheetTable = rows => `<div class="tablewrap"><table class="sheet">${rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+
 async function reference(idx) {
   const tabs = await sheets();
-  const groups = Object.groupBy(tabs.map((t, i) => ({ ...t, i })), t => t.source);
-  const t = tabs[idx];
-  $app.innerHTML = `<h1>Reference</h1>${Object.entries(groups).map(([src, ts]) => `<h3>${esc(src)}</h3><div class="tabs">${ts.map(x => `<a ${x.i === idx ? 'class="on" aria-current="page"' : ''} href="#/ref/${x.i}">${esc(x.tab)}</a>`).join('')}</div>`).join('')}
-    ${t ? `<section class="panel" id="sheet"><h2>${esc(t.tab)}</h2>${t.url ? `<p><a href="${esc(t.url)}" target="_blank" rel="noopener">Open the original sheet</a></p>` : ''}
-      <div class="filters"><input type="search" id="q" aria-label="Filter rows" placeholder="Filter rows"></div><div class="tablewrap"><table class="sheet" id="tbl"></table></div></section>` : '<p class="muted">Pick a tab.</p>'}`;
-  if (!t) return;
+  const kept = Object.entries(REF_TOPICS).map(([topic, names]) => [topic, Object.entries(names).map(([tab, name]) => ({ name, i: tabs.findIndex(t => t.tab === tab), ext: REF_EXTERNAL.has(tab) }))
+    .filter(x => x.i >= 0 && (!x.ext || tabs[x.i].url))]);
+  const own = kept.flatMap(([, ts]) => ts).filter(x => !x.ext), t = own.some(x => x.i === idx) && tabs[idx], nameOf = i => own.find(x => x.i === i).name;
+  $app.innerHTML = `<h1>Reference</h1><p class="muted">Lookup tables from the community sheets. Loot sources, the weekly reset and set bonuses live in Weapons, Farming and Armor sets. ↗ opens the original sheet.</p>
+    <div class="filters"><input type="search" id="q" aria-label="Search every table" placeholder="Search perks, mods, abilities, bosses…"></div>
+    ${kept.map(([topic, ts]) => `<h3>${esc(topic)}</h3><div class="tabs">${ts.map(x => x.ext ? `<a href="${esc(tabs[x.i].url)}" target="_blank" rel="noopener" title="Opens the original sheet">${esc(x.name)} ↗</a>`
+      : `<a ${x.i === idx ? 'class="on" aria-current="page"' : ''} href="#/ref/${x.i}">${esc(x.name)}</a>`).join('')}</div>`).join('')}
+    <div id="refbody"></div>`;
+  const body = $app.querySelector('#refbody'), open = t ? `<section class="panel" id="sheet"><h2>${esc(nameOf(idx))}</h2>
+      <p><small class="muted">From ${esc(t.source)}${t.url ? ` · <a href="${esc(t.url)}" target="_blank" rel="noopener">open the original sheet</a>` : ''}</small></p>${sheetTable(cleanRows(t))}</section>` : '<p class="empty">Pick a table or search them all.</p>';
   const draw = () => {
-    const q = $app.querySelector('#q').value.toLowerCase();
-    $app.querySelector('#tbl').innerHTML = t.rows.filter((r, i) => i < 2 || !q || r.some(c => c.toLowerCase().includes(q)))
-      .map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('');
+    const q = $app.querySelector('#q').value.trim().toLowerCase();
+    if (!q) { body.innerHTML = open; return; }
+    const hits = own.map(x => ({ ...x, rows: cleanRows(tabs[x.i]).filter(r => r.some(c => c.toLowerCase().includes(q))) })).filter(x => x.rows.length);
+    body.innerHTML = hits.length ? hits.map(x => `<section class="panel"><h2><a href="#/ref/${x.i}">${esc(x.name)}</a> <span class="count">${x.rows.length}</span></h2>
+        ${sheetTable(x.rows.slice(0, 25))}${x.rows.length > 25 ? `<p><a href="#/ref/${x.i}">See all of ${esc(x.name)}</a></p>` : ''}</section>`).join('')
+      : `<p class="empty">Nothing in the tables matches “${esc(q)}”.</p>`;
   };
   $app.querySelector('#q').addEventListener('input', draw);
   draw();
   // on phones the tab list is long, so bring the chosen sheet into view
   const sheet = $app.querySelector('#sheet');
-  if (sheet.getBoundingClientRect().top > innerHeight * 0.6) sheet.scrollIntoView();
+  if (sheet && sheet.getBoundingClientRect().top > innerHeight * 0.6) sheet.scrollIntoView();
 }
 
 function images() {
