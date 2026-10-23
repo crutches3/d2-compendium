@@ -1,0 +1,22 @@
+name: Refresh game data
+on:
+  schedule:
+    - cron: '30 18 * * 2'  # Tuesdays after weekly reset (17:00 UTC)
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 tools/build_data.py
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git add data/weapons.json data/plugs.json data/godrolls.json
+          git diff --cached --quiet || git commit -m "Refresh Bungie manifest and Voltron god rolls"
+          git push
