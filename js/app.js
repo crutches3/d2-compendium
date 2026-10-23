@@ -144,21 +144,24 @@ async function weaponPage(hash) {
   const same = d.weapons.filter(x => x.n === w.n && x.h !== w.h);
   const er = d.rolls[w.h];
   const godNames = new Set([...Object.values(er?.p || {}).flat(), er?.o]);
+  // the masterwork socket offers every stat in the game; keep the ones this weapon has (Impact only on swords)
+  const stats = new Set(w.st.map(s => s[0])), mwName = h => d.plugs[h]?.n.match(/^Masterworked: (.+)/)?.[1];
+  const mw = { c: 'Masterwork', p: w.cols.flatMap(c => c.p).filter(h => stats.has(mwName(h)) && (mwName(h) !== 'Impact' || w.ty === 'Sword')) };
+  const mwPicks = (er?.mw || '').toLowerCase().split(' or ').filter(Boolean);  // "Handling or Reload"
+  mw.p.forEach(h => mwPicks.some(x => mwName(h).toLowerCase().startsWith(x)) && godNames.add(d.plugs[h].n));
   const perk = (h, col) => { const p = d.plugs[h];
-    return `<button type="button" class="perk${godNames.has(p.n) ? ' god' : ''}${col.cur === h ? ' cur' : ''}" data-h="${h}">${img(p.i)}<span>${esc(p.n)}${p.e ? ' <span class="enh">enhanced</span>' : ''}</span></button>`; };
+    return `<button type="button" class="perk${godNames.has(p.n) ? ' god' : ''}${col.cur === h ? ' cur' : ''}" data-h="${h}">${img(p.i)}<span>${esc(mwName(h) || p.n)}${p.e ? ' <span class="enh">enhanced</span>' : ''}</span></button>`; };
   // enhanced versions share a name with the base perk, so show one entry per name (the first, usually the base);
   // "Empty ... Socket" plugs are placeholders, not choices
   const dedupe = hs => hs.filter((h, i) => d.plugs[h] && !/^Empty .*Socket$/.test(d.plugs[h].n) && hs.findIndex(x => d.plugs[x]?.n === d.plugs[h].n) === i);
   const perkCols = cols => cols.map(c => [c, dedupe(c.p)]).filter(([, hs]) => hs.length)
     .map(([c, hs]) => `<div class="perkcol"><h3>${esc(d.plugs[c.p[0]]?.t || c.c)}</h3>${hs.map(h => perk(h, c)).join('')}</div>`).join('');
-  const mods = w.cols.filter(c => c.c === 'Weapon Mods');
   const maxStat = Math.max(100, ...w.st.filter(s => !s[2]).map(s => s[1]));
   $app.innerHTML = `
     ${hero(w, `<span class="badge">${esc(w.ti)}</span><span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span><span class="badge">${esc(w.ty)}</span><span class="badge">${esc(w.sl)} · ${esc(w.am)}</span>${tierBadge(er)}`)}
     ${same.length ? `<p class="versions">Other versions: ${same.map((x, i) => `<a href="#/weapon/${x.h}">${esc(bungieSource(x) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
     <section class="panel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll <span class="key cur"></span> Curated roll</p>
-      <div class="perkcols">${perkCols(w.cols.filter(c => c.c !== 'Weapon Mods'))}</div>
-      ${mods.length ? `<details class="more"><summary>Masterwork and mods</summary><div class="perkcols">${perkCols(mods)}</div></details>` : ''}
+      <div class="perkcols">${perkCols([...w.cols.filter(c => c.c !== 'Weapon Mods'), mw])}</div>
       <div class="perkinfo" id="perkinfo" aria-live="polite"><span class="muted">Select a perk to see what it does.</span></div></section>
     <div class="cols2"><div>
       <section class="panel"><h2>Stats</h2>${w.st.map(([n, v, num]) => `<div class="stat"><span class="muted">${esc(n)}</span>${num ? '<span></span>' : `<div class="bar"><span style="width:${Math.min(100, v / maxStat * 100)}%"></span></div>`}<b>${v}</b></div>`).join('')}</section>

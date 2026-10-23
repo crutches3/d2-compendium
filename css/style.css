@@ -95,8 +95,6 @@ section.panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .
 .perk.god { border-color: rgba(76, 209, 138, .7); }
 .perk.cur img { box-shadow: 0 0 0 2px var(--gold); }
 .perk .enh { color: var(--gold); font-size: 11px; }
-details.more { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
-details.more > summary { cursor: pointer; color: var(--muted); font-size: 13px; margin-bottom: 12px; }
 .perkinfo.on { position: sticky; bottom: 8px; box-shadow: 0 6px 18px rgba(0, 0, 0, .35); }
 .perkinfo { margin-top: 14px; background: var(--panel2); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; font-size: 13px;
   white-space: pre-wrap; max-height: 40vh; overflow-y: auto; }
