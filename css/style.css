@@ -208,7 +208,14 @@ p.err { color: #ff8a80; }
 .chip .x:hover { color: var(--text); border-color: var(--line-strong); }
 section.panel.priority { border-color: var(--accent); }
 section.panel.priority h2 { color: var(--text); }
-h2.sub { font-size: 18px; margin: 32px 0 0; }
-.farmview { margin: 20px 0 0; }
+.tabs.view { margin: 20px 0 0; }
 .farmtop { margin: 12px 0 0; }
 .farmtop b { color: var(--text); }
+.typetabs { gap: 0; margin: 16px 0 0; border-bottom: 1px solid var(--line); }
+.typetabs button { background: none; border: 0; border-bottom: 2px solid transparent; border-radius: 0; padding: 8px 12px; color: var(--muted); }
+.typetabs button:hover { color: var(--text); }
+.typetabs button.on { color: var(--text); border-bottom-color: var(--accent); }
+.tabs.act { margin: 12px 0 0; }
+.tabs.act button { font-size: 12px; padding: 3px 10px; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; }
+.linkbtn:hover { text-decoration: underline; }

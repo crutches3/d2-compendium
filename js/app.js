@@ -738,7 +738,7 @@ async function farm() {
       <div class="eg"><span class="muted">Single items</span><div class="chips" id="items"></div></div></details></section>
     <div id="plan"><p class="muted">Working out where everything drops…</p></div>`;
   const $ = sel => $app.querySelector(sel), plan = $('#plan');
-  let view = 'now';  // 'now' (this week) or 'later' (coming up)
+  let view = 'now', pick = {};  // the open tabs: 'now' (this week) or 'later' (coming up), then { type, act }
 
   const draw = async () => {
     const f = farmPrefs();
@@ -777,26 +777,37 @@ async function farm() {
       }
     }
     const score = g => g.items.reduce((s, t) => s + (t.r ? 4 - Math.min(3, TIERS.indexOf(t.r.t)) : 2) + t.reasons.length, 0);
-    const count = acts => [...acts.values()].reduce((n, g) => n + g.items.length, 0);
+    const count = acts => [...acts].reduce((n, [, g]) => n + g.items.length, 0);  // a Map or sorted [name, group] pairs
     // the priority farm is this week's best rotating raid or dungeon
     const top = ['Raids', 'Dungeons'].flatMap(k => [...(plans.now.get(k)?.values() || [])]).filter(g => !g.rank).sort((x, y) => score(y) - score(x))[0];
-    const topName = top && [...plans.now.values()].flatMap(acts => [...acts]).find(([, g]) => g === top)[0];
+    const [topType, topName] = top ? [...plans.now].flatMap(([k, acts]) => [...acts].map(([n, g]) => [k, n, g])).find(x => x[2] === top) : [];
     const cards = items => `<div class="grid">${items.sort((m, n) => tierOrder(m.r) - tierOrder(n.r)).map(t => card(t.x, `<small>${tierBadge(t.r)}${t.owned ? 'You have it, not the god roll' : 'Not owned'}</small>
       <small>${t.reasons.map(esc).join(' · ')}</small>`, t.kind)).join('')}</div>`;
     const group = ([name, g]) => `<section class="panel${g === top ? ' priority' : ''}"><h2>${g === top ? 'Priority farm: ' : ''}${esc(name)} <span class="count">${g.note}${g.master ? ' · Master available' : ''} · ${plural(g.items.length, 'item')}</span></h2>${cards(g.items)}</section>`;
     const TYPES = ['Raids', 'Dungeons', 'Pantheon', 'Grandmaster', 'PvP'], rankType = k => (TYPES.indexOf(k) + 1 || 9);
-    const show = which => [...plans[which]].sort((x, y) => rankType(x[0]) - rankType(y[0]) || (x[0] === 'Other sources') - (y[0] === 'Other sources') || count(y[1]) - count(x[1]))
-      .map(([type, acts]) => `<h2 class="sub">${esc(type)} <span class="count">${plural(count(acts), 'item')}</span></h2>${[...acts]
-        .sort((x, y) => which === 'later' ? x[1].when.localeCompare(y[1].when) || score(y[1]) - score(x[1]) : x[1].rank - y[1].rank || score(y[1]) - score(x[1])).map(group).join('')}`).join('')
-      || `<p class="empty">${which === 'later' ? 'Nothing you\'re after is waiting on a future rotation.' : 'Nothing you\'re after drops this week. Check Coming up.'}</p>`;
+    // one tab row per level: This week / Coming up, then activity type, then activity; only the open activity's items show
+    const sorted = which => [...plans[which]].sort((x, y) => rankType(x[0]) - rankType(y[0]) || (x[0] === 'Other sources') - (y[0] === 'Other sources') || count(y[1]) - count(x[1]))
+      .map(([k, acts]) => [k, [...acts].sort((x, y) => which === 'later' ? x[1].when.localeCompare(y[1].when) || score(y[1]) - score(x[1]) : x[1].rank - y[1].rank || score(y[1]) - score(x[1]))]);
+    const tabs = (level, list, on, cls = 'charpick') => `<div class="tabs ${cls} ${level}">${list.map(([k, label]) => `<button type="button" data-${level}="${esc(k)}"${k === on ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${label}</button>`).join('')}</div>`;
     const total = which => [...plans[which].values()].reduce((n, acts) => n + count(acts), 0);
-    plan.innerHTML = `<div class="tabs charpick farmview">${[['now', 'This week'], ['later', 'Coming up']].map(([k, label]) => `<button type="button" data-view="${k}"${k === view ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${label} · ${total(k)}</button>`).join('')}</div>
-      ${top ? `<p class="muted farmtop">Priority farm this week: <b>${esc(topName)}</b>, ${plural(top.items.length, 'item')} you're after${top.master ? ', Master available' : ''}.</p>` : ''}<div id="planbody">${show(view)}</div>`;
-    plan.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
-      view = b.dataset.view;
-      plan.querySelectorAll('[data-view]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', String(x === b)); });
-      $('#planbody').innerHTML = show(view);
-    }));
+    const render = () => {
+      const types = sorted(view), [k, acts] = types.find(x => x[0] === pick.type) || types[0] || [];
+      const g = acts?.find(x => x[0] === pick.act) || acts?.[0];
+      pick = { type: k, act: g?.[0] };
+      plan.innerHTML = tabs('view', [['now', 'This week'], ['later', 'Coming up']].map(([v, label]) => [v, `${label} · ${total(v)}`]), view)
+        + (top ? `<p class="muted farmtop">Priority farm this week: <button type="button" class="linkbtn" data-view="now" data-type="${esc(topType)}" data-act="${esc(topName)}">${esc(topName)}</button>, ${plural(top.items.length, 'item')} you're after${top.master ? ', Master available' : ''}.</p>` : '')
+        + (g ? tabs('type', types.map(([t, a]) => [t, `${esc(t)} <span class="count">${count(a)}</span>`]), k, 'typetabs')
+          + tabs('act', acts.map(([n, x]) => [n, `${esc(n)} · ${x.items.length}`]), g[0]) + group(g)
+          : `<p class="empty">${view === 'later' ? 'Nothing you\'re after is waiting on a future rotation.' : 'Nothing you\'re after drops this week. Check Coming up.'}</p>`);
+    };
+    plan.onclick = e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.view) { view = b.dataset.view; pick = {}; }
+      if (b.dataset.type) pick = { type: b.dataset.type };
+      if (b.dataset.act) pick.act = b.dataset.act;
+      render();
+    };
+    render();
   };
   const save = (k, v) => { Bungie.store.set('d2c_farm', { ...farmPrefs(), [k]: v }); draw(); };
   $('#tier').addEventListener('change', e => save('tier', e.target.value));

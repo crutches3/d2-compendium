@@ -26,29 +26,48 @@ const errs = []; p.on('pageerror', e => errs.push(e.message));
 // every data file is fetched with the page's ?v=, so a cached file from an older release can't pair with new code
 const unversioned = []; p.on('request', r => r.url().includes('/data/') && !/\?v=\d+$/.test(r.url()) && unversioned.push(r.url()));
 const plan = () => p.innerText('#plan');
-const section = name => p.locator('#plan section', { hasText: name }).first().innerText();
+// open an activity's tab and read its items
+const section = async (type, act) => { await p.click(`.typetabs [data-type="${type}"]`); await p.click(`.tabs.act [data-act="${act}"]`); return p.innerText('#plan section'); };
+// click through every type and activity tab in both views
+const allText = async () => {
+  let out = '';
+  for (const v of ['now', 'later']) {
+    await p.click(`[data-view="${v}"]`);
+    for (let i = 0; i < await p.locator('.typetabs button').count(); i++) {
+      await p.locator('.typetabs button').nth(i).click();
+      for (let j = 0; j < await p.locator('.tabs.act button').count(); j++) { await p.locator('.tabs.act button').nth(j).click(); out += await p.innerText('#plan section'); }
+    }
+  }
+  return out;
+};
 
 // signed out: S-tier god rolls, with this week's rotating raid or dungeon as the priority
 await p.goto('http://localhost:8765/#/farm'); await p.waitForSelector('#plan section');
 assert.ok((await p.innerText('#app')).includes('Sign in with Bungie so the plan skips what you already own.'));
 assert.match(await p.innerText('#plan section.priority h2'), /^PRIORITY FARM: (KING'S FALL|SUNDERED DOCTRINE|GRASP OF AVARICE|GARDEN OF SALVATION) /);
-assert.ok((await section("King's Fall")).includes('Doom of Chelchis'));
-assert.ok(!(await plan()).includes('Doom of Chelchis (Harrowed)'), 'Harrowed copies merge into the base weapon');
-// grouped by activity type, then activity; future rotations sit behind their own button
-const types = () => p.$$eval('#plan h2.sub', hs => hs.map(h => h.firstChild.textContent.trim()));
+// tabs: This week / Coming up, then activity type, then activity, showing one activity at a time
+const types = () => p.$$eval('.typetabs button', bs => bs.map(b => b.dataset.type));
 assert.deepEqual((await types()).slice(0, 5), ['Raids', 'Dungeons', 'Pantheon', 'Grandmaster', 'PvP']);
 assert.equal(await p.getAttribute('[data-view="now"]', 'aria-pressed'), 'true');
-assert.ok(!(await plan()).includes('Deep Stone Crypt'));
+assert.equal(await p.locator('#plan section').count(), 1);
+assert.ok((await section('Raids', "King's Fall")).includes('Doom of Chelchis'));
+assert.ok(!(await plan()).includes('Doom of Chelchis (Harrowed)'), 'Harrowed copies merge into the base weapon');
+// the priority callout jumps back to its tab
+await section('PvP', 'Iron Banner');
+await p.click('.farmtop .linkbtn');
+assert.match(await p.innerText('#plan section.priority h2'), /^PRIORITY FARM: /);
+assert.ok(!(await p.$$eval('.tabs.act button', bs => bs.map(b => b.dataset.act))).includes('Deep Stone Crypt'));
 await p.click('[data-view="later"]');
 assert.deepEqual(await types(), ['Raids', 'Dungeons']);
-assert.ok((await section('Deep Stone Crypt')).includes('Featured Oct 27'.toUpperCase()));
+assert.ok((await section('Raids', 'Deep Stone Crypt')).includes('Featured Oct 27'.toUpperCase()));
 await p.click('[data-view="now"]');
+assert.equal(await p.getAttribute('.typetabs [data-type="Raids"]', 'aria-pressed'), 'true');
 
 // signed in: a god roll you own drops off, a copy without it stays
 await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', expires_at: Date.now() + 3e6 })));
 await p.reload(); await p.waitForSelector('#plan section');
 assert.ok(!(await p.innerText('#app')).includes('Sign in with Bungie so the plan'));
-const kf = await section("King's Fall");
+const kf = await section('Raids', "King's Fall");
 assert.ok(!kf.includes('Doom of Chelchis'), 'owned god roll should be skipped');
 assert.ok(kf.includes("Zaouli's Bane") && kf.includes('You have it, not the god roll'));
 
@@ -56,7 +75,7 @@ assert.ok(kf.includes("Zaouli's Bane") && kf.includes('You have it, not the god 
 await p.click('#prefs summary');
 await p.check(`[data-set="${setHash}"]`);
 const setPieces = A.armor.filter(x => x.set === setHash && x.a3 && x.cl === 'Hunter');
-const text = await plan();
+const text = await allText();
 assert.ok(setPieces.every(x => text.includes(x.n)), 'every Hunter piece of the set');
 assert.ok(text.includes(`${set.n} set`));
 assert.ok(!A.armor.filter(x => x.set === setHash && x.a3 && x.cl === 'Titan').some(x => text.includes(x.n) && !setPieces.some(h => h.n === x.n)), 'no Titan pieces');
@@ -68,7 +87,7 @@ assert.equal(await p.textContent('[data-farm]'), 'Remove from farming plan');
 await p.goto('http://localhost:8765/#/farm'); await p.waitForSelector('#plan section');
 assert.ok((await p.textContent('#items')).includes('Fatebringer'));
 await p.click('[data-view="later"]');  // Fatebringer is a Vault of Glass drop, which isn't featured this week
-assert.ok((await section('Vault of Glass')).includes('Added by you'));
+assert.ok((await section('Raids', 'Vault of Glass')).includes('Added by you'));
 await p.click('#prefs summary'); await p.click('[data-unfarm]');
 assert.ok(!(await p.textContent('#items')).includes('Fatebringer'));
 
@@ -78,7 +97,7 @@ await p.evaluate(([z]) => { localStorage.setItem('d2c_builds', JSON.stringify([{
 await p.reload(); await p.waitForSelector('#plan');
 assert.ok((await plan()).includes('Nothing to farm'), await plan());
 await p.check('[data-build="b1"]');
-const kf2 = await section("King's Fall");
+const kf2 = await section('Raids', "King's Fall");
 assert.ok(kf2.includes("Zaouli's Bane") && kf2.includes('Build: Spite'));
 assert.ok(await p.isChecked('[data-build="b1"]'));
 
