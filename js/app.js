@@ -698,9 +698,13 @@ async function buildPage(id) {
     const have = gear.filter(it => pick(it)).length;
     const subParts = Object.entries(Object.groupBy(Object.entries(subclass?.socketOverrides || {}).sort((x, y) => x[0] - y[0]).map(([, h]) => h).filter(h => defs[h] && !/^Empty /.test(defs[h].n)),
       h => /Aspect/.test(defs[h].t) ? 'Aspects' : /Fragment/.test(defs[h].t) ? 'Fragments' : 'Abilities'));
+    // what the build's armor adds up to, using the copy of each piece that Equip would pick
+    const myArmor = gear.filter(it => a.byHash[it.hash]).map(it => pick(it, chars[0]?.id)).filter(Boolean);
+    const total = h => myArmor.reduce((n, i) => n + (i.stats[h] || 0), 0);
+    const minOf = c => c.minStat ?? (c.minTier ? c.minTier * 10 : 0);
     const stats = (P.statConstraints || []).filter(c => a.stats[c.statHash]).map(c => {
-      const min = c.minStat ?? (c.minTier ? c.minTier * 10 : 0), max = c.maxStat ?? (c.maxTier != null && c.maxTier < 10 ? c.maxTier * 10 : null);
-      return `<li><b>${esc(a.stats[c.statHash])}</b>${min ? ` ${min}+` : ''}${max != null ? ` up to ${max}` : ''}</li>`; });
+      const min = minOf(c), max = c.maxStat ?? (c.maxTier != null && c.maxTier < 10 ? c.maxTier * 10 : null);
+      return `<li><b>${esc(a.stats[c.statHash])}</b>${min ? ` ${min}+` : ''}${max != null ? ` up to ${max}` : ''}${min && myArmor.length ? ` <span class="${total(c.statHash) >= min ? 'met' : 'short'}">yours ${total(c.statHash)}</span>` : ''}</li>`; });
     const sets = Object.entries(P.setBonuses || {}).filter(([h]) => a.sets[h]).map(([h, n]) => `<span class="badge">${esc(a.sets[h].n)} · ${n} pieces</span>`);
     box.innerHTML = `<section class="panel buildhead"><h2>${esc(loadout.name || 'Untitled build')}${cls ? ` <span class="count">${cls}</span>` : ''}</h2>
         ${loadout.notes ? `<p class="lore">${esc(loadout.notes)}</p>` : ''}
@@ -712,12 +716,13 @@ async function buildPage(id) {
       ${subclass ? `<section class="panel"><h2>Subclass</h2><p>${chip(subclass.hash)}</p>${subParts.map(([k, hs]) => `<div class="eg"><span class="muted">${k}</span><div class="chips">${hs.map(h => chip(h)).join('')}</div></div>`).join('')}</section>` : ''}
       ${stats.length || custom || gear.some(it => a.byHash[it.hash]) ? `<section class="panel"><h2>Stat priorities${custom ? ' <span class="count">set by you</span>' : ''}</h2>
         ${stats.length ? `<ol class="statrank">${stats.join('')}</ol>` : editStats ? '' : '<p class="muted">This build doesn\'t rank armor stats.</p>'}
-        ${editStats ? `<p class="muted"><small>Click stats in priority order. Click a ranked stat to take it out.</small></p>
+        ${editStats ? `<p class="muted"><small>Click stats in priority order. Click a ranked stat to take it out. Give a ranked stat a minimum total to aim for across all your armor.</small></p>
           <div class="tabs charpick statpick">${Object.entries(a.stats).map(([h, n]) => { const k = P.statConstraints.findIndex(c => c.statHash == h);
             return `<button type="button" data-stat="${h}"${k >= 0 ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${k >= 0 ? `${k + 1}. ` : ''}${esc(n)}</button>`; }).join('')}</div>
+          ${P.statConstraints.length ? `<div class="statmins">${P.statConstraints.map(c => `<label>${esc(a.stats[c.statHash])} at least <input type="number" inputmode="numeric" min="0" max="200" step="5" data-min="${c.statHash}" value="${minOf(c) || ''}" placeholder="any"></label>`).join('')}</div>` : ''}
           <div class="statacts"><button type="button" class="primary" data-stats-done>Done</button><button type="button" data-stats-clear>Clear</button></div>`
           : custom || !stats.length ? `<p><button type="button" data-stats-edit>${stats.length ? 'Change stat priorities' : 'Add stat priorities'}</button></p>` : ''}
-        ${top.length ? `<p class="muted"><small>An armor piece fits when ${esc(top.join(' and '))} are among its three highest stats.</small></p>` : ''}</section>` : ''}
+        ${top.length ? `<p class="muted"><small>An armor piece fits when ${esc(top.join(' and '))} are among its three highest stats.${(P.statConstraints || []).some(minOf) && myArmor.length ? ' "Yours" adds up the armor you have for this build, before mods and fonts.' : ''}</small></p>` : ''}</section>` : ''}
       ${['weapon', 'armor'].map(k => { const list = gear.filter(it => !!d.byHash[it.hash] === (k === 'weapon'));
         return list.length ? `<section class="panel"><h2>${k === 'weapon' ? 'Weapons' : 'Armor'}</h2><div class="grid">${list.map(piece).join('')}</div></section>` : ''; }).join('')}
       ${P.exoticArmorHash && !gear.some(it => it.hash === P.exoticArmorHash) ? `<section class="panel"><h2>Exotic armor</h2><div class="chips">${chip(P.exoticArmorHash)}</div></section>` : ''}
@@ -743,6 +748,11 @@ async function buildPage(id) {
     box.querySelectorAll('[data-stat]').forEach(b => b.addEventListener('click', () => {
       const h = +b.dataset.stat, list = P.statConstraints.filter(c => c.statHash != h);
       saveStats(list.length < P.statConstraints.length ? list : [...list, { statHash: h }]);
+      draw(p, status);
+    }));
+    box.querySelectorAll('[data-min]').forEach(el => el.addEventListener('change', () => {
+      const n = Math.max(0, Math.min(200, Math.round(+el.value || 0)));
+      saveStats(P.statConstraints.map(c => c.statHash == el.dataset.min ? (n ? { statHash: c.statHash, minStat: n } : { statHash: c.statHash }) : c));
       draw(p, status);
     }));
     box.querySelector('[data-stats-done]')?.addEventListener('click', () => { editStats = false; draw(p, status); });

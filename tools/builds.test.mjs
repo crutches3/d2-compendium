@@ -55,7 +55,8 @@ const text = await p.locator('#build').innerText();
 for (const s of ['THE BUILD OF SPITE', 'Shoot the boss.', 'Prismatic Hunter', 'Golden Gun: Marksman', 'Stylish Executioner', 'Facet of Grace', 'Heavy Ammo Finder ×2', 'You have 3 of 4 pieces of gear.'])
   assert.ok(text.includes(s), 'missing: ' + s);
 // stat priorities in the build's order, and the helmet you own is checked against the top two
-assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Weapons 100+', 'Health']);
+// a DIM minimum is checked against what your armor for the build adds up to
+assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Weapons 100+ yours 30', 'Health']);
 assert.ok(text.includes('Fits') && text.includes('Weapons 30, Grenade 25, Health 20'));
 assert.ok(text.includes('Missing'), 'Threat Level should be missing');
 // only the build's class can equip it
@@ -109,13 +110,17 @@ await p.click('[data-stat="392767087"]'); await p.click('[data-stat="2996146975"
 assert.equal(new URL(p.url()).hash, '#/build/saved-y');
 assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Health', 'Weapons']);
 assert.equal(await p.textContent('[data-stat="2996146975"]'), '2. Weapons');
+// minimum totals: compared with what your armor for the build adds up to (the helmet: Weapons 30, Health 20)
+await p.fill('[data-min="2996146975"]', '100'); await p.press('[data-min="2996146975"]', 'Enter');
+await p.fill('[data-min="392767087"]', '20'); await p.press('[data-min="392767087"]', 'Enter');
+assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => [l.innerText, l.querySelector('span')?.className])), [['Health 20+ yours 20', 'met'], ['Weapons 100+ yours 30', 'short']]);
 await p.click('[data-stats-done]');
 assert.equal(await p.textContent('[data-stats-edit]'), 'Change stat priorities');
 assert.ok((await p.locator('#build').innerText()).includes('Fits'));  // the helmet rolled Weapons, Grenade, Health
 await p.reload(); await p.waitForSelector('.statrank');
-assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Health', 'Weapons']);
+assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Health 20+ yours 20', 'Weapons 100+ yours 30']);
 assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('d2c_builds')).find(b => b.key === 'saved-y').loadout.parameters.statConstraints),
-  [{ statHash: 392767087 }, { statHash: 2996146975 }]);
+  [{ statHash: 392767087, minStat: 20 }, { statHash: 2996146975, minStat: 100 }]);
 // links that carry their own priorities can't be changed here
 await p.goto('http://localhost:8765/#/build/saved-x'); await p.waitForSelector('.statrank');
 assert.equal(await p.locator('[data-stats-edit]').count(), 0);

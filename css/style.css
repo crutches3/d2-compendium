@@ -248,3 +248,7 @@ section.panel.priority h2 { color: var(--text); }
 .goalbar button[aria-pressed="true"] { border-color: var(--build); color: var(--build); }
 .statpick { margin: 8px 0 0; }
 .statacts { display: flex; gap: 6px; margin: 10px 0 0; }
+.statrank .met { color: var(--good); font-size: 13px; }
+.statrank .short { color: var(--partial); font-size: 13px; }
+.statmins { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+.statmins input { width: 72px; margin-left: 6px; padding: 4px 8px; }
