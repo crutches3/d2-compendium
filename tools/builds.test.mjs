@@ -13,6 +13,13 @@ const defs = { 4282591831: ['Prismatic Hunter', 16, 'Hunter Subclass'], 23702693
 const loadout = { id: 'x', name: 'The Build Of Spite', classType: 1, notes: 'Shoot the boss.',
   equipped: [{ hash: 4282591831, socketOverrides: { 2: 2370269390, 7: 2835214900, 9: 2626922121 } }, { hash: fate.h, id: '91' }, { hash: gjally.h, id: '92' }, { hash: helm.h, id: '93' }, { hash: threat.h, id: '94' }],
   unequipped: [], parameters: { mods: [1001, 1001], artifactUnlocks: { unlockedItemHashes: [ARTS[2].tiers[0].perks[0].h] }, statConstraints: [{ statHash: 2996146975, minStat: 100 }, { statHash: 392767087 }] } };
+// DIM can name a perk by another artifact's or season's copy of it, or keep the perks on an artifact item in the loadout
+const named = n => ARTS.flatMap(x => x.tiers.flatMap(t => t.perks)).filter(k => k.n === n).length === 1;
+const uniq = ARTS[1].tiers[1].perks.find(k => named(k.n)), inItem = ARTS[3].tiers[2].perks[0];
+Object.assign(defs, { 777001: [uniq.n, 19, 'Artifact Perk'], 777002: ['Old Season Perk', 19, 'Artifact Perk'], 777003: [ARTS[3].n, 0, 'Seasonal Artifact'], 777004: ['Empty Artifact Perk', 19, 'Artifact Perk'] });
+const shares = { igeavhy: loadout,
+  artname: { ...loadout, name: 'Renamed Perks', parameters: { artifactUnlocks: { unlockedItemHashes: [777001, 777002], seasonNumber: 27 } } },
+  artitem: { ...loadout, name: 'Artifact Item', parameters: {}, equipped: [...loadout.equipped, { hash: 777003, socketOverrides: { 0: inItem.h, 1: 777004 } }] } };
 const profile = {
   characters: { data: { H1: { classType: 1, light: 480 }, T1: { classType: 0, light: 481 } } },
   profileInventory: { data: { items: [{ itemHash: fate.h, itemInstanceId: '1', bucketHash: 138197802 }, { itemHash: helm.h, itemInstanceId: '3', bucketHash: 138197802 }] } },
@@ -28,8 +35,8 @@ let shareCalls = 0;
 await ctx.route('https://api.destinyitemmanager.com/**', route => {
   shareCalls++;
   const id = new URL(route.request().url()).searchParams.get('shareId');
-  if (id !== 'igeavhy') return route.fulfill({ status: 404, body: '' });
-  route.fulfill({ contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ loadout, shareUrl: 'https://dim.gg/igeavhy/The-Build-Of-Spite' }) });
+  if (!shares[id]) return route.fulfill({ status: 404, body: '' });
+  route.fulfill({ contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ loadout: shares[id], shareUrl: `https://dim.gg/${id}/${shares[id].name.replace(/ /g, '-')}` }) });
 });
 await ctx.route('https://www.bungie.net/Platform/**', route => {
   const r = route.request(), u = r.url();
@@ -40,6 +47,7 @@ await ctx.route('https://www.bungie.net/Platform/**', route => {
     return ok(body.itemIds ? { equipResults: body.itemIds.map(itemInstanceId => ({ itemInstanceId, equipStatus: 1 })) } : 0);
   }
   const def = u.match(/DestinyInventoryItemDefinition\/(\d+)/);
+  if (def && !defs[def[1]]) return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ErrorCode: 7, Message: 'not found' }) });
   if (def) { const [name, itemType, type] = defs[def[1]]; return ok({ displayProperties: { name, icon: '', description: name + ' does things.' }, itemType, itemTypeDisplayName: type }); }
   ok(u.includes('GetMemberships') ? { primaryMembershipId: '1', destinyMemberships: [{ membershipId: '1', membershipType: 3 }], bungieNetUser: { uniqueName: 'Randy#1234' } } : profile);
 });
@@ -62,6 +70,15 @@ assert.ok(text.includes('Fits') && text.includes('Weapons 30, Grenade 25, Health
 assert.ok(text.includes('Missing'), 'Threat Level should be missing');
 // the artifact comes from the perks the link unlocks
 assert.ok(text.includes(ARTS[2].n) && text.includes(ARTS[2].tiers[0].perks[0].n) && text.includes('Change artifact'));
+// a perk DIM names by another copy's hash matches by name, and one no artifact has is still listed
+await open('https://dim.gg/artname/Renamed-Perks');
+let artBox = await p.locator('#build section', { hasText: 'Change artifact' }).innerText();
+assert.ok(artBox.includes(ARTS[1].n) && artBox.includes(uniq.n) && artBox.includes('DIM also lists') && artBox.includes('Old Season Perk'), artBox);
+// an artifact in the loadout brings its socketed perks, without its empty sockets
+await open('https://dim.gg/artitem/Artifact-Item');
+artBox = await p.locator('#build section', { hasText: 'Change artifact' }).innerText();
+assert.ok(artBox.includes(ARTS[3].n) && artBox.includes(inItem.n) && !artBox.includes('Empty') && !artBox.includes('DIM also lists'), artBox);
+await open('https://dim.gg/igeavhy/The-Build-Of-Spite');
 // only the build's class can equip it
 assert.deepEqual(await p.$$eval('[data-equip]', bs => bs.map(x => x.textContent)), ['Equip on Hunter']);
 

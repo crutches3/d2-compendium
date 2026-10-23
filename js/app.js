@@ -706,7 +706,7 @@ async function buildPage(id) {
   const P = loadout.parameters ||= {}, items = [...loadout.equipped, ...(loadout.unequipped || [])];
   // gear comes from the site's own data; subclass pieces, mods and artifact perks from Bungie's manifest
   const defs = {};
-  const hashes = new Set([...items.flatMap(i => [i.hash, ...Object.values(i.socketOverrides || {})]), ...(P.mods || []), P.exoticArmorHash].filter(Boolean));
+  const hashes = new Set([...items.flatMap(i => [i.hash, ...Object.values(i.socketOverrides || {})]), ...(P.mods || []), ...(P.artifactUnlocks?.unlockedItemHashes || []), P.exoticArmorHash].filter(Boolean));
   await Promise.all([...hashes].map(async h => {
     defs[h] = d.byHash[h] || a.byHash[h] || d.plugs[h] ||
       await Bungie.item(h).then(x => ({ n: x.displayProperties.name, i: x.displayProperties.icon, d: x.displayProperties.description, t: x.itemTypeDisplayName, sub: x.itemType === 16 })).catch(() => null);
@@ -719,13 +719,18 @@ async function buildPage(id) {
   const cls = ['Titan', 'Hunter', 'Warlock'][loadout.classType];
   let editStats = false;  // picking stat priorities for a build whose link has none
   let editArt = false, artDraft = null;  // picking the build's artifact and its perks
-  // the build's artifact: picked here (saved with the build), else the one whose perks the DIM link unlocks
+  // DIM keeps unlocked artifact perks in the build's parameters, or as socket overrides on an artifact in the loadout.
+  // A perk can have another hash on another artifact or season, so names match too.
+  const isArt = (x, h) => x.h === h || x.n === defs[h]?.n, isPerk = (k, h) => k.h === h || k.n === defs[h]?.n;
+  const artItem = items.find(i => arts.some(x => isArt(x, i.hash)));
+  const dimPerks = [...new Set([...(P.artifactUnlocks?.unlockedItemHashes || []), ...Object.values(artItem?.socketOverrides || {})])].filter(h => !/^Empty /.test(defs[h]?.n));
+  // the build's artifact: picked here (saved with the build), else the one in the loadout or whose perks the DIM link unlocks
   const artOf = () => {
     const own = savedBuilds().find(b => b.key === key)?.artifact;
     if (own) return { ...own, custom: true };
-    const got = new Set(P.artifactUnlocks?.unlockedItemHashes || []), on = x => x.tiers.flatMap(t => t.perks).filter(k => got.has(k.h)).map(k => k.h);
-    const best = arts.map(x => ({ h: x.h, perks: on(x) })).sort((x, y) => y.perks.length - x.perks.length)[0];
-    return best?.perks.length ? best : null;
+    const best = arts.filter(x => !artItem || isArt(x, artItem.hash)).map(x => ({ h: x.h, perks: x.tiers.flatMap(t => t.perks).filter(k => dimPerks.some(h => isPerk(k, h))).map(k => k.h) }))
+      .sort((x, y) => y.perks.length - x.perks.length)[0];
+    return artItem || best?.perks.length ? best : null;
   };
 
   const draw = (p, status = '') => {
@@ -754,6 +759,7 @@ async function buildPage(id) {
       h => /Aspect/.test(defs[h].t) ? 'Aspects' : /Fragment/.test(defs[h].t) ? 'Fragments' : 'Abilities'));
     const best = p && cls ? bestArmor(a, p.items, cls, loadout) : null;
     const art = artOf(), artDef = art && arts.find(x => x.h === art.h);
+    const extra = art?.custom ? [] : dimPerks.filter(h => defs[h] && !artDef?.tiers.some(t => t.perks.some(k => isPerk(k, h))));  // DIM perks we can't place on an artifact
     // a tier's slots also take lower-tier perks, so from tier k up you can pick at most the slots of tier k and above
     const artEditor = () => { const cur = arts.find(x => x.h === artDraft.h);
       const tierOf = h => cur.tiers.findIndex(t => t.perks.some(x => x.h === h)), room = k => cur.tiers.slice(k).reduce((n, t) => n + t.slots, 0);
@@ -801,7 +807,8 @@ async function buildPage(id) {
           <div class="perks">${[...artDef.el, ...artDef.wp].map(n => `<span class="badge">${esc(n)}</span>`).join('')}</div></div></div>
         ${artDef.tiers.map((t, k) => { const on = t.perks.filter(x => art.perks.includes(x.h));
           return on.length ? `<div class="eg"><span class="muted">Tier ${k + 1}</span><div class="artperks">${on.map(x => `<div class="bonus">${img(x.i)}<div><b>${esc(x.n)}</b><br><span class="muted">${esc(x.d)}</span></div></div>`).join('')}</div></div>` : ''; }).join('')}`
-        : '<p class="muted">This build doesn\'t pick an artifact.</p>'}
+        : extra.length ? '' : '<p class="muted">This build doesn\'t pick an artifact.</p>'}
+        ${extra.length && !editArt ? `<p class="muted">${artDef ? 'DIM also lists these perks, which aren\'t on this artifact:' : 'DIM lists these artifact perks, but they aren\'t on any artifact the site knows:'}</p><div class="chips">${extra.map(h => chip(h)).join('')}</div>` : ''}
         ${editArt ? '' : `<p><button type="button" data-art-edit>${artDef ? 'Change artifact' : 'Pick an artifact'}</button></p>`}</section>`;
     const toggleSave = () => {
       const rest = savedBuilds().filter(b => b.key !== key), adding = rest.length === savedBuilds().length;
