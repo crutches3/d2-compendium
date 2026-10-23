@@ -23,6 +23,8 @@ await ctx.route('https://www.bungie.net/Platform/**', route => route.fulfill({ c
 const p = await ctx.newPage();
 await p.clock.setFixedTime(new Date('2026-10-23T12:00:00Z'));
 const errs = []; p.on('pageerror', e => errs.push(e.message));
+// every data file is fetched with the page's ?v=, so a cached file from an older release can't pair with new code
+const unversioned = []; p.on('request', r => r.url().includes('/data/') && !/\?v=\d+$/.test(r.url()) && unversioned.push(r.url()));
 const plan = () => p.innerText('#plan');
 const section = name => p.locator('#plan section', { hasText: name }).first().innerText();
 
@@ -81,5 +83,6 @@ assert.ok(kf2.includes("Zaouli's Bane") && kf2.includes('Build: Spite'));
 assert.ok(await p.isChecked('[data-build="b1"]'));
 
 assert.deepEqual(errs, []);
+assert.deepEqual(unversioned, []);
 await b.close();
 console.log('farm tests passed');

@@ -6,7 +6,9 @@ const cache = {};
 let routeSeq = 0;
 // Settles only while the page that asked is still the one showing, so a slow page you've left never draws over the next one.
 const live = async promise => { const seq = routeSeq, v = await promise; if (seq !== routeSeq) await new Promise(() => {}); return v; };
-const load = name => live(cache[name] ||= fetch(`data/${name}.json`).then(r => r.json()));
+// data files carry the page's ?v= too, so a release never pairs new code with a browser-cached old file
+const DATA_VERSION = new URL(document.currentScript.src).search;
+const load = name => live(cache[name] ||= fetch(`data/${name}.json${DATA_VERSION}`).then(r => r.json()));
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const img = (path, cls = '') => path ? `<img class="${cls}" loading="lazy" src="${BNET}${path}" alt="">` : '';
