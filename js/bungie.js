@@ -40,15 +40,30 @@ const Bungie = (() => {
     history.replaceState(null, '', location.pathname + back);
   }
 
-  async function call(path) {
+  // GET, or POST when a body is given
+  async function call(path, body) {
     const t = token();
-    const res = await fetch(API + path, { headers: { 'X-API-Key': apiKey, ...(t ? { Authorization: 'Bearer ' + t.access_token } : {}) } });
+    const res = await fetch(API + path, {
+      method: body ? 'POST' : 'GET',
+      headers: { 'X-API-Key': apiKey, ...(t ? { Authorization: 'Bearer ' + t.access_token } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
     const j = await res.json();
-    if (j.ErrorCode !== 1) throw new Error(`${j.ErrorStatus}: ${j.Message}`);
+    if (j.ErrorStatus === 'AccessNotPermittedByApplicationScope')
+      throw new Error('This site isn\'t allowed to move gear yet. Tick "Move or equip Destiny gear" in your Bungie app settings, then sign out and back in here.');
+    if (j.ErrorCode !== 1) throw new Error(j.Message || j.ErrorStatus);
     return j.Response;
   }
 
-  // Returns { name, items: [{ itemHash, instanceId, location, plugs: Set<plugHash>, power, tier, stats: {statHash: value} }] } for every instanced item.
+  const POSTMASTER = 215593132;
+  // Human-readable place, kept in step with owner/equipped as items move.
+  function locate(p, it) {
+    const cls = p.chars.find(c => c.id === it.owner)?.cls;
+    it.location = it.postmaster ? `Postmaster (${cls})` : !it.owner ? 'Vault' : it.equipped ? `${cls} (equipped)` : cls;
+  }
+
+  // Returns { name, membershipType, chars: [{ id, cls }], items: [{ itemHash, instanceId, owner (character id, null = vault), equipped,
+  // postmaster, location, plugs: Set<plugHash>, power, tier, stats: {statHash: value} }] } for every instanced item.
   async function loadProfile() {
     const m = await call('/User/GetMembershipsForCurrentUser/');
     const primary = m.primaryMembershipId;
@@ -56,11 +71,13 @@ const Bungie = (() => {
     if (!dm) throw new Error('No Destiny account found on this Bungie profile.');
     const p = await call(`/Destiny2/${dm.membershipType}/Profile/${dm.membershipId}/?components=102,200,201,205,300,304,305,310`);
     const items = [];
-    const push = (list, where) => list.forEach(i => i.itemInstanceId && items.push({ itemHash: i.itemHash, instanceId: i.itemInstanceId, location: where }));
-    push(p.profileInventory.data.items, 'Vault');
-    const charName = cid => ['Titan', 'Hunter', 'Warlock'][p.characters?.data?.[cid]?.classType] || 'Character ' + cid.slice(-4);
-    for (const [cid, inv] of Object.entries(p.characterInventories.data || {})) push(inv.items, charName(cid));
-    for (const [cid, eq] of Object.entries(p.characterEquipment.data || {})) push(eq.items, charName(cid) + ' (equipped)');
+    const push = (list, owner, equipped) => list.forEach(i => i.itemInstanceId && items.push({ itemHash: i.itemHash, instanceId: i.itemInstanceId, owner, equipped,
+      postmaster: i.bucketHash === POSTMASTER }));
+    push(p.profileInventory.data.items, null, false);
+    for (const [cid, inv] of Object.entries(p.characterInventories.data || {})) push(inv.items, cid, false);
+    for (const [cid, eq] of Object.entries(p.characterEquipment.data || {})) push(eq.items, cid, true);
+    const chars = Object.entries(p.characters?.data || {}).map(([id, c]) => ({ id, cls: ['Titan', 'Hunter', 'Warlock'][c.classType] || 'Character ' + id.slice(-4) }));
+    const profile = { name: m.bungieNetUser.uniqueName || m.bungieNetUser.displayName, membershipType: dm.membershipType, chars, items };
     const sockets = p.itemComponents.sockets.data || {}, reusable = p.itemComponents.reusablePlugs.data || {}, inst = p.itemComponents.instances.data || {};
     const stats = p.itemComponents.stats?.data || {};
     for (const it of items) {
@@ -71,9 +88,24 @@ const Bungie = (() => {
       it.power = inst[it.instanceId]?.primaryStat?.value || 0;
       it.tier = inst[it.instanceId]?.gearTier || 0;
       it.stats = Object.fromEntries(Object.entries(stats[it.instanceId]?.stats || {}).map(([h, s]) => [h, s.value]));
+      locate(profile, it);
     }
-    return { name: m.bungieNetUser.uniqueName || m.bungieNetUser.displayName, items };
+    return profile;
   }
 
-  return { token, signIn, signOut, handleRedirect, loadProfile, store };
+  // Moves an item to a character id or 'vault'. Character-to-character goes through the vault, as in game.
+  async function move(p, it, to) {
+    const transfer = (characterId, transferToVault) => call('/Destiny2/Actions/Items/TransferItem/',
+      { itemReferenceHash: it.itemHash, stackSize: 1, transferToVault, itemId: it.instanceId, characterId, membershipType: p.membershipType });
+    if (it.owner && it.owner !== to) { await transfer(it.owner, true); it.owner = null; locate(p, it); }
+    if (to !== 'vault' && it.owner !== to) { await transfer(to, false); it.owner = to; locate(p, it); }
+  }
+
+  // Equips an item that is already on a character; the caller unmarks whatever it replaced.
+  async function equip(p, it) {
+    await call('/Destiny2/Actions/Items/EquipItem/', { itemId: it.instanceId, characterId: it.owner, membershipType: p.membershipType });
+    it.equipped = true; locate(p, it);
+  }
+
+  return { token, signIn, signOut, handleRedirect, loadProfile, move, equip, locate, store };
 })();

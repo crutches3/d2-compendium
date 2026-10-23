@@ -346,10 +346,11 @@ async function needProfile() {
   return p;
 }
 
-const gearTabs = on => `<div class="tabs gear">${[['', 'Weapons'], ['/armor', 'Armor']].map(([path, label]) => `<a href="#/inventory${path}"${label === on ? ' class="on" aria-current="page"' : ''}>${label}</a>`).join('')}</div>`;
+const gearTabs = on => `<div class="tabs gear">${[['', 'Weapons'], ['/armor', 'Armor'], ['/move', 'Transfer']].map(([path, label]) => `<a href="#/inventory${path}"${label === on ? ' class="on" aria-current="page"' : ''}>${label}</a>`).join('')}</div>`;
 
 async function inventory(tab) {
   if (tab === 'armor') return armorInventory();
+  if (tab === 'move') return transferPage();
   const d = await data();
   const p = await needProfile(); if (!p) return;
   const owned = p.items.filter(i => d.byHash[i.itemHash]);
@@ -394,6 +395,65 @@ async function armorInventory() {
       || '<p class="empty">Nothing matches this filter.</p>';
   };
   $app.querySelectorAll('input,select').forEach(el => el.addEventListener('input', draw));
+  draw();
+}
+
+// DIM-style mover: every weapon and armor piece by place; pick one, then send it somewhere or equip it.
+async function transferPage() {
+  const [d, a] = await Promise.all([data(), armorData()]);
+  const p = await needProfile(); if (!p) return;
+  const def = i => d.byHash[i.itemHash] || a.byHash[i.itemHash];
+  const slotOf = i => d.byHash[i.itemHash]?.sl || a.byHash[i.itemHash]?.ty;
+  const slots = ['Kinetic', 'Energy', 'Power', 'Helmet', 'Gauntlets', 'Chest Armor', 'Leg Armor'];
+  const order = (m, n) => n.equipped - m.equipped || (slots.indexOf(slotOf(m)) + 1 || 9) - (slots.indexOf(slotOf(n)) + 1 || 9) || def(m).n.localeCompare(def(n).n);
+  let sel = null, busy = false, msg = '';
+  $app.innerHTML = `<h1>My gear</h1>${gearTabs('Transfer')}<p class="muted">Pick an item, then choose where it goes. Moves happen in the game straight away.</p>
+    <div class="filters"><input type="search" id="q" aria-label="Find an item" placeholder="Find an item">${select('kind', 'Weapons and armor', [['w', 'Weapons'], ['a', 'Armor']])}
+    <button type="button" id="reload">Reload from Bungie</button></div><div id="places"></div><div id="actions" class="actionbar" aria-live="polite" hidden></div>`;
+  const f = id => $app.querySelector('#' + id);
+  const tile = i => `<button type="button" class="tile${i.equipped ? ' equipped' : ''}${sel === i ? ' sel' : ''}" data-id="${i.instanceId}" title="${esc(def(i).n)}" aria-label="${esc(def(i).n)}${i.equipped ? ', equipped' : ''}">${icon(def(i))}</button>`;
+  const place = (title, list) => `<section class="panel place"><h2>${esc(title)} <span class="count">${list.length}</span></h2><div class="tiles">${list.sort(order).map(tile).join('') || '<span class="muted">Nothing here</span>'}</div></section>`;
+  const draw = () => {
+    const q = f('q').value.trim().toLowerCase(), kind = f('kind').value;
+    const items = p.items.filter(i => def(i) && (!kind || (kind === 'w') === !!d.byHash[i.itemHash]) && (!q || def(i).n.toLowerCase().includes(q)));
+    const postmaster = items.filter(i => i.postmaster);
+    f('places').innerHTML = `<div class="chars">${p.chars.map(c => place(c.cls, items.filter(i => i.owner === c.id && !i.postmaster))).join('')}</div>
+      ${place('Vault', items.filter(i => !i.owner))}${postmaster.length ? place('Postmaster', postmaster) : ''}`;
+    const bar = f('actions');
+    bar.hidden = !sel;
+    if (!sel) return;
+    const cls = a.byHash[sel.itemHash]?.cl;  // class armor can only go to that class
+    const targets = p.chars.filter(c => !cls || c.cls === cls);
+    const stuck = sel.equipped ? 'Equipped items can\'t be moved. Equip something else in that slot first.' : sel.postmaster ? 'Pull this from the Postmaster in game first.'
+      : !targets.length ? `Only a ${cls} can hold this, and there's no ${cls} on this account.` : '';
+    const btn = (attr, label) => `<button type="button" ${attr}${busy || stuck ? ' disabled' : ''}>${esc(label)}</button>`;
+    bar.innerHTML = `${icon(def(sel))}<div class="what"><b>${esc(def(sel).n)}</b><small>${esc(sel.location)}</small><small class="${/^(Done|Moving|Equipping)/.test(msg) ? '' : 'err'}">${esc(stuck || msg)}</small></div>
+      <div class="acts">${sel.owner ? btn('data-move="vault"', 'To Vault') : ''}${targets.filter(c => c.id !== sel.owner).map(c => btn(`data-move="${c.id}"`, `To ${c.cls}`)).join('')}
+      ${targets.map(c => btn(`data-equip="${c.id}" class="primary"`, `Equip on ${c.cls}`)).join('')}<button type="button" data-close>Close</button></div>`;
+  };
+  const run = async (label, fn) => {
+    busy = true; msg = label; draw();
+    try { await fn(); msg = 'Done.'; } catch (e) { msg = e.message; }
+    busy = false; draw();
+  };
+  f('places').addEventListener('click', e => {
+    const t = e.target.closest('.tile'); if (!t) return;
+    sel = p.items.find(i => i.instanceId === t.dataset.id); msg = ''; draw();
+  });
+  f('actions').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || b.disabled) return;
+    if (b.hasAttribute('data-close')) { sel = null; draw(); return; }
+    const it = sel, to = b.dataset.move || b.dataset.equip, cls = p.chars.find(c => c.id === to)?.cls || 'Vault';
+    if (b.dataset.move) run(`Moving to ${cls}…`, () => Bungie.move(p, it, to));
+    else run(`Equipping on ${cls}…`, async () => {
+      await Bungie.move(p, it, to);
+      const old = p.items.filter(i => i !== it && i.owner === to && i.equipped && slotOf(i) === slotOf(it));
+      await Bungie.equip(p, it);
+      old.forEach(i => { i.equipped = false; Bungie.locate(p, i); });
+    });
+  });
+  $app.querySelectorAll('.filters input,.filters select').forEach(el => el.addEventListener('input', draw));
+  f('reload').addEventListener('click', () => { S.profile = null; transferPage(); });
   draw();
 }
 
