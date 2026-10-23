@@ -67,13 +67,21 @@ assert.ok((await section('Raids', 'Deep Stone Crypt')).includes('Featured Oct 27
 await p.click('[data-view="now"]');
 assert.equal(await p.getAttribute('.typetabs [data-type="Raids"]', 'aria-pressed'), 'true');
 
+// roll grades: every column is a perfect roll, both main perks a god roll, one main perk partial; a build's own perks grade the same way
+const grades = await p.evaluate(() => {
+  const d = { plugs: { 1: { n: 'Barrel' }, 2: { n: 'Mag' }, 3: { n: 'P1' }, 4: { n: 'P2' } } };
+  const roll = { p: { Barrel: ['Barrel'], Magazine: ['Mag'], 'Perk 1': ['P1', 'other'], 'Perk 2': ['P2'] } }, build = { p: { P1: ['P1'], P2: ['P2'] } };
+  return [[1, 2, 3, 4], [3, 4], [1, 2, 3], [1, 2], []].map(hs => rollFit(d, roll, new Set(hs)).grade).concat([[3], [3, 4]].map(hs => rollFit(d, build, new Set(hs)).grade));
+});
+assert.deepEqual(grades, ['perfect', 'god', 'half', 'none', 'none', 'half', 'perfect']);
+
 // signed in: a god roll you own drops off, a copy without it stays
 await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', expires_at: Date.now() + 3e6 })));
 await p.reload(); await p.waitForSelector('#plan section');
 assert.ok(!(await p.innerText('#app')).includes('Sign in with Bungie so the plan'));
 const kf = await section('Raids', "King's Fall");
 assert.ok(!kf.includes('Doom of Chelchis'), 'owned god roll should be skipped');
-assert.ok(kf.includes("Zaouli's Bane") && kf.includes('You have it, not the god roll'));
+assert.ok(kf.includes("Zaouli's Bane") && kf.includes('Your best:') && kf.includes('No match'));
 
 // an armor set: only pieces for your classes (this account is Hunter only)
 await p.click('#prefs summary');

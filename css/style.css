@@ -223,3 +223,15 @@ section.panel.priority h2 { color: var(--text); }
 .statrank li { color: var(--muted); }
 .statrank li::marker { color: var(--accent); font-weight: 600; }
 .statrank b { color: var(--text); font-weight: 600; }
+:root { --partial: #f08a4b; }
+.pips { display: inline-flex; align-items: center; gap: 2px; vertical-align: middle; margin-right: 6px; }
+.pips i { font-style: normal; font-size: 10px; font-weight: 700; line-height: 14px; min-width: 16px; padding: 0 2px; text-align: center; border-radius: 3px; border: 1px solid var(--line-strong); color: var(--muted); }
+.pips b { font-size: 11px; font-weight: 600; margin-left: 4px; color: var(--muted); }
+.pips.g-perfect i.on { background: var(--gold); border-color: var(--gold); color: var(--bg); }
+.pips.g-god i.on { background: var(--good); border-color: var(--good); color: var(--bg); }
+.pips.g-half i.on { background: var(--partial); border-color: var(--partial); color: var(--bg); }
+.pips.g-perfect b { color: var(--gold); }
+.pips.g-god b { color: var(--good); }
+.pips.g-half b { color: var(--partial); }
+.pipkey .pips { margin: 0; }
+.pipkey .pips b { margin: 0; }

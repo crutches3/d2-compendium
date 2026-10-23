@@ -27,9 +27,28 @@ async function data() {
   return { weapons: w.weapons, byHash: w.byHash, version: w.version, plugs, rolls: gr.rolls, source: gr.source };
 }
 
-// d.rolls[hash] is Aegis's Endgame Analysis rating. A copy is a god roll when it has one of the Perk 1 picks and one of the
-// Perk 2 picks; exotics are rated but have no roll to match.
-const rollMatches = (roll, plugs) => !!roll?.c?.length && roll.c.every(col => col.some(p => plugs.has(p)));
+// d.rolls[hash] is Aegis's Endgame Analysis rating; exotics are rated but have no roll to match.
+// How a copy lines up with a recommended roll, column by column: the Endgame Analysis Barrel, Magazine, Perk 1 and Perk 2, or a build's
+// own perks. grade: 'perfect' (every column), 'god' (Perk 1 and Perk 2), 'half' (one of them, or some of a build's perks), 'none'.
+function rollFit(d, roll, plugs) {
+  const names = new Set([...plugs].map(h => d.plugs[h]?.n));
+  const cols = Object.entries(roll?.p || {}).filter(([, v]) => v.length).map(([c, v]) => ({ c, ok: v.some(n => names.has(n)) }));
+  if (!cols.length) return null;
+  const main = cols.filter(x => /^Perk \d$/.test(x.c));
+  const grade = cols.every(x => x.ok) ? 'perfect' : main.length && main.every(x => x.ok) ? 'god' : (main.length ? main : cols).some(x => x.ok) ? 'half' : 'none';
+  return { cols, grade };
+}
+const GRADES = { perfect: 'Perfect roll', god: 'God roll', half: 'Partial', none: 'No match' };
+const isGod = f => f?.grade === 'perfect' || f?.grade === 'god';
+const gradeRank = f => f ? Object.keys(GRADES).indexOf(f.grade) * 10 - f.cols.filter(x => x.ok).length : 99;  // lower is better
+const bestFit = fits => fits.filter(Boolean).sort((x, y) => gradeRank(x) - gradeRank(y))[0];
+// one lettered pip per column (B, M, 1, 2 for the tier list; a perk's first letter for a build's own picks), lit in the grade's color
+const rollPips = f => { if (!f) return '';
+  const label = `${GRADES[f.grade]}: ${f.cols.filter(x => x.ok).length} of ${f.cols.length} match (${f.cols.map(x => `${x.c} ${x.ok ? 'yes' : 'no'}`).join(', ')})`;
+  return `<span class="pips g-${f.grade}" role="img" aria-label="${esc(label)}" title="${esc(label)}">${f.cols.map(x => `<i${x.ok ? ' class="on"' : ''}>${esc(/^Perk \d$/.test(x.c) ? x.c.slice(-1) : x.c[0])}</i>`).join('')}<b>${GRADES[f.grade]}</b></span>`; };
+const rollLegend = '<small class="muted pipkey">B, M, 1, 2: the tier list\'s Barrel, Magazine, Perk 1 and Perk 2. <span class="pips g-perfect"><b>Gold</b></span> all four, <span class="pips g-god"><b>green</b></span> both main perks (god roll), <span class="pips g-half"><b>orange</b></span> one main perk.</small>';
+// a build's own perks for a weapon (DIM socketOverrides) as a roll to match; null when the build didn't pick any
+const buildRoll = (d, it) => { const ns = Object.values(it.socketOverrides || {}).map(h => d.plugs[h]?.n).filter(Boolean); return ns.length ? { p: Object.fromEntries(ns.map(n => [n, [n]])) } : null; };
 const TIERS = ['S', 'A', 'B', 'C', 'D', 'E', 'F'];
 const tierOrder = r => r ? (TIERS.indexOf(r.t) + 1 || 9) * 1000 + r.r : 1e5;
 const tierBadge = r => r ? `<span class="badge tier tier-${esc(r.t)}">Tier ${esc(r.t)}</span>` : '';
@@ -219,17 +238,16 @@ async function showCopies(d, w, er, mwPicks) {
     const mine = prof.items.filter(i => d.byHash[i.itemHash]?.n === w.n).map(i => {
       const n = names(i);
       const missing = er?.p ? recommended.filter(([, v]) => v.length && !v.some(x => n.has(x))).map(([k]) => k) : [];
-      const god = !!er?.c?.length && er.c.every(col => col.some(h => n.has(d.plugs[h]?.n)));
       // the perk showing in each column, as icons
       const shown = traitCols.map(ns => [...i.socketed].map(h => d.plugs[h]).find(p => p && ns.has(p.n))).filter(Boolean);
-      return { i, n, missing, god, shown };
-    }).sort((a, b) => b.god - a.god || a.missing.length - b.missing.length);
+      return { i, n, missing, fit: rollFit(d, er, i.plugs), shown };
+    }).sort((a, b) => gradeRank(a.fit) - gradeRank(b.fit) || a.missing.length - b.missing.length);
     if (!mine.length) { box.innerHTML = '<h3>Your copies</h3><p class="muted">You don\'t own this weapon.</p>'; return; }
     box.innerHTML = `<h3>Your copies <span class="count">${mine.length}</span></h3>${mine.map((c, k) => `<button type="button" class="copy" data-k="${k}" aria-pressed="false">
-      <span class="where">${c.god ? '<span class="badge good">God roll</span>' : ''}${esc(c.i.location)}${c.i.power ? ` · ${c.i.power}` : ''}${c.i.itemHash !== w.h ? ' · other version' : ''}</span>
+      <span class="where">${rollPips(c.fit)}${esc(c.i.location)}${c.i.power ? ` · ${c.i.power}` : ''}${c.i.itemHash !== w.h ? ' · other version' : ''}</span>
       <span class="minis">${c.shown.map(p => `<img src="${BNET}${p.i}" alt="${esc(p.n)}" title="${esc(p.n)}">`).join('')}</span>
       ${er?.p ? `<small class="${c.missing.length ? 'miss' : 'full'}">${c.missing.length ? 'Missing: ' + esc(c.missing.join(', ')) : 'Has every recommended pick'}</small>` : ''}</button>`).join('')}
-      <p class="muted hint">Hover or tap a copy to see its perks in the grid. A dashed outline is a recommended perk it doesn't have.</p>`;
+      <p class="muted hint">Hover or tap a copy to see its perks in the grid. A dashed outline is a recommended perk it doesn't have.</p>${er?.p ? `<p class="hint">${rollLegend}</p>` : ''}`;
     let pinned = null;
     const show = k => {
       const n = k == null ? null : mine[k].n;
@@ -400,17 +418,18 @@ async function inventory(tab) {
   const byWeapon = Object.groupBy(owned, i => i.itemHash);
   const rows = Object.entries(byWeapon).map(([h, list]) => {
     const w = d.byHash[h], r = d.rolls[h];
-    return { w, r, list, god: list.filter(i => rollMatches(r, i.plugs)).length, hasRolls: !!r?.c?.length };
-  }).sort((a, b) => b.god - a.god || tierOrder(a.r) - tierOrder(b.r) || a.w.n.localeCompare(b.w.n));
+    const fits = list.map(i => rollFit(d, r, i.plugs));
+    return { w, r, list, best: bestFit(fits), god: fits.filter(isGod).length, hasRolls: !!r?.c?.length };
+  }).sort((a, b) => gradeRank(a.best) - gradeRank(b.best) || tierOrder(a.r) - tierOrder(b.r) || a.w.n.localeCompare(b.w.n));
   $app.innerHTML = `<h1>My gear</h1>${gearTabs('Weapons')}<p class="muted">${plural(owned.length, 'weapon')}, ${plural(rows.reduce((s, r) => s + r.god, 0), 'god roll')}, ${plural(rows.filter(r => r.list.length > 1).length, 'weapon')} with duplicates.</p>
     <div class="filters"><input type="search" id="q" aria-label="Filter your weapons" placeholder="Filter by name"><select id="show" aria-label="Show"><option value="">Everything</option><option value="god">God rolls</option><option value="nogod">Has a god roll I don't own yet</option><option value="dupe">Duplicates</option></select></div>
-    <div class="grid" id="list"></div>`;
+    <p>${rollLegend}</p><div class="grid" id="list"></div>`;
   const draw = () => {
     const q = $app.querySelector('#q').value.toLowerCase(), show = $app.querySelector('#show').value;
     $app.querySelector('#list').innerHTML = rows.filter(r => r.w.n.toLowerCase().includes(q) &&
         (!show || show === 'god' && r.god || show === 'nogod' && r.hasRolls && !r.god || show === 'dupe' && r.list.length > 1))
       .map(r => card(r.w, `<small>${tierBadge(r.r)}${esc(r.w.ty)} · owned ×${r.list.length}</small>
-        <small>${r.god ? `<span class="badge good">${plural(r.god, 'god roll')}</span>` : r.hasRolls ? '<span class="badge">No god roll yet</span>' : ''}</small>`)).join('')
+        <small>${rollPips(r.best)}${r.god > 1 ? ` · ${r.god} god rolls` : ''}</small>`)).join('')
       || '<p class="empty">Nothing matches this filter.</p>';
   };
   $app.querySelectorAll('input,select').forEach(el => el.addEventListener('input', draw));
@@ -604,13 +623,14 @@ async function buildPage(id) {
     // best copy for a character: this exact version, a god roll, already there, in the vault; never the postmaster
     const fit = i => !!a.byHash[i.itemHash] && top.length > 0 && fitsBuild(a, i, top);
     const pick = (it, cid) => (p?.items || []).filter(i => !i.postmaster && nameOf(i.itemHash) === nameOf(it.hash))
-      .sort((x, y) => (y.itemHash === it.hash) - (x.itemHash === it.hash) || rollMatches(d.rolls[y.itemHash], y.plugs) - rollMatches(d.rolls[x.itemHash], x.plugs) || fit(y) - fit(x) || y.tier - x.tier
+      .sort((x, y) => (y.itemHash === it.hash) - (x.itemHash === it.hash) || gradeRank(rollFit(d, buildRoll(d, it) || d.rolls[x.itemHash], x.plugs)) - gradeRank(rollFit(d, buildRoll(d, it) || d.rolls[y.itemHash], y.plugs)) || fit(y) - fit(x) || y.tier - x.tier
         || (y.owner === cid) - (x.owner === cid) || !y.owner - !x.owner)[0];
     const owned = it => { const c = pick(it, chars[0]?.id);
       if (!p) return '';
       if (!c) return '<span class="badge">Missing</span>';
       const where = `${esc(c.location)}${c.itemHash !== it.hash ? ' · other version' : ''}`;
-      if (!a.byHash[it.hash] || !top.length) return `<span class="badge good">You have it</span>${where}`;
+      if (d.byHash[it.hash]) { const f = rollFit(d, buildRoll(d, it) || d.rolls[c.itemHash], c.plugs); return f ? `${rollPips(f)}</small><small>${where}` : `<span class="badge good">You have it</span>${where}`; }
+      if (!top.length) return `<span class="badge good">You have it</span>${where}`;
       const best = topStats(a, c).map(st => `${st} ${c.stats[Object.keys(a.stats).find(h => a.stats[h] === st)] || 0}`).join(', ');
       return fit(c) ? `<span class="badge good">Fits</span>${esc(best)}</small><small>${where}` : `<span class="badge">Wrong stats</span>Best copy: ${esc(best)}</small><small>${where}`; };
     const piece = it => { const w = d.byHash[it.hash], x = w || a.byHash[it.hash], perks = Object.values(it.socketOverrides || {}).map(h => defs[h]?.n).filter(Boolean);
@@ -693,7 +713,7 @@ const baseName = n => n.replace(/\s*\((Adept|Timelost|Harrowed)\)$/, '');
 function farmTargets(d, a, p, f) {
   const nameOf = h => d.byHash[h] ? baseName(d.byHash[h].n) : a.byHash[h] && a.byHash[h].n + a.byHash[h].cl;
   const owned = new Set((p?.items || []).map(i => nameOf(i.itemHash)).filter(Boolean));
-  const haveGod = new Set((p?.items || []).filter(i => rollMatches(d.rolls[i.itemHash], i.plugs)).map(i => nameOf(i.itemHash)));
+  const haveGod = new Set((p?.items || []).filter(i => isGod(rollFit(d, d.rolls[i.itemHash], i.plugs))).map(i => nameOf(i.itemHash)));
   const classes = p ? new Set(p.chars.map(c => c.cls)) : null;
   const targets = new Map();
   const add = (x, kind, reason, top = []) => {
@@ -703,7 +723,8 @@ function farmTargets(d, a, p, f) {
     const want = kind === 'armor' && top.length && !(p?.items || []).some(i => nameOf(i.itemHash) === n && fitsBuild(a, i, top)) ? top.join(' + ') : '';
     const need = r?.c?.length && !haveGod.has(n) ? 'god roll' : want ? 'stats' : owned.has(n) ? '' : 'item';
     if (!need) return;
-    const t = targets.get(n) || targets.set(n, { x, kind, r, need, want, owned: owned.has(n), reasons: [] }).get(n);
+    const best = kind === 'weapon' && r && bestFit((p?.items || []).filter(i => nameOf(i.itemHash) === n).map(i => rollFit(d, d.rolls[i.itemHash] || r, i.plugs)));
+    const t = targets.get(n) || targets.set(n, { x, kind, r, need, want, best, owned: owned.has(n), reasons: [] }).get(n);
     t.want ||= want;
     if (!t.reasons.includes(reason)) t.reasons.push(reason);
   };
@@ -797,7 +818,7 @@ async function farm() {
     // the priority farm is this week's best rotating raid or dungeon
     const top = ['Raids', 'Dungeons'].flatMap(k => [...(plans.now.get(k)?.values() || [])]).filter(g => !g.rank).sort((x, y) => score(y) - score(x))[0];
     const [topType, topName] = top ? [...plans.now].flatMap(([k, acts]) => [...acts].map(([n, g]) => [k, n, g])).find(x => x[2] === top) : [];
-    const cards = items => `<div class="grid">${items.sort((m, n) => tierOrder(m.r) - tierOrder(n.r)).map(t => card(t.x, `<small>${tierBadge(t.r)}${t.want ? `${t.owned ? 'You have it, but not with' : 'Not owned · want'} ${esc(t.want)}` : t.owned ? 'You have it, not the god roll' : 'Not owned'}</small>
+    const cards = items => `<div class="grid">${items.sort((m, n) => tierOrder(m.r) - tierOrder(n.r)).map(t => card(t.x, `<small>${tierBadge(t.r)}${t.want ? `${t.owned ? 'You have it, but not with' : 'Not owned · want'} ${esc(t.want)}` : t.owned && t.best ? `Your best: ${rollPips(t.best)}` : t.owned ? 'You have it, not the god roll' : 'Not owned'}</small>
       <small>${t.reasons.map(esc).join(' · ')}</small>`, t.kind)).join('')}</div>`;
     const group = ([name, g]) => `<section class="panel${g === top ? ' priority' : ''}"><h2>${g === top ? 'Priority farm: ' : ''}${esc(name)} <span class="count">${g.note}${g.master ? ' · Master available' : ''} · ${plural(g.items.length, 'item')}</span></h2>${cards(g.items)}</section>`;
     const TYPES = ['Raids', 'Dungeons', 'Pantheon', 'Grandmaster', 'PvP'], rankType = k => (TYPES.indexOf(k) + 1 || 9);
