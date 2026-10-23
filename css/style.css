@@ -253,3 +253,9 @@ section.panel.priority h2 { color: var(--text); }
 .statmins { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 10px 0 0; font-size: 13px; color: var(--muted); }
 .statmins input { width: 72px; margin-left: 6px; padding: 4px 8px; }
 h3.bestarmor { font-size: 13px; color: var(--muted); font-weight: 600; margin: 16px 0 8px; }
+.arthead { display: flex; gap: 12px; align-items: center; margin: 0 0 8px; }
+.arthead img { width: 48px; height: 48px; border-radius: 6px; flex: none; }
+.artperks { display: grid; gap: 8px; }
+.artpick button { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; }
+.artpick img { width: 22px; height: 22px; border-radius: 4px; }
+.artpick button:disabled { opacity: .4; cursor: not-allowed; }

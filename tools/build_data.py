@@ -1,4 +1,4 @@
-"""Builds data/weapons.json, data/plugs.json, data/armor.json and data/godrolls.json from the Bungie manifest and
+"""Builds data/weapons.json, data/plugs.json, data/armor.json, data/artifacts.json and data/godrolls.json from the Bungie manifest and
 Aegis's Destiny 2: Endgame Analysis sheet (tiers and recommended rolls).
 
 Usage: python3 tools/build_data.py [manifest_cache_dir]
@@ -135,6 +135,30 @@ def build_armor(d):
     return {'armor': armor, 'sets': sets, 'archetypes': archetypes, 'stats': stats}
 
 
+def build_artifacts(d):
+    """The seasonal artifacts you can equip: each tier's slots and the perks it unlocks. A tier's sockets also take the perks of the
+    tiers below it, so each tier lists only its new perks."""
+    I, PS, PERK = d['DestinyInventoryItemDefinition'], d['DestinyPlugSetDefinition'], d['DestinySandboxPerkDefinition']
+    out = []
+    for h, x in I.items():
+        if x.get('itemTypeDisplayName') != 'Artifact' or not x.get('sockets'): continue
+        tiers = {}
+        for e in x['sockets']['socketEntries']:
+            perks = [I[str(p)] | {'h': p} for p in plug_list(e, PS) if I.get(str(p), {}).get('itemTypeDisplayName') == 'Artifact Perk']
+            if perks: tiers.setdefault(e.get('reusablePlugSetHash') or e.get('randomizedPlugSetHash'), [0, perks])[0] += 1
+        # "[Arc]" and the like are inline icons in Bungie's text
+        desc = lambda p: ' '.join(re.sub(r'\[[^\]]*\]', '', p['displayProperties']['description'] or ' '.join(
+            PERK[str(k['perkHash'])]['displayProperties']['description'] for k in p.get('perks', []) if str(k['perkHash']) in PERK)).split())
+        seen = set()
+        out.append({'h': int(h), 'n': x['displayProperties']['name'], 'i': x['displayProperties']['icon'],
+                    # "Works best with: Elements: [Kill] [Void] ... Weapons: [Sword] ..."; [Kill] is the Kinetic glyph
+                    **dict(zip(['el', 'wp'], [re.findall(r'\[([^\]]+)\]', part.replace('[Kill]', '[Kinetic]')) for part in x['displayProperties']['description'].partition('Weapons:')[::2]])),
+                    'tiers': [{'slots': n, 'perks': [{'h': p['h'], 'n': p['displayProperties']['name'], 'i': p['displayProperties']['icon'], 'd': desc(p)}
+                                                     for p in perks if p['h'] not in seen and not seen.add(p['h'])]}
+                              for n, perks in sorted(tiers.values(), key=lambda t: len(t[1]))]})
+    return sorted(out, key=lambda a: a['n'])
+
+
 def endgame_tabs():
     """(name, rows) for each weapon tab of the Endgame Analysis sheet, found from its tab list so new tabs are picked up."""
     page = get(f'https://docs.google.com/spreadsheets/d/{ENDGAME}/htmlview').decode('utf-8')
@@ -188,6 +212,7 @@ def main():
     version, d = load_manifest(cache)
     weapons, plugs = build(d)
     armor = build_armor(d)
+    artifacts = build_artifacts(d)
     rolls, missing = parse_endgame(list(endgame_tabs()), weapons, plugs)
     if missing: print('Endgame Analysis names not in the manifest:', missing)
     os.makedirs(os.path.join(ROOT, 'data'), exist_ok=True)
@@ -196,10 +221,12 @@ def main():
     dump('plugs.json', plugs)
     dump('godrolls.json', {'source': f'https://docs.google.com/spreadsheets/d/{ENDGAME}', 'rolls': rolls})
     dump('armor.json', armor)
+    dump('artifacts.json', artifacts)
     print(version, len(weapons), 'weapons', len(plugs), 'plugs', len(rolls), 'weapons with an Endgame Analysis tier',
           len(armor['armor']), 'armor', len(armor['sets']), 'sets', len(armor['archetypes']), 'archetypes')
     assert len(weapons) > 1000 and len(rolls) > 500 and sum(bool(r.get('c')) for r in rolls.values()) > 300, 'manifest or Endgame Analysis parse looks broken'
     assert len(armor['armor']) > 1000 and len(armor['sets']) > 20 and len(armor['archetypes']) >= 6, 'armor parse looks broken'
+    assert artifacts and all(len(a['tiers']) == 3 and all(t['perks'] for t in a['tiers']) for a in artifacts), 'artifact parse looks broken'
 
 
 if __name__ == '__main__':

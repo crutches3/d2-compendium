@@ -702,11 +702,11 @@ async function buildPage(id) {
   const key = isShare ? id : saved?.key || 'saved-' + String(loadout.id || Date.now().toString(36)).replace(/[^a-z0-9]/gi, '').slice(0, 16).toLowerCase();
   box.innerHTML = '<p class="muted">Looking up the build\'s items…</p>';
 
-  const [d, a] = await Promise.all([data(), armorData()]);
+  const [d, a, arts] = await Promise.all([data(), armorData(), load('artifacts')]);
   const P = loadout.parameters ||= {}, items = [...loadout.equipped, ...(loadout.unequipped || [])];
   // gear comes from the site's own data; subclass pieces, mods and artifact perks from Bungie's manifest
   const defs = {};
-  const hashes = new Set([...items.flatMap(i => [i.hash, ...Object.values(i.socketOverrides || {})]), ...(P.mods || []), ...(P.artifactUnlocks?.unlockedItemHashes || []), P.exoticArmorHash].filter(Boolean));
+  const hashes = new Set([...items.flatMap(i => [i.hash, ...Object.values(i.socketOverrides || {})]), ...(P.mods || []), P.exoticArmorHash].filter(Boolean));
   await Promise.all([...hashes].map(async h => {
     defs[h] = d.byHash[h] || a.byHash[h] || d.plugs[h] ||
       await Bungie.item(h).then(x => ({ n: x.displayProperties.name, i: x.displayProperties.icon, d: x.displayProperties.description, t: x.itemTypeDisplayName, sub: x.itemType === 16 })).catch(() => null);
@@ -718,6 +718,15 @@ async function buildPage(id) {
   const subclass = loadout.equipped.find(i => defs[i.hash]?.sub);
   const cls = ['Titan', 'Hunter', 'Warlock'][loadout.classType];
   let editStats = false;  // picking stat priorities for a build whose link has none
+  let editArt = false, artDraft = null;  // picking the build's artifact and its perks
+  // the build's artifact: picked here (saved with the build), else the one whose perks the DIM link unlocks
+  const artOf = () => {
+    const own = savedBuilds().find(b => b.key === key)?.artifact;
+    if (own) return { ...own, custom: true };
+    const got = new Set(P.artifactUnlocks?.unlockedItemHashes || []), on = x => x.tiers.flatMap(t => t.perks).filter(k => got.has(k.h)).map(k => k.h);
+    const best = arts.map(x => ({ h: x.h, perks: on(x) })).sort((x, y) => y.perks.length - x.perks.length)[0];
+    return best?.perks.length ? best : null;
+  };
 
   const draw = (p, status = '') => {
     const top = buildTop(a, loadout), custom = !!savedBuilds().find(b => b.key === key)?.customStats;
@@ -744,6 +753,17 @@ async function buildPage(id) {
     const subParts = Object.entries(Object.groupBy(Object.entries(subclass?.socketOverrides || {}).sort((x, y) => x[0] - y[0]).map(([, h]) => h).filter(h => defs[h] && !/^Empty /.test(defs[h].n)),
       h => /Aspect/.test(defs[h].t) ? 'Aspects' : /Fragment/.test(defs[h].t) ? 'Fragments' : 'Abilities'));
     const best = p && cls ? bestArmor(a, p.items, cls, loadout) : null;
+    const art = artOf(), artDef = art && arts.find(x => x.h === art.h);
+    // a tier's slots also take lower-tier perks, so from tier k up you can pick at most the slots of tier k and above
+    const artEditor = () => { const cur = arts.find(x => x.h === artDraft.h);
+      const tierOf = h => cur.tiers.findIndex(t => t.perks.some(x => x.h === h)), room = k => cur.tiers.slice(k).reduce((n, t) => n + t.slots, 0);
+      const fits = sel => cur.tiers.every((_, k) => sel.filter(h => tierOf(h) >= k).length <= room(k));
+      return `<div class="goalbar"><label for="artpick">Artifact</label><select id="artpick">${arts.map(x => `<option value="${x.h}"${x.h === cur.h ? ' selected' : ''}>${esc(x.n)}</option>`).join('')}</select></div>
+        <p class="muted"><small>Works best with ${esc([...cur.el, ...cur.wp].join(', '))}. ${artDraft.perks.filter(h => tierOf(h) >= 0).length} of ${room(0)} picked:
+          at most ${cur.tiers.slice(1).map((t, k) => `${room(k + 1)} from Tier ${k + 2}${k + 2 < cur.tiers.length ? ' and up' : ''}`).reverse().join(', ')}. Hover a perk to read what it does.</small></p>
+        ${cur.tiers.map((t, k) => `<div class="eg"><span class="muted">Tier ${k + 1}</span><div class="tabs charpick artpick">${t.perks.map(x => { const on = artDraft.perks.includes(x.h);
+            return `<button type="button" data-perk="${x.h}" title="${esc(x.d)}" aria-pressed="${on}"${on ? ' class="on"' : fits([...artDraft.perks, x.h]) ? '' : ' disabled'}>${img(x.i)}${esc(x.n)}</button>`; }).join('')}</div></div>`).join('')}
+        <div class="statacts"><button type="button" class="primary" data-art-done>Done</button><button type="button" data-art-clear>Clear</button></div>`; };
     const stats = (P.statConstraints || []).filter(c => a.stats[c.statHash]).map(c => {
       const min = minOf(c), max = c.maxStat ?? (c.maxTier != null && c.maxTier < 10 ? c.maxTier * 10 : null);
       return `<li><b>${esc(a.stats[c.statHash])}</b>${min ? ` ${min}+` : ''}${max != null ? ` up to ${max}` : ''}${best ? ` <span class="${!min || best.totals[c.statHash] >= min ? 'met' : 'short'}">best you own ${best.totals[c.statHash]}</span>` : ''}</li>`; });
@@ -777,7 +797,12 @@ async function buildPage(id) {
       ${P.exoticArmorHash && !gear.some(it => it.hash === P.exoticArmorHash) ? `<section class="panel"><h2>Exotic armor</h2><div class="chips">${chip(P.exoticArmorHash)}</div></section>` : ''}
       ${P.mods?.length ? `<section class="panel"><h2>Armor mods</h2><div class="chips">${counted(P.mods)}</div></section>` : ''}
       ${sets.length ? `<section class="panel"><h2>Set bonuses</h2><div class="perks">${sets.join('')}</div></section>` : ''}
-      ${P.artifactUnlocks?.unlockedItemHashes?.length ? `<section class="panel"><h2>Artifact perks</h2><div class="chips">${P.artifactUnlocks.unlockedItemHashes.map(h => chip(h)).join('')}</div></section>` : ''}`;
+      <section class="panel"><h2>Artifact${art?.custom ? ' <span class="count">set by you</span>' : ''}</h2>${editArt ? artEditor() : artDef ? `<div class="arthead">${img(artDef.i)}<div><b>${esc(artDef.n)}</b>
+          <div class="perks">${[...artDef.el, ...artDef.wp].map(n => `<span class="badge">${esc(n)}</span>`).join('')}</div></div></div>
+        ${artDef.tiers.map((t, k) => { const on = t.perks.filter(x => art.perks.includes(x.h));
+          return on.length ? `<div class="eg"><span class="muted">Tier ${k + 1}</span><div class="artperks">${on.map(x => `<div class="bonus">${img(x.i)}<div><b>${esc(x.n)}</b><br><span class="muted">${esc(x.d)}</span></div></div>`).join('')}</div></div>` : ''; }).join('')}`
+        : '<p class="muted">This build doesn\'t pick an artifact.</p>'}
+        ${editArt ? '' : `<p><button type="button" data-art-edit>${artDef ? 'Change artifact' : 'Pick an artifact'}</button></p>`}</section>`;
     const toggleSave = () => {
       const rest = savedBuilds().filter(b => b.key !== key), adding = rest.length === savedBuilds().length;
       const sub = subclass && defs[subclass.hash];
@@ -805,6 +830,20 @@ async function buildPage(id) {
       draw(p, status);
     }));
     box.querySelector('[data-stats-done]')?.addEventListener('click', () => { editStats = false; draw(p, status); });
+    const saveArt = artifact => {
+      if (!savedBuilds().some(b => b.key === key)) toggleSave();
+      Bungie.store.set('d2c_builds', savedBuilds().map(b => b.key === key ? { ...b, artifact } : b));
+      draw(p, status);
+    };
+    box.querySelector('[data-art-edit]')?.addEventListener('click', () => { artDraft = art ? { h: art.h, perks: [...art.perks] } : { h: arts[0].h, perks: [] }; editArt = true; draw(p, status); });
+    box.querySelector('#artpick')?.addEventListener('change', e => { artDraft = { h: +e.target.value, perks: [] }; saveArt(artDraft); });
+    box.querySelectorAll('[data-perk]').forEach(b => b.addEventListener('click', () => {
+      const h = +b.dataset.perk;
+      artDraft.perks = artDraft.perks.includes(h) ? artDraft.perks.filter(x => x !== h) : [...artDraft.perks, h];
+      saveArt({ ...artDraft });
+    }));
+    box.querySelector('[data-art-done]')?.addEventListener('click', () => { editArt = false; draw(p, status); });
+    box.querySelector('[data-art-clear]')?.addEventListener('click', () => { editArt = false; saveArt(null); });
     box.querySelector('[data-stats-clear]')?.addEventListener('click', () => { saveStats([]); draw(p, status); });
     // farming a build saves it too, since the farming plan reads saved builds
     box.querySelector('[data-farmbuild]').addEventListener('click', () => {
