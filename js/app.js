@@ -18,18 +18,16 @@ const hero = (x, badges) => `<div class="hero" style="background-image:url('${BN
 
 async function data() {
   const [w, plugs, gr] = await Promise.all([load('weapons'), load('plugs'), load('godrolls')]);
-  if (!w.byHash) {
-    w.byHash = Object.fromEntries(w.weapons.map(x => [x.h, x]));
-    // reissues share perk hashes, so a roll written for any version applies to every version with that name
-    const byName = {};
-    w.weapons.forEach(x => (byName[x.n] ||= []).push(...(gr.rolls[x.h] || [])));
-    w.rolls = Object.fromEntries(w.weapons.filter(x => byName[x.n].length).map(x => [x.h, byName[x.n]]));
-  }
-  return { weapons: w.weapons, byHash: w.byHash, version: w.version, plugs, rolls: w.rolls, notes: gr.notes };
+  w.byHash ||= Object.fromEntries(w.weapons.map(x => [x.h, x]));
+  return { weapons: w.weapons, byHash: w.byHash, version: w.version, plugs, rolls: gr.rolls, source: gr.source };
 }
 
-// A wishlist roll matches when every column has at least one of its perks on the item.
-const rollMatches = (roll, plugs) => roll.c.every(col => col.some(p => plugs.has(p)));
+// d.rolls[hash] is Aegis's Endgame Analysis rating. A copy is a god roll when it has one of the Perk 1 picks and one of the
+// Perk 2 picks; exotics are rated but have no roll to match.
+const rollMatches = (roll, plugs) => !!roll?.c?.length && roll.c.every(col => col.some(p => plugs.has(p)));
+const TIERS = ['S', 'A', 'B', 'C', 'D', 'E', 'F'];
+const tierOrder = r => r ? (TIERS.indexOf(r.t) + 1 || 9) * 1000 + r.r : 1e5;
+const tierBadge = r => r ? `<span class="badge tier tier-${esc(r.t)}">Tier ${esc(r.t)}</span>` : '';
 
 async function profile() {
   if (S.profile || !Bungie.token()) return S.profile;
@@ -116,22 +114,22 @@ function rowTable(hits) {
 async function weaponList(params) {
   const d = await data();
   const uniq = (k) => [...new Set(d.weapons.map(w => w[k]).filter(Boolean))].sort();
-  $app.innerHTML = `<h1>Weapons</h1><p class="muted">Every weapon in the game, with perks, stats, community god rolls and what your sheets say about it.</p><div class="filters">
+  $app.innerHTML = `<h1>Weapons</h1><p class="muted">Every weapon in the game, with perks, stats, Endgame Analysis tiers and rolls, and what your sheets say about it.</p><div class="filters">
     <input type="search" id="q" aria-label="Search weapons" placeholder="Search weapons, perks or sources" value="${esc(params.get('q') || '')}">
     ${select('ty', 'All types', uniq('ty'))}${select('dm', 'All elements', uniq('dm'))}${select('am', 'All ammo', uniq('am'))}${select('ti', 'All rarities', uniq('ti'))}
-    <label class="check"><input type="checkbox" id="gr"> Has god roll</label></div><p id="count" class="muted"></p><div class="grid" id="list"></div>`;
+    ${select('tier', 'All tiers', TIERS.map(t => [t, 'Tier ' + t]))}</div><p id="count" class="muted"></p><div class="grid" id="list"></div>`;
   const f = id => $app.querySelector('#' + id);
   const draw = () => {
     const q = f('q').value.trim().toLowerCase();
     const list = d.weapons.filter(w => (!q || w.n.toLowerCase().includes(q) || w.src.toLowerCase().includes(q) ||
         w.cols.some(c => c.p.some(p => d.plugs[p]?.n.toLowerCase() === q)))
-      && ['ty', 'dm', 'am', 'ti'].every(k => !f(k).value || w[k] === f(k).value) && (!f('gr').checked || d.rolls[w.h]));
+      && ['ty', 'dm', 'am', 'ti'].every(k => !f(k).value || w[k] === f(k).value) && (!f('tier').value || d.rolls[w.h]?.t === f('tier').value));
     // reissues share a name; list each name once (newest version first, by the build's sort) and link the rest from its page
     const byName = new Map();
     list.forEach(w => byName.has(w.n) ? byName.get(w.n).count++ : byName.set(w.n, { w, count: 1 }));
     const names = [...byName.values()];
     f('count').textContent = plural(names.length, 'weapon') + (names.length > 300 ? ', showing the first 300' : '');
-    f('list').innerHTML = names.slice(0, 300).map(({ w, count }) => card(w, `<small><span class="dmg-${esc(w.dm)}">${esc(w.dm)}</span> ${esc(w.ty)} · ${esc(w.am)}</small>
+    f('list').innerHTML = names.slice(0, 300).map(({ w, count }) => card(w, `<small>${tierBadge(d.rolls[w.h])}<span class="dmg-${esc(w.dm)}">${esc(w.dm)}</span> ${esc(w.ty)} · ${esc(w.am)}</small>
       <small>${esc(bungieSource(w))}${count > 1 ? `${bungieSource(w) ? ' · ' : ''}${count} versions` : ''}</small>`)).join('')
       || '<p class="empty">No weapons match. Try a shorter search or clear a filter.</p>';
   };
@@ -144,9 +142,8 @@ async function weaponPage(hash) {
   const w = d.byHash[hash];
   if (!w) { $app.innerHTML = '<p>Weapon not found.</p>'; return; }
   const same = d.weapons.filter(x => x.n === w.n && x.h !== w.h);
-  const rolls = d.rolls[w.h] || [];
-  const godPerks = new Set(rolls.flatMap(r => r.c.flat()));
-  const godNames = new Set([...godPerks].map(h => d.plugs[h]?.n));
+  const er = d.rolls[w.h];
+  const godNames = new Set([...Object.values(er?.p || {}).flat(), er?.o]);
   const perk = (h, col) => { const p = d.plugs[h];
     return `<button type="button" class="perk${godNames.has(p.n) ? ' god' : ''}${col.cur === h ? ' cur' : ''}" data-h="${h}">${img(p.i)}<span>${esc(p.n)}${p.e ? ' <span class="enh">enhanced</span>' : ''}</span></button>`; };
   // enhanced versions share a name with the base perk, so show one entry per name (the first, usually the base);
@@ -157,9 +154,9 @@ async function weaponPage(hash) {
   const mods = w.cols.filter(c => c.c === 'Weapon Mods');
   const maxStat = Math.max(100, ...w.st.filter(s => !s[2]).map(s => s[1]));
   $app.innerHTML = `
-    ${hero(w, `<span class="badge">${esc(w.ti)}</span><span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span><span class="badge">${esc(w.ty)}</span><span class="badge">${esc(w.sl)} · ${esc(w.am)}</span>${rolls.length ? '<span class="badge good">God rolls</span>' : ''}`)}
+    ${hero(w, `<span class="badge">${esc(w.ti)}</span><span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span><span class="badge">${esc(w.ty)}</span><span class="badge">${esc(w.sl)} · ${esc(w.am)}</span>${tierBadge(er)}`)}
     ${same.length ? `<p class="versions">Other versions: ${same.map((x, i) => `<a href="#/weapon/${x.h}">${esc(bungieSource(x) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
-    <section class="panel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In a community god roll <span class="key cur"></span> Curated roll</p>
+    <section class="panel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll <span class="key cur"></span> Curated roll</p>
       <div class="perkcols">${perkCols(w.cols.filter(c => c.c !== 'Weapon Mods'))}</div>
       ${mods.length ? `<details class="more"><summary>Masterwork and mods</summary><div class="perkcols">${perkCols(mods)}</div></details>` : ''}
       <div class="perkinfo" id="perkinfo" aria-live="polite"><span class="muted">Select a perk to see what it does.</span></div></section>
@@ -168,7 +165,7 @@ async function weaponPage(hash) {
       <section class="panel"><h2>Source</h2><p id="farmsrc">${esc(bungieSource(w) || 'Unknown')}</p><div id="sheetsrc" class="muted">Looking up community sheets…</div></section>
       <section class="panel" id="mine"><h2>Your copies</h2><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies and which of them are god rolls.'}</p></section>
     </div><div>
-      <section class="panel"><h2>God rolls</h2><p class="muted">From the Voltron community wishlist. Open one to see every perk combination it accepts.</p>${rolls.length ? rollGroups(d, rolls) : '<p class="muted">No community god roll for this weapon.</p>'}</section>
+      <section class="panel"><h2>Endgame Analysis</h2>${endgamePanel(d, er)}</section>
     </div></div>
     ${w.lore ? `<section class="panel"><h2>Lore</h2><div class="lore">${esc(w.lore)}</div></section>` : ''}`;
 
@@ -201,25 +198,21 @@ async function weaponPage(hash) {
       const prof = await profile(); renderAccount();
       const mine = prof.items.filter(i => i.itemHash === w.h);
       document.querySelector('#mine').innerHTML = `<h2>Your copies</h2>` + (mine.length ? mine.map(i => {
-        const hit = rolls.filter(r => rollMatches(r, i.plugs));
-        return `<div class="roll">${hit.length ? '<span class="badge good">God roll</span>' : '<span class="badge">Not a god roll</span>'} ${esc(i.location)}${i.power ? ` · ${i.power} power` : ''}
-          <div class="perks">${w.cols.filter(c => c.c === 'Weapon Perks').flatMap(c => c.p).filter(p => i.plugs.has(p) && !/^Empty .*Socket$/.test(d.plugs[p].n)).map(p => `<span class="badge${godPerks.has(p) ? ' good' : ''}">${esc(d.plugs[p].n)}</span>`).join('')}</div>
-          ${hit[0] ? `<small class="muted note">${esc(noteTitle(d.notes[hit[0].note]))}</small>` : ''}</div>`;
+        const label = rollMatches(er, i.plugs) ? '<span class="badge good">God roll</span>' : er?.c?.length ? '<span class="badge">Not a god roll</span>' : '';
+        return `<div class="roll">${label} ${esc(i.location)}${i.power ? ` · ${i.power} power` : ''}
+          <div class="perks">${w.cols.filter(c => c.c === 'Weapon Perks').flatMap(c => c.p).filter(p => i.plugs.has(p) && !/^Empty .*Socket$/.test(d.plugs[p].n)).map(p => `<span class="badge${godNames.has(d.plugs[p].n) ? ' good' : ''}">${esc(d.plugs[p].n)}</span>`).join('')}</div></div>`;
       }).join('') : '<p class="muted">You don\'t own this version.</p>');
     } catch (e) { document.querySelector('#mine').innerHTML = `<h2>Your copies</h2><p>${esc(e.message)}</p>`; }
   }
 }
 
-// Wishlist notes end in machine tags ("...|tags:pve,god-pve"); keep the human part.
-const noteTitle = n => (n || '').replace(/\s*\|\s*tags:.*$/i, '').replace(/^File auto generated from csv\s*/i, '').replace(/\s*\(tags:[^)]*\)/i, '').trim() || 'No notes';
-const noteModes = n => ['PvE', 'PvP'].filter(m => new RegExp(m, 'i').test(n || ''));
-
-// One collapsible block per wishlist note, listing every perk combination that note recommends.
-function rollGroups(d, rolls) {
-  const groups = Object.groupBy(rolls, r => r.note);
-  const combo = r => r.c.map(col => `<span class="badge">${[...new Set(col.map(p => d.plugs[p]?.n || p))].map(esc).join(' / ')}</span>`).join('');
-  return Object.entries(groups).map(([note, rs]) => `<details class="roll"><summary>${noteModes(d.notes[note]).map(m => `<span class="badge mode">${m}</span>`).join('')}<span class="note">${esc(noteTitle(d.notes[note]))}</span></summary>
-    ${rs.slice(0, 6).map(r => `<div class="perks">${combo(r)}</div>`).join('')}${rs.length > 6 ? `<small class="muted">and ${rs.length - 6} more combinations</small>` : ''}</details>`).join('');
+// Aegis's rating: tier, rank within the weapon type, why, and the roll to chase in priority order.
+function endgamePanel(d, r) {
+  if (!r) return '<p class="muted">Not rated in the Endgame Analysis sheet.</p>';
+  const rows = [...Object.entries(r.p || {}), ['Masterwork', r.mw ? [r.mw] : []], ['Origin trait', r.o ? [r.o] : []]].filter(([, v]) => v.length);
+  return `<p>${tierBadge(r)} <span class="muted">#${r.r} of ${r.of} in ${esc(r.tab)}</span></p>${r.d ? `<p>${esc(r.d)}</p>` : ''}${r.note ? `<p>${esc(r.note)}</p>` : ''}
+    ${rows.map(([k, v]) => `<div class="eg"><span class="muted">${k}</span><div class="perks">${v.map(n => `<span class="badge${/^Perk/.test(k) ? ' good' : ''}">${esc(n)}</span>`).join('')}</div></div>`).join('')}
+    <p class="muted"><small>From <a href="${esc(d.source)}" target="_blank" rel="noopener">Aegis's Destiny 2: Endgame Analysis</a>.${r.c?.length ? ' A copy counts as a god roll when it has one of the Perk 1 picks and one of the Perk 2 picks.' : ''}</small></p>`;
 }
 
 // ---------- armor ----------
@@ -356,9 +349,9 @@ async function inventory(tab) {
   const owned = p.items.filter(i => d.byHash[i.itemHash]);
   const byWeapon = Object.groupBy(owned, i => i.itemHash);
   const rows = Object.entries(byWeapon).map(([h, list]) => {
-    const w = d.byHash[h], rolls = d.rolls[h] || [];
-    return { w, list, god: list.filter(i => rolls.some(r => rollMatches(r, i.plugs))).length, hasRolls: rolls.length > 0 };
-  }).sort((a, b) => b.god - a.god || a.w.n.localeCompare(b.w.n));
+    const w = d.byHash[h], r = d.rolls[h];
+    return { w, r, list, god: list.filter(i => rollMatches(r, i.plugs)).length, hasRolls: !!r?.c?.length };
+  }).sort((a, b) => b.god - a.god || tierOrder(a.r) - tierOrder(b.r) || a.w.n.localeCompare(b.w.n));
   $app.innerHTML = `<h1>My gear</h1>${gearTabs('Weapons')}<p class="muted">${plural(owned.length, 'weapon')}, ${plural(rows.reduce((s, r) => s + r.god, 0), 'god roll')}, ${plural(rows.filter(r => r.list.length > 1).length, 'weapon')} with duplicates.</p>
     <div class="filters"><input type="search" id="q" aria-label="Filter your weapons" placeholder="Filter by name"><select id="show" aria-label="Show"><option value="">Everything</option><option value="god">God rolls</option><option value="nogod">Has a god roll I don't own yet</option><option value="dupe">Duplicates</option></select></div>
     <div class="grid" id="list"></div>`;
@@ -366,7 +359,7 @@ async function inventory(tab) {
     const q = $app.querySelector('#q').value.toLowerCase(), show = $app.querySelector('#show').value;
     $app.querySelector('#list').innerHTML = rows.filter(r => r.w.n.toLowerCase().includes(q) &&
         (!show || show === 'god' && r.god || show === 'nogod' && r.hasRolls && !r.god || show === 'dupe' && r.list.length > 1))
-      .map(r => card(r.w, `<small>${esc(r.w.ty)} · owned ×${r.list.length}</small>
+      .map(r => card(r.w, `<small>${tierBadge(r.r)}${esc(r.w.ty)} · owned ×${r.list.length}</small>
         <small>${r.god ? `<span class="badge good">${plural(r.god, 'god roll')}</span>` : r.hasRolls ? '<span class="badge">No god roll yet</span>' : ''}</small>`)).join('')
       || '<p class="empty">Nothing matches this filter.</p>';
   };
@@ -478,27 +471,28 @@ async function transferPage() {
 async function farm() {
   const d = await data();
   const p = Bungie.token() ? await needProfile() : null;
-  const haveGod = new Set((p?.items || []).filter(i => (d.rolls[i.itemHash] || []).some(r => rollMatches(r, i.plugs))).map(i => d.byHash[i.itemHash]?.n));
+  const haveGod = new Set((p?.items || []).filter(i => rollMatches(d.rolls[i.itemHash], i.plugs)).map(i => d.byHash[i.itemHash]?.n));
   // one entry per weapon name, sourced from Monument of Triumph first, then Bungie's collection text
   const chase = new Map();
-  for (const w of d.weapons.filter(w => d.rolls[w.h] && !haveGod.has(w.n))) {
+  for (const w of d.weapons.filter(w => d.rolls[w.h]?.c?.length && !haveGod.has(w.n))) {
     const src = (await whereToFarm(w))[0];
-    if (src && (!chase.has(w.n) || !chase.get(w.n).src)) chase.set(w.n, { ...w, src }); // keep a version with a known source
-    else if (!chase.has(w.n)) chase.set(w.n, { ...w, src: 'Unknown source' });
+    if (src && (!chase.has(w.n) || !chase.get(w.n).src)) chase.set(w.n, { ...w, src, r: d.rolls[w.h] }); // keep a version with a known source
+    else if (!chase.has(w.n)) chase.set(w.n, { ...w, src: 'Unknown source', r: d.rolls[w.h] });
   }
   const bySource = Object.groupBy([...chase.values()], w => w.src);
-  const sources = Object.keys(bySource).sort((a, b) => bySource[b].length - bySource[a].length);
   $app.innerHTML = `<h1>Farming plan</h1>
-    <p class="muted">${p ? `God rolls you don't own yet` : 'Every weapon with a community god roll'}, grouped by where it drops. ${p ? '' : 'Sign in to hide the ones you already have.'}</p>
-    <div class="filters"><input type="search" id="q" aria-label="Filter the farming plan" placeholder="Filter by source or weapon (e.g. Zavala, Nightfall, Last Wish)"></div><div id="list"></div>`;
+    <p class="muted">${p ? `Endgame Analysis god rolls you don't own yet` : 'Every weapon with an Endgame Analysis roll'}, grouped by where it drops, best tier first. ${p ? '' : 'Sign in to hide the ones you already have.'}</p>
+    <div class="filters"><input type="search" id="q" aria-label="Filter the farming plan" placeholder="Filter by source or weapon (e.g. Zavala, Nightfall, Last Wish)">
+    <select id="best" aria-label="Tiers to show">${TIERS.slice(0, -1).map(t => `<option value="${t}"${t === 'A' ? ' selected' : ''}>Tier ${t}${t === 'S' ? ' only' : ' and up'}</option>`).join('')}<option value="F">Every tier</option></select></div><div id="list"></div>`;
   const draw = () => {
-    const q = $app.querySelector('#q').value.toLowerCase();
-    $app.querySelector('#list').innerHTML = sources.map(s => {
-      const ws = bySource[s].filter(w => !q || s.toLowerCase().includes(q) || w.n.toLowerCase().includes(q));
-      return ws.length ? `<section class="panel"><h2>${esc(s)} <span class="count">${ws.length}</span></h2><div class="grid">${ws.map(w => card(w, `<small>${esc(w.ty)} · <span class="dmg-${esc(w.dm)}">${esc(w.dm)}</span></small>`)).join('')}</div></section>` : '';
-    }).join('') || '<p class="empty">Nothing matches this filter.</p>';
+    const q = $app.querySelector('#q').value.toLowerCase(), best = TIERS.indexOf($app.querySelector('#best').value);
+    $app.querySelector('#list').innerHTML = Object.keys(bySource)
+      .map(s => [s, bySource[s].filter(w => TIERS.indexOf(w.r.t) <= best && (!q || s.toLowerCase().includes(q) || w.n.toLowerCase().includes(q))).sort((a, b) => tierOrder(a.r) - tierOrder(b.r))])
+      .filter(([, ws]) => ws.length).sort((a, b) => b[1].length - a[1].length)
+      .map(([s, ws]) => `<section class="panel"><h2>${esc(s)} <span class="count">${ws.length}</span></h2><div class="grid">${ws.map(w => card(w, `<small>${tierBadge(w.r)}${esc(w.ty)} · <span class="dmg-${esc(w.dm)}">${esc(w.dm)}</span></small>`)).join('')}</div></section>`)
+      .join('') || '<p class="empty">Nothing matches this filter.</p>';
   };
-  $app.querySelector('#q').addEventListener('input', draw);
+  $app.querySelectorAll('.filters input,.filters select').forEach(el => el.addEventListener('input', draw));
   draw();
 }
 

@@ -103,12 +103,12 @@ details.more > summary { cursor: pointer; color: var(--muted); font-size: 13px; 
 .roll { border-top: 1px solid var(--line); padding: 10px 0; font-size: 13px; }
 .roll:first-of-type { border-top: 0; }
 .roll .perks { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-details.roll > summary { cursor: pointer; list-style: none; display: flex; gap: 6px; align-items: baseline; }
-details.roll > summary::-webkit-details-marker { display: none; }
-details.roll > summary::before { content: ""; flex: none; width: 6px; height: 6px; border-right: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted); transform: rotate(-45deg); transition: transform .15s var(--ease); margin: 0 4px 2px 0; }
-details.roll[open] > summary::before { transform: rotate(45deg); }
-.roll .note { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-details.roll[open] .note { display: block; }
+.eg { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 6px 0; border-top: 1px solid var(--line); font-size: 13px; }
+.eg .perks { display: flex; flex-wrap: wrap; gap: 4px; }
+.badge.tier { font-weight: 600; color: var(--text); }
+.badge.tier-S { color: var(--gold); border-color: rgba(217, 180, 74, .55); }
+.badge.tier-A { color: var(--good); border-color: rgba(76, 209, 138, .5); }
+.badge.tier-B { color: var(--accent); border-color: rgba(108, 184, 255, .5); }
 table.sheet { border-collapse: collapse; font-size: 13px; width: 100%; font-variant-numeric: tabular-nums; }
 table.sheet td { border: 1px solid var(--line); padding: 5px 8px; vertical-align: top; white-space: pre-wrap; max-width: 420px; }
 table.sheet td.muted { width: 30%; }

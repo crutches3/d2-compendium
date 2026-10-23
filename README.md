@@ -6,7 +6,7 @@ Live at https://crutches3.github.io/d2-compendium/
 
 ## Data
 
-- `data/weapons.json`, `data/plugs.json`, `data/godrolls.json`, `data/armor.json` (armor, sets, archetypes): built by `tools/build_data.py` from the Bungie manifest and the [Voltron wishlist](https://github.com/48klocs/dim-wish-list-sources). A GitHub Action refreshes them every Tuesday after reset; run it by hand from the Actions tab after a patch.
+- `data/weapons.json`, `data/plugs.json`, `data/godrolls.json`, `data/armor.json` (armor, sets, archetypes): built by `tools/build_data.py` from the Bungie manifest and Aegis's [Destiny 2: Endgame Analysis](https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY) sheet (each weapon's tier, rank and recommended roll; a copy is a god roll when it has one of the Perk 1 and one of the Perk 2 picks). A GitHub Action refreshes them every Tuesday after reset; run it by hand from the Actions tab after a patch.
 - `data/tabs.json`: community sheets (Destiny Data Compendium, Court's damage buffs sheet, Llama's sheets, theaegisrelic's Boss Damage, Monument of Triumph loot sources), built by `tools/build_tabs.py` from CSV exports. Refreshed by hand.
 - `img/`: armor set bonus and artifact perk infographics.
 

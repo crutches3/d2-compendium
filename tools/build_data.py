@@ -1,13 +1,14 @@
-"""Builds data/weapons.json, data/plugs.json and data/godrolls.json from the Bungie manifest and the Voltron wishlist.
+"""Builds data/weapons.json, data/plugs.json, data/armor.json and data/godrolls.json from the Bungie manifest and
+Aegis's Destiny 2: Endgame Analysis sheet (tiers and recommended rolls).
 
 Usage: python3 tools/build_data.py [manifest_cache_dir]
 Standard library only, so the weekly GitHub Action can run it as is.
 """
-import json, os, re, sys, urllib.request
+import csv, io, json, os, re, sys, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BNET = 'https://www.bungie.net'
-VOLTRON = 'https://raw.githubusercontent.com/48klocs/dim-wish-list-sources/master/voltron.txt'
+ENDGAME = '1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY'  # Google Sheet id of Destiny 2: Endgame Analysis
 TABLES = ['DestinyInventoryItemDefinition', 'DestinyPlugSetDefinition', 'DestinyStatDefinition', 'DestinyCollectibleDefinition',
           'DestinyLoreDefinition', 'DestinySocketCategoryDefinition', 'DestinyDamageTypeDefinition', 'DestinyStatGroupDefinition',
           'DestinyEquipableItemSetDefinition', 'DestinySandboxPerkDefinition']
@@ -134,18 +135,52 @@ def build_armor(d):
     return {'armor': armor, 'sets': sets, 'archetypes': archetypes, 'stats': stats}
 
 
-def parse_wishlist(text, weapon_hashes):
-    """Voltron/DIM wishlist lines: dimwishlist:item=<hash>&perks=<a>,<b>,...#notes:<text>. Negative item = trash roll, skipped."""
-    rolls, notes = {}, ''
-    for line in text.splitlines():
-        if not line.strip(): notes = ''; continue
-        if line.startswith('//notes:'): notes = line[8:].strip(); continue
-        if not line.startswith('dimwishlist:'): continue
-        m = re.match(r'dimwishlist:item=(-?\d+)(?:&perks=([\d,]*))?(?:#notes:(.*))?', line)
-        if not m or m.group(1).startswith('-') or int(m.group(1)) not in weapon_hashes: continue
-        perks = [int(p) for p in (m.group(2) or '').split(',') if p]
-        rolls.setdefault(m.group(1), []).append({'p': perks, 'note': (m.group(3) or notes)[:300]})
-    return rolls
+def endgame_tabs():
+    """(name, rows) for each weapon tab of the Endgame Analysis sheet, found from its tab list so new tabs are picked up."""
+    page = get(f'https://docs.google.com/spreadsheets/d/{ENDGAME}/htmlview').decode('utf-8')
+    for name, gid in re.findall(r'name: "([^"]+)", pageUrl: "[^"]*gid=(\d+)', page):
+        rows = list(csv.reader(io.StringIO(get(f'https://docs.google.com/spreadsheets/d/{ENDGAME}/gviz/tq?tqx=out:csv&gid={gid}').decode('utf-8'))))
+        if rows and 'Tier' in rows[0] and (any(h.endswith('Perk 1') for h in rows[0]) or name == 'Exotic Weapons'):
+            yield name, rows
+
+
+def parse_endgame(tabs, weapons, plugs):
+    """Aegis's tier and recommended roll for each weapon, on every version that shares its name.
+    {hash: {t: tier, r: rank, of: weapons in tab, tab, note, d (exotics: what it does), mw, o (origin trait),
+    p: {column label: [perk names]}, c: [[Perk 1 hashes], [Perk 2 hashes]] (a copy is a god roll when it has one of each)}}"""
+    key = lambda n: re.sub(r'[^a-z0-9]', '', n.lower())
+    versions = {}
+    for w in weapons: versions.setdefault(key(re.sub(r' \((Adept|Timelost|Harrowed)\)$', '', w['n'])), []).append(w)
+    split = lambda cell: [x.strip() for x in cell.split('\n') if x.strip() and x.strip().lower() not in ('none', 'n/a', '-')]
+    rolls, missing = {}, []
+    for tab, rows in tabs:
+        head = rows[0]
+        col = lambda label: next((i for i, h in enumerate(head) if h.strip().endswith(label)), None)
+        name, tier, rank = col('Name'), len(head) - 1 - head[::-1].index('Tier'), col('#')
+        listed = [r for r in rows[1:] if r[name].strip() and r[tier].strip()]
+        for pos, r in enumerate(listed, 1):
+            # a second line in the name cell says which reissue was rated, e.g. "Prosecutor\nRotN version"
+            title, _, which = r[name].strip().partition('\n')
+            vs = versions.get(key(title))
+            if not vs: missing.append(title); continue
+            base = {'t': r[tier].strip(), 'r': int(r[rank]) if rank is not None and r[rank].isdigit() else pos, 'of': len(listed), 'tab': tab}
+            if tab == 'Exotic Weapons':
+                base.update(note=r[col('Usage')].strip(), d=r[col('Description')].strip())
+                for w in vs: rolls.setdefault(str(w['h']), base)
+                continue
+            p = {label: split(r[col(h)]) for label, h in (('Barrel', 'Barrel'), ('Magazine', 'Mag'), ('Perk 1', 'Perk 1'), ('Perk 2', 'Perk 2'))}
+            base.update(note=(f'Rated: {which.strip()}. ' if which.strip() else '') + r[col('Notes')].strip(), mw=' or '.join(split(r[col('MW')])), o=', '.join(split(r[col('Origin Trait')])), p=p)
+            fits = []
+            for w in vs:
+                pool = {}
+                for c in w['cols']:
+                    for h in c['p']: pool.setdefault(key(plugs[str(h)]['n']), []).append(h)
+                c = [sorted({h for n in p[label] for h in pool.get(key(n), [])}) for label in ('Perk 1', 'Perk 2')]
+                if all(c): fits.append((w, c))
+            # older versions that can't roll the recommended perks weren't the ones rated
+            for w, c in fits or [(w, []) for w in vs]:
+                rolls.setdefault(str(w['h']), {**base, 'c': c})  # first row listing a weapon wins
+    return rolls, missing
 
 
 def main():
@@ -153,34 +188,17 @@ def main():
     version, d = load_manifest(cache)
     weapons, plugs = build(d)
     armor = build_armor(d)
-    rolls = parse_wishlist(get(VOLTRON).decode('utf-8'), {w['h'] for w in weapons})
-    # Voltron spells each roll out as every perk combination, one line each. Collapse a note's lines back into
-    # per-column options ([[a|b], [c|d]] = any of a/b plus any of c/d) when they are exactly that full product.
-    for h, rs in rolls.items():
-        by_note, out = {}, []
-        for r in rs: by_note.setdefault(r['note'], set()).add(tuple(r['p']))
-        for note, combos in by_note.items():
-            groups = {}
-            for c in combos: groups.setdefault(len(c), []).append(c)
-            for n, cs in groups.items():
-                cols = [sorted({c[i] for c in cs}) for i in range(n)]
-                size = 1
-                for col in cols: size *= len(col)
-                out += [{'c': cols, 'note': note}] if size == len(cs) else [{'c': [[p] for p in c], 'note': note} for c in cs]
-        rolls[h] = out
-    notes = list(dict.fromkeys(r['note'] for rs in rolls.values() for r in rs))  # each note once; rolls point at it by index
-    idx = {n: i for i, n in enumerate(notes)}
-    for rs in rolls.values():
-        for r in rs: r['note'] = idx[r['note']]
+    rolls, missing = parse_endgame(list(endgame_tabs()), weapons, plugs)
+    if missing: print('Endgame Analysis names not in the manifest:', missing)
     os.makedirs(os.path.join(ROOT, 'data'), exist_ok=True)
     dump = lambda name, obj: json.dump(obj, open(os.path.join(ROOT, 'data', name), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     dump('weapons.json', {'version': version, 'weapons': weapons})
     dump('plugs.json', plugs)
-    dump('godrolls.json', {'notes': notes, 'rolls': rolls})
+    dump('godrolls.json', {'source': f'https://docs.google.com/spreadsheets/d/{ENDGAME}', 'rolls': rolls})
     dump('armor.json', armor)
-    print(version, len(weapons), 'weapons', len(plugs), 'plugs', len(rolls), 'weapons with god rolls',
+    print(version, len(weapons), 'weapons', len(plugs), 'plugs', len(rolls), 'weapons with an Endgame Analysis tier',
           len(armor['armor']), 'armor', len(armor['sets']), 'sets', len(armor['archetypes']), 'archetypes')
-    assert len(weapons) > 1000 and len(rolls) > 300, 'manifest or wishlist parse looks broken'
+    assert len(weapons) > 1000 and len(rolls) > 500 and sum(bool(r.get('c')) for r in rolls.values()) > 300, 'manifest or Endgame Analysis parse looks broken'
     assert len(armor['armor']) > 1000 and len(armor['sets']) > 20 and len(armor['archetypes']) >= 6, 'armor parse looks broken'
 
 
