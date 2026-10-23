@@ -56,7 +56,7 @@ for (const s of ['THE BUILD OF SPITE', 'Shoot the boss.', 'Prismatic Hunter', 'G
   assert.ok(text.includes(s), 'missing: ' + s);
 // stat priorities in the build's order, and the helmet you own is checked against the top two
 // a DIM minimum is checked against what your armor for the build adds up to
-assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Weapons 100+ yours 30', 'Health']);
+assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Weapons 100+ best you own 30', 'Health best you own 20']);
 assert.ok(text.includes('Fits') && text.includes('Weapons 30, Grenade 25, Health 20'));
 assert.ok(text.includes('Missing'), 'Threat Level should be missing');
 // only the build's class can equip it
@@ -108,17 +108,19 @@ assert.ok(!(await p.locator('#build').innerText()).includes('Fits'));
 await p.click('[data-stats-edit]');
 await p.click('[data-stat="392767087"]'); await p.click('[data-stat="2996146975"]');  // Health, then Weapons
 assert.equal(new URL(p.url()).hash, '#/build/saved-y');
-assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Health', 'Weapons']);
+assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Health best you own 20', 'Weapons best you own 30']);
 assert.equal(await p.textContent('[data-stat="2996146975"]'), '2. Weapons');
 // minimum totals: compared with what your armor for the build adds up to (the helmet: Weapons 30, Health 20)
 await p.fill('[data-min="2996146975"]', '100'); await p.press('[data-min="2996146975"]', 'Enter');
 await p.fill('[data-min="392767087"]', '20'); await p.press('[data-min="392767087"]', 'Enter');
-assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => [l.innerText, l.querySelector('span')?.className])), [['Health 20+ yours 20', 'met'], ['Weapons 100+ yours 30', 'short']]);
+assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => [l.innerText, l.querySelector('span')?.className])), [['Health 20+ best you own 20', 'met'], ['Weapons 100+ best you own 30', 'short']]);
 await p.click('[data-stats-done]');
 assert.equal(await p.textContent('[data-stats-edit]'), 'Change stat priorities');
 assert.ok((await p.locator('#build').innerText()).includes('Fits'));  // the helmet rolled Weapons, Grenade, Health
+const bestText = await p.locator('#build').innerText();
+assert.ok(bestText.includes('Best armor you own for this build') && bestText.includes('Still 70 short of the minimums'));
 await p.reload(); await p.waitForSelector('.statrank');
-assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Health 20+ yours 20', 'Weapons 100+ yours 30']);
+assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Health 20+ best you own 20', 'Weapons 100+ best you own 30']);
 assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('d2c_builds')).find(b => b.key === 'saved-y').loadout.parameters.statConstraints),
   [{ statHash: 392767087, minStat: 20 }, { statHash: 2996146975, minStat: 100 }]);
 // links that carry their own priorities can't be changed here
@@ -130,6 +132,21 @@ await open('https://example.com/nope');
 assert.equal(await p.isVisible('#linkerr'), true);
 await open('https://dim.gg/zzzzzzz/Gone');
 assert.ok((await p.locator('#build').innerText()).includes('DIM has no build with that link'));
+
+// best armor you own: one piece per slot, the build's exotic, its set bonus, minimums before raw stats
+const picks = await p.evaluate(() => {
+  const L = (n, ty, x = {}) => ({ n, ty, cl: 'Hunter', ti: 'Legendary', set: '', ...x });
+  const a = { stats: { 1: 'Weapons', 2: 'Health' }, byHash: { 10: L('Helm A', 'Helmet'), 11: L('Helm Set', 'Helmet', { set: 'S' }), 20: L('Arms A', 'Gauntlets'),
+    21: L('Arms Set', 'Gauntlets', { set: 'S' }), 30: L('Chest A', 'Chest Armor'), 31: L('Chest Exotic', 'Chest Armor', { ti: 'Exotic' }), 40: L('Titan Helm', 'Helmet', { cl: 'Titan' }) } };
+  const it = (h, w, hp) => ({ itemHash: h, stats: { 1: w, 2: hp } });
+  const items = [it(10, 30, 0), it(11, 5, 20), it(20, 30, 0), it(21, 10, 5), it(30, 40, 40), it(31, 5, 5), it(40, 99, 99)];
+  const run = params => bestArmor(a, items, 'Hunter', { equipped: params.equipped || [], parameters: params }).pieces.map(i => a.byHash[i.itemHash].n);
+  return [run({ statConstraints: [{ statHash: 1 }, { statHash: 2 }] }),
+    run({ statConstraints: [{ statHash: 1 }, { statHash: 2, minStat: 50 }] }),
+    run({ statConstraints: [{ statHash: 1 }], setBonuses: { S: 2 } }),
+    run({ statConstraints: [{ statHash: 1 }], equipped: [{ hash: 31 }] })];
+});
+assert.deepEqual(picks, [['Helm A', 'Arms A', 'Chest A'], ['Helm Set', 'Arms A', 'Chest A'], ['Helm Set', 'Arms Set', 'Chest A'], ['Helm A', 'Arms A', 'Chest Exotic']]);
 
 assert.deepEqual(errs, []);
 await b.close();

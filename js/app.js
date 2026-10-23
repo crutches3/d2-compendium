@@ -349,6 +349,51 @@ const buildTop = (a, loadout) => (loadout.parameters?.statConstraints || []).map
 // No archetype covers every pair (none has Weapons + Health), which is why this reads stats rather than archetypes.
 const topStats = (a, item) => Object.keys(a.stats).sort((x, y) => (item.stats[y] || 0) - (item.stats[x] || 0)).slice(0, 3).map(h => a.stats[h]);
 const fitsBuild = (a, item, top) => statTotal(a, item) > 0 && top.every(st => topStats(a, item).includes(st));
+const minOf = c => c.minStat ?? (c.minTier ? c.minTier * 10 : 0);
+// The best armor you own for a build: one piece per slot for its class, the build's exotic (else legendaries only), keeping the
+// sets the build counts on. Best means fewest missing set pieces, then least short of the minimums, then the most of each stat
+// weighted by priority (the first counts most).
+function bestArmor(a, items, cls, loadout) {
+  const P = loadout.parameters || {}, ranked = (P.statConstraints || []).filter(c => a.stats[c.statHash]);
+  if (!ranked.length) return null;
+  const weight = Object.fromEntries(ranked.map((c, k) => [c.statHash, ranked.length - k])), mins = ranked.map(minOf);
+  const value = i => ranked.reduce((n, c) => n + weight[c.statHash] * (i.stats[c.statHash] || 0), 0);
+  const build = [...loadout.equipped, ...(loadout.unequipped || [])].map(it => a.byHash[it.hash]).filter(Boolean);
+  const exotic = build.find(x => x.ti === 'Exotic') || a.byHash[P.exoticArmorHash];
+  // sets the build counts on: its setBonuses, or 2 or 4 of its own pieces from one set
+  const sets = { ...Object.fromEntries(Object.entries(Object.groupBy(build.filter(x => x.set), x => x.set)).filter(([, l]) => l.length >= 2).map(([h, l]) => [h, l.length >= 4 ? 4 : 2])),
+    ...P.setBonuses };
+  const setKeys = Object.keys(sets);
+  const mine = items.filter(i => !i.postmaster && a.byHash[i.itemHash]?.cl === cls);
+  const haveExotic = exotic && mine.some(i => a.byHash[i.itemHash].n === exotic.n);
+  const lists = Object.entries(Object.groupBy(mine, i => a.byHash[i.itemHash].ty)).map(([ty, list]) => {
+    const allowed = haveExotic && ty === exotic.ty ? list.filter(i => a.byHash[i.itemHash].n === exotic.n) : list.filter(i => a.byHash[i.itemHash].ti !== 'Exotic');
+    const top = (l, by, n) => [...l].sort((x, y) => by(y) - by(x)).slice(0, n);
+    // shortcut: tries each slot's 12 strongest copies (for each set, each minimum, then overall) rather than every copy; widen if it misses combos
+    return [...new Set([...setKeys.flatMap(h => top(allowed.filter(i => a.byHash[i.itemHash].set === h), value, 2)),
+      ...ranked.filter(minOf).flatMap(c => top(allowed, i => i.stats[c.statHash] || 0, 2)), ...top(allowed, value, 12)])].slice(0, 12)
+      .map(i => ({ i, s: ranked.map(c => i.stats[c.statHash] || 0), v: value(i), set: a.byHash[i.itemHash].set }));
+  }).filter(l => l.length);
+  const tot = ranked.map(() => 0), cnt = Object.fromEntries(setKeys.map(h => [h, 0])), picked = [];
+  let best = null, val = 0;
+  const walk = k => {
+    if (k === lists.length) {
+      const sets_ = setKeys.reduce((n, h) => n + Math.max(0, sets[h] - cnt[h]), 0), short = mins.reduce((n, m, j) => n + Math.max(0, m - tot[j]), 0);
+      if (!best || sets_ < best.sets_ || sets_ === best.sets_ && (short < best.short || short === best.short && val > best.val)) best = { sets_, short, val, pieces: picked.map(x => x.i) };
+      return;
+    }
+    for (const x of lists[k]) {
+      picked.push(x); x.s.forEach((n, j) => { tot[j] += n; }); val += x.v; if (x.set in cnt) cnt[x.set]++;
+      walk(k + 1);
+      picked.pop(); x.s.forEach((n, j) => { tot[j] -= n; }); val -= x.v; if (x.set in cnt) cnt[x.set]--;
+    }
+  };
+  walk(0);
+  if (!best) return null;
+  const totals = Object.fromEntries(ranked.map(c => [c.statHash, best.pieces.reduce((n, i) => n + (i.stats[c.statHash] || 0), 0)]));
+  return { pieces: best.pieces, totals, short: best.short, missingSets: setKeys.filter(h => best.pieces.filter(i => a.byHash[i.itemHash].set === h).length < sets[h]),
+    exotic, haveExotic, slots: lists.length };
+}
 async function armorSource(a, x) {
   const monu = await monumentSources(), set = a.sets[x.set];
   return monu.get(x.n.toLowerCase()) || (set && monu.get(`${set.n} armor`.toLowerCase())) || [bungieSource(x)].filter(Boolean);
@@ -698,13 +743,10 @@ async function buildPage(id) {
     const have = gear.filter(it => pick(it)).length;
     const subParts = Object.entries(Object.groupBy(Object.entries(subclass?.socketOverrides || {}).sort((x, y) => x[0] - y[0]).map(([, h]) => h).filter(h => defs[h] && !/^Empty /.test(defs[h].n)),
       h => /Aspect/.test(defs[h].t) ? 'Aspects' : /Fragment/.test(defs[h].t) ? 'Fragments' : 'Abilities'));
-    // what the build's armor adds up to, using the copy of each piece that Equip would pick
-    const myArmor = gear.filter(it => a.byHash[it.hash]).map(it => pick(it, chars[0]?.id)).filter(Boolean);
-    const total = h => myArmor.reduce((n, i) => n + (i.stats[h] || 0), 0);
-    const minOf = c => c.minStat ?? (c.minTier ? c.minTier * 10 : 0);
+    const best = p && cls ? bestArmor(a, p.items, cls, loadout) : null;
     const stats = (P.statConstraints || []).filter(c => a.stats[c.statHash]).map(c => {
       const min = minOf(c), max = c.maxStat ?? (c.maxTier != null && c.maxTier < 10 ? c.maxTier * 10 : null);
-      return `<li><b>${esc(a.stats[c.statHash])}</b>${min ? ` ${min}+` : ''}${max != null ? ` up to ${max}` : ''}${min && myArmor.length ? ` <span class="${total(c.statHash) >= min ? 'met' : 'short'}">yours ${total(c.statHash)}</span>` : ''}</li>`; });
+      return `<li><b>${esc(a.stats[c.statHash])}</b>${min ? ` ${min}+` : ''}${max != null ? ` up to ${max}` : ''}${best ? ` <span class="${!min || best.totals[c.statHash] >= min ? 'met' : 'short'}">best you own ${best.totals[c.statHash]}</span>` : ''}</li>`; });
     const sets = Object.entries(P.setBonuses || {}).filter(([h]) => a.sets[h]).map(([h, n]) => `<span class="badge">${esc(a.sets[h].n)} · ${n} pieces</span>`);
     box.innerHTML = `<section class="panel buildhead"><h2>${esc(loadout.name || 'Untitled build')}${cls ? ` <span class="count">${cls}</span>` : ''}</h2>
         ${loadout.notes ? `<p class="lore">${esc(loadout.notes)}</p>` : ''}
@@ -722,7 +764,14 @@ async function buildPage(id) {
           ${P.statConstraints.length ? `<div class="statmins">${P.statConstraints.map(c => `<label>${esc(a.stats[c.statHash])} at least <input type="number" inputmode="numeric" min="0" max="200" step="5" data-min="${c.statHash}" value="${minOf(c) || ''}" placeholder="any"></label>`).join('')}</div>` : ''}
           <div class="statacts"><button type="button" class="primary" data-stats-done>Done</button><button type="button" data-stats-clear>Clear</button></div>`
           : custom || !stats.length ? `<p><button type="button" data-stats-edit>${stats.length ? 'Change stat priorities' : 'Add stat priorities'}</button></p>` : ''}
-        ${top.length ? `<p class="muted"><small>An armor piece fits when ${esc(top.join(' and '))} are among its three highest stats.${(P.statConstraints || []).some(minOf) && myArmor.length ? ' "Yours" adds up the armor you have for this build, before mods and fonts.' : ''}</small></p>` : ''}</section>` : ''}
+        ${top.length ? `<p class="muted"><small>An armor piece fits when ${esc(top.join(' and '))} are among its three highest stats.</small></p>` : ''}
+        ${best ? `<h3 class="bestarmor">Best armor you own for this build</h3><div class="grid">${best.pieces.map(i => { const x = a.byHash[i.itemHash], arch = archetypeOf(a, i);
+            return card(x, `<small>${esc(slotLabel(x))}${i.tier ? ` · Tier ${i.tier}` : ''}${arch ? ` · ${esc(arch.n)}` : ''}</small><small>${esc(topStats(a, i).map(st => `${st} ${i.stats[Object.keys(a.stats).find(h => a.stats[h] === st)] || 0}`).join(', '))}</small><small>${esc(i.location)}</small>`, 'armor'); }).join('')}</div>
+          <p class="muted"><small>${[best.short ? `Still ${best.short} short of the minimums with what you own.` : (P.statConstraints || []).some(minOf) ? 'Meets every minimum.' : '',
+            best.exotic && !best.haveExotic ? `You don't own ${esc(best.exotic.n)}, so this uses legendaries only.` : '',
+            best.missingSets.length ? `Couldn't make the ${best.missingSets.map(h => esc(a.sets[h]?.n || 'set')).join(' and ')} bonus from what you own.` : '',
+            best.slots < 5 ? `You own nothing for ${5 - best.slots} slot${best.slots === 4 ? '' : 's'}.` : '',
+            'Totals are armor only, before mods and fonts.'].filter(Boolean).join(' ')}</small></p>` : ''}</section>` : ''}
       ${['weapon', 'armor'].map(k => { const list = gear.filter(it => !!d.byHash[it.hash] === (k === 'weapon'));
         return list.length ? `<section class="panel"><h2>${k === 'weapon' ? 'Weapons' : 'Armor'}</h2><div class="grid">${list.map(piece).join('')}</div></section>` : ''; }).join('')}
       ${P.exoticArmorHash && !gear.some(it => it.hash === P.exoticArmorHash) ? `<section class="panel"><h2>Exotic armor</h2><div class="chips">${chip(P.exoticArmorHash)}</div></section>` : ''}
