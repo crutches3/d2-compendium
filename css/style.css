@@ -193,3 +193,9 @@ p.err { color: #ff8a80; }
 .savedgrid { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
 .card.saved a { color: var(--text); text-decoration: none; }
 @media (max-width: 400px) { .savedgrid { grid-template-columns: minmax(0, 1fr); } }
+.savedbar { display: flex; align-items: center; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin: 0 0 12px; scrollbar-width: thin; }
+.savedbar[hidden] { display: none; }
+.savedbar .back { flex: none; font-size: 13px; margin-right: 6px; }
+.savedbar .chip { flex: none; white-space: nowrap; color: var(--text); text-decoration: none; }
+.savedbar .chip:hover { border-color: var(--line-strong); }
+.savedbar .chip[aria-current] { border-color: var(--accent); background: rgba(108, 184, 255, .12); }

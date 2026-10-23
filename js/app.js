@@ -538,11 +538,15 @@ function showSaved(box) {
   }));
 }
 
+// Quick switcher shown above an open build: every saved build, the open one marked.
+const savedBar = current => `<a href="#/build" class="back">All saved builds</a>${savedBuilds().map(b => `<a href="#/build/${esc(b.key)}" class="chip"${b.key === current ? ' aria-current="page"' : ''}>${img(b.sub?.i)}<span>${esc(b.name)}</span></a>`).join('')}`;
+
 async function buildPage(id) {
   $app.innerHTML = `<h1>Builds</h1><p class="muted">Paste a DIM loadout link to see the whole build, check what you own and equip it.</p>
     <form class="filters" id="open"><input type="search" inputmode="url" id="link" aria-label="DIM loadout link" placeholder="https://dim.gg/abc1234/Build-Name">
-    <button type="submit" class="primary">Open build</button></form><p class="err" id="linkerr" hidden></p><div id="build"></div>`;
-  const f = sel => $app.querySelector(sel), box = f('#build'), link = f('#link');
+    <button type="submit" class="primary">Open build</button></form><p class="err" id="linkerr" hidden></p>
+    <nav class="savedbar" id="savedbar" aria-label="Saved builds"${id ? '' : ' hidden'}>${id ? savedBar(id) : ''}</nav><div id="build"></div>`;
+  const f = sel => $app.querySelector(sel), box = f('#build'), link = f('#link'), bar = f('#savedbar');
   f('#open').addEventListener('submit', e => {
     e.preventDefault();
     const got = parseBuildLink(link.value);
@@ -623,6 +627,7 @@ async function buildPage(id) {
       Bungie.store.set('d2c_builds', adding ? [{ key, name: loadout.name || 'Untitled build', cls, shareUrl, saved: Date.now(), sub: sub ? { n: sub.n, i: sub.i } : null,
         icons: gear.filter(it => d.byHash[it.hash]).map(it => d.byHash[it.hash].i).slice(0, 3), loadout }, ...rest] : rest);
       if (adding && id === 'link') history.replaceState(null, '', '#/build/' + key);  // so a reload finds it
+      bar.innerHTML = savedBar(key);
       draw(p, status);
     });
     box.querySelectorAll('[data-equip]').forEach(b => b.addEventListener('click', async () => {

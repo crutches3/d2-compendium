@@ -68,7 +68,11 @@ assert.ok((await p.locator('#build').innerText()).includes('Done. Everything you
 // save it, find it in the saved list, and reopen it without asking DIM again
 await p.click('[data-save]');
 assert.equal(await p.textContent('[data-save]'), 'Remove from saved');
-await p.goto('http://localhost:8765/#/build'); await p.waitForSelector('.card.saved');
+// the open build is marked in the saved-builds bar, which links back to the full list
+assert.equal(await p.textContent('#savedbar .chip[aria-current]'), 'The Build Of Spite');
+await p.click('#savedbar .back'); await p.waitForSelector('.card.saved');
+assert.equal(new URL(p.url()).hash, '#/build');
+assert.equal(await p.isVisible('#savedbar'), false);
 assert.ok((await p.textContent('.card.saved')).includes('The Build Of Spite'));
 assert.ok((await p.textContent('.card.saved')).includes('Hunter · Prismatic Hunter'));
 const dimCalls = shareCalls;
