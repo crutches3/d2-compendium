@@ -161,12 +161,12 @@ async function weaponPage(hash) {
     ${hero(w, `<span class="badge">${esc(w.ti)}</span><span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span><span class="badge">${esc(w.ty)}</span><span class="badge">${esc(w.sl)} · ${esc(w.am)}</span>${tierBadge(er)}`)}
     ${same.length ? `<p class="versions">Other versions: ${same.map((x, i) => `<a href="#/weapon/${x.h}">${esc(bungieSource(x) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
     <section class="panel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll <span class="key cur"></span> Curated roll</p>
-      <div class="perkcols">${perkCols([...w.cols.filter(c => c.c !== 'Weapon Mods'), mw])}</div>
+      <div class="perkwrap"><div class="perkcols">${perkCols([...w.cols.filter(c => c.c !== 'Weapon Mods'), mw])}</div>
+      <aside class="copies" id="mine"><h3>Your copies</h3><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies here.'}</p></aside></div>
       <div class="perkinfo" id="perkinfo" aria-live="polite"><span class="muted">Select a perk to see what it does.</span></div></section>
     <div class="cols2"><div>
       <section class="panel"><h2>Stats</h2>${w.st.map(([n, v, num]) => `<div class="stat"><span class="muted">${esc(n)}</span>${num ? '<span></span>' : `<div class="bar"><span style="width:${Math.min(100, v / maxStat * 100)}%"></span></div>`}<b>${v}</b></div>`).join('')}</section>
       <section class="panel"><h2>Source</h2><p id="farmsrc">${esc(bungieSource(w) || 'Unknown')}</p><div id="sheetsrc" class="muted">Looking up community sheets…</div></section>
-      <section class="panel" id="mine"><h2>Your copies</h2><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies and which of them are god rolls.'}</p></section>
     </div><div>
       <section class="panel"><h2>Endgame Analysis</h2>${endgamePanel(d, er)}</section>
     </div></div>
@@ -188,6 +188,8 @@ async function weaponPage(hash) {
     el.setAttribute('aria-pressed', 'true');
   }));
 
+  if (Bungie.token()) showCopies(d, w, er, mw.p.filter(h => godNames.has(d.plugs[h].n)).map(h => d.plugs[h].n));  // runs alongside the slower sheet lookups below
+
   // Community sheet rows mentioning this weapon by name, or its frame for the same weapon type.
   const frame = w.cols.find(c => c.c === 'Intrinsic Traits');
   const frameName = frame && d.plugs[frame.p[0]]?.n;
@@ -195,18 +197,51 @@ async function weaponPage(hash) {
     ...(frameName && w.ti !== 'Exotic' ? await sheetRows(frameName, (t, r) => t.tab === 'Weapons' && r.some(c => c.toLowerCase() === w.ty.toLowerCase())) : [])];
   document.getElementById('farmsrc').textContent = (await whereToFarm(w)).join(' · also: ') || 'Unknown';
   document.getElementById('sheetsrc').innerHTML = hits.length ? rowTable(hits) : 'Not mentioned in the community sheets.';
+}
 
-  if (Bungie.token()) {
-    try {
-      const prof = await profile(); renderAccount();
-      const mine = prof.items.filter(i => i.itemHash === w.h);
-      document.querySelector('#mine').innerHTML = `<h2>Your copies</h2>` + (mine.length ? mine.map(i => {
-        const label = rollMatches(er, i.plugs) ? '<span class="badge good">God roll</span>' : er?.c?.length ? '<span class="badge">Not a god roll</span>' : '';
-        return `<div class="roll">${label} ${esc(i.location)}${i.power ? ` · ${i.power} power` : ''}
-          <div class="perks">${w.cols.filter(c => c.c === 'Weapon Perks').flatMap(c => c.p).filter(p => i.plugs.has(p) && !/^Empty .*Socket$/.test(d.plugs[p].n)).map(p => `<span class="badge${godNames.has(d.plugs[p].n) ? ' good' : ''}">${esc(d.plugs[p].n)}</span>`).join('')}</div></div>`;
-      }).join('') : '<p class="muted">You don\'t own this version.</p>');
-    } catch (e) { document.querySelector('#mine').innerHTML = `<h2>Your copies</h2><p>${esc(e.message)}</p>`; }
-  }
+// Copies of this weapon (any version) beside the perk grid. Hovering or tapping one lights up its perks in the grid:
+// filled = on this copy, dashed outline = a recommended perk it's missing.
+async function showCopies(d, w, er, mwPicks) {
+  const box = document.querySelector('#mine'), grid = $app.querySelector('.perkcols');
+  try {
+    const prof = await profile(); renderAccount();
+    if (!box.isConnected) return;
+    const mwName = h => d.plugs[h]?.n.match(/^Masterworked: (.+)/)?.[1];
+    // masterwork plugs only count when socketed; every tier of a stat's masterwork shares its name
+    const names = i => new Set([...i.plugs].filter(h => !mwName(h) || i.socketed.has(h)).map(h => d.plugs[h]?.n).filter(Boolean));
+    const recommended = [...Object.entries(er?.p || {}), ['Masterwork', mwPicks]];
+    const traitCols = w.cols.filter(c => c.c === 'Weapon Perks').map(c => new Set(c.p.map(h => d.plugs[h]?.n)));
+    const mine = prof.items.filter(i => d.byHash[i.itemHash]?.n === w.n).map(i => {
+      const n = names(i);
+      const missing = er?.p ? recommended.filter(([, v]) => v.length && !v.some(x => n.has(x))).map(([k]) => k) : [];
+      const god = !!er?.c?.length && er.c.every(col => col.some(h => n.has(d.plugs[h]?.n)));
+      // the perk showing in each column, as icons
+      const shown = traitCols.map(ns => [...i.socketed].map(h => d.plugs[h]).find(p => p && ns.has(p.n))).filter(Boolean);
+      return { i, n, missing, god, shown };
+    }).sort((a, b) => b.god - a.god || a.missing.length - b.missing.length);
+    if (!mine.length) { box.innerHTML = '<h3>Your copies</h3><p class="muted">You don\'t own this weapon.</p>'; return; }
+    box.innerHTML = `<h3>Your copies <span class="count">${mine.length}</span></h3>${mine.map((c, k) => `<button type="button" class="copy" data-k="${k}" aria-pressed="false">
+      <span class="where">${c.god ? '<span class="badge good">God roll</span>' : ''}${esc(c.i.location)}${c.i.power ? ` · ${c.i.power}` : ''}${c.i.itemHash !== w.h ? ' · other version' : ''}</span>
+      <span class="minis">${c.shown.map(p => `<img src="${BNET}${p.i}" alt="${esc(p.n)}" title="${esc(p.n)}">`).join('')}</span>
+      ${er?.p ? `<small class="${c.missing.length ? 'miss' : 'full'}">${c.missing.length ? 'Missing: ' + esc(c.missing.join(', ')) : 'Has every recommended pick'}</small>` : ''}</button>`).join('')}
+      <p class="muted hint">Hover or tap a copy to see its perks in the grid. A dashed outline is a recommended perk it doesn't have.</p>`;
+    let pinned = null;
+    const show = k => {
+      const n = k == null ? null : mine[k].n;
+      grid.classList.toggle('showing', !!n);
+      grid.querySelectorAll('.perk').forEach(el => el.classList.toggle('have', !!n && n.has(d.plugs[el.dataset.h].n)));
+      box.querySelectorAll('.copy').forEach(el => el.classList.toggle('on', el.dataset.k == k));
+    };
+    box.addEventListener('mouseover', e => { const c = e.target.closest('.copy'); if (c) show(c.dataset.k); });
+    box.addEventListener('mouseleave', () => show(pinned));
+    box.addEventListener('focusin', e => { const c = e.target.closest('.copy'); if (c) show(c.dataset.k); });
+    box.addEventListener('click', e => {
+      const c = e.target.closest('.copy'); if (!c) return;
+      pinned = pinned === c.dataset.k ? null : c.dataset.k;
+      box.querySelectorAll('.copy').forEach(el => el.setAttribute('aria-pressed', String(el.dataset.k === pinned)));
+      show(pinned);
+    });
+  } catch (e) { box.innerHTML = `<h3>Your copies</h3><p>${esc(e.message)}</p>`; }
 }
 
 // Aegis's rating: tier, rank within the weapon type, why, and the roll to chase in priority order.

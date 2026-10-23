@@ -95,6 +95,24 @@ section.panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .
 .perk.god { border-color: rgba(76, 209, 138, .7); }
 .perk.cur img { box-shadow: 0 0 0 2px var(--gold); }
 .perk .enh { color: var(--gold); font-size: 11px; }
+.perkwrap { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 16px; align-items: start; }
+.copies { position: sticky; top: 64px; border-left: 1px solid var(--line); padding-left: 14px; }
+.copies h3 { font-size: 12px; color: var(--muted); margin: 0 0 6px; font-weight: 600; }
+.copies .hint { font-size: 12px; margin: 4px 0 0; }
+.copy { display: flex; flex-direction: column; gap: 5px; width: 100%; text-align: left; padding: 8px; margin-bottom: 6px; border: 1px solid var(--line); border-radius: 6px;
+  background: none; font-size: 12px; }
+.copy:hover, .copy.on { background: var(--panel2); border-color: var(--line-strong); }
+.copy[aria-pressed="true"] { border-color: var(--accent); }
+.copy .minis { display: flex; gap: 4px; }
+.copy .minis img { width: 24px; height: 24px; border-radius: 50%; background: #2a3a55; }
+.copy small.miss { color: var(--muted); }
+.copy small.full { color: var(--good); }
+.perkcols .perk { transition: opacity .15s var(--ease), background-color .15s var(--ease), border-color .15s var(--ease); }
+.perkcols.showing .perk { opacity: .35; }
+.perkcols.showing .perk.have { opacity: 1; background: rgba(108, 184, 255, .14); }
+.perkcols.showing .perk.have.god { background: rgba(76, 209, 138, .16); }
+.perkcols.showing .perk.god:not(.have) { opacity: .9; border-style: dashed; }
+@media (max-width: 860px) { .perkwrap { grid-template-columns: minmax(0, 1fr); } .copies { order: -1; position: static; border-left: 0; padding-left: 0; border-bottom: 1px solid var(--line); padding-bottom: 12px; } }
 .perkinfo.on { position: sticky; bottom: 8px; box-shadow: 0 6px 18px rgba(0, 0, 0, .35); }
 .perkinfo { margin-top: 14px; background: var(--panel2); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; font-size: 13px;
   white-space: pre-wrap; max-height: 40vh; overflow-y: auto; }

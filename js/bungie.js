@@ -63,7 +63,8 @@ const Bungie = (() => {
   }
 
   // Returns { name, membershipType, chars: [{ id, cls, emblem, light }], items: [{ itemHash, instanceId, owner (character id, null = vault), equipped,
-  // postmaster, location, plugs: Set<plugHash>, power, tier, stats: {statHash: value} }] } for every instanced item.
+  // postmaster, location, plugs: Set<plugHash> (socketed plus selectable), socketed: Set<plugHash>, power, tier, stats: {statHash: value} }] }
+  // for every instanced item.
   async function loadProfile() {
     const m = await call('/User/GetMembershipsForCurrentUser/');
     const primary = m.primaryMembershipId;
@@ -82,10 +83,10 @@ const Bungie = (() => {
     const sockets = p.itemComponents.sockets.data || {}, reusable = p.itemComponents.reusablePlugs.data || {}, inst = p.itemComponents.instances.data || {};
     const stats = p.itemComponents.stats?.data || {};
     for (const it of items) {
-      const plugs = new Set();
-      (sockets[it.instanceId]?.sockets || []).forEach(s => s.plugHash && plugs.add(s.plugHash));
+      const plugs = new Set(), socketed = new Set();
+      (sockets[it.instanceId]?.sockets || []).forEach(s => s.plugHash && (plugs.add(s.plugHash), socketed.add(s.plugHash)));
       Object.values(reusable[it.instanceId]?.plugs || {}).forEach(col => col.forEach(pl => plugs.add(pl.plugItemHash)));
-      it.plugs = plugs;
+      it.plugs = plugs; it.socketed = socketed;
       it.power = inst[it.instanceId]?.primaryStat?.value || 0;
       it.tier = inst[it.instanceId]?.gearTier || 0;
       it.stats = Object.fromEntries(Object.entries(stats[it.instanceId]?.stats || {}).map(([h, s]) => [h, s.value]));
