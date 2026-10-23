@@ -658,7 +658,7 @@ async function buildPage(id) {
   box.innerHTML = '<p class="muted">Looking up the build\'s items…</p>';
 
   const [d, a] = await Promise.all([data(), armorData()]);
-  const P = loadout.parameters || {}, items = [...loadout.equipped, ...(loadout.unequipped || [])];
+  const P = loadout.parameters ||= {}, items = [...loadout.equipped, ...(loadout.unequipped || [])];
   // gear comes from the site's own data; subclass pieces, mods and artifact perks from Bungie's manifest
   const defs = {};
   const hashes = new Set([...items.flatMap(i => [i.hash, ...Object.values(i.socketOverrides || {})]), ...(P.mods || []), ...(P.artifactUnlocks?.unlockedItemHashes || []), P.exoticArmorHash].filter(Boolean));
@@ -671,9 +671,11 @@ async function buildPage(id) {
   const nameOf = h => (d.byHash[h] || a.byHash[h])?.n;
   const gear = items.filter(i => nameOf(i.hash));
   const subclass = loadout.equipped.find(i => defs[i.hash]?.sub);
-  const cls = ['Titan', 'Hunter', 'Warlock'][loadout.classType], top = buildTop(a, loadout);
+  const cls = ['Titan', 'Hunter', 'Warlock'][loadout.classType];
+  let editStats = false;  // picking stat priorities for a build whose link has none
 
   const draw = (p, status = '') => {
+    const top = buildTop(a, loadout), custom = !!savedBuilds().find(b => b.key === key)?.customStats;
     const chars = p ? p.chars.filter(c => !cls || c.cls === cls) : [];
     // best copy for a character: this exact version, a god roll, already there, in the vault; never the postmaster
     const fit = i => !!a.byHash[i.itemHash] && top.length > 0 && fitsBuild(a, i, top);
@@ -708,7 +710,13 @@ async function buildPage(id) {
         ${chars.length ? '<p class="muted"><small>Equip moves and equips the weapons and armor you have. Set the subclass and mods in game.</small></p>' : ''}
         ${status ? `<p class="${/^Done/.test(status) ? 'muted' : 'err'}" aria-live="polite">${esc(status)}</p>` : ''}</section>
       ${subclass ? `<section class="panel"><h2>Subclass</h2><p>${chip(subclass.hash)}</p>${subParts.map(([k, hs]) => `<div class="eg"><span class="muted">${k}</span><div class="chips">${hs.map(h => chip(h)).join('')}</div></div>`).join('')}</section>` : ''}
-      ${stats.length ? `<section class="panel"><h2>Stat priorities</h2><ol class="statrank">${stats.join('')}</ol>
+      ${stats.length || custom || gear.some(it => a.byHash[it.hash]) ? `<section class="panel"><h2>Stat priorities${custom ? ' <span class="count">set by you</span>' : ''}</h2>
+        ${stats.length ? `<ol class="statrank">${stats.join('')}</ol>` : editStats ? '' : '<p class="muted">This build doesn\'t rank armor stats.</p>'}
+        ${editStats ? `<p class="muted"><small>Click stats in priority order. Click a ranked stat to take it out.</small></p>
+          <div class="tabs charpick statpick">${Object.entries(a.stats).map(([h, n]) => { const k = P.statConstraints.findIndex(c => c.statHash == h);
+            return `<button type="button" data-stat="${h}"${k >= 0 ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${k >= 0 ? `${k + 1}. ` : ''}${esc(n)}</button>`; }).join('')}</div>
+          <div class="statacts"><button type="button" class="primary" data-stats-done>Done</button><button type="button" data-stats-clear>Clear</button></div>`
+          : custom || !stats.length ? `<p><button type="button" data-stats-edit>${stats.length ? 'Change stat priorities' : 'Add stat priorities'}</button></p>` : ''}
         ${top.length ? `<p class="muted"><small>An armor piece fits when ${esc(top.join(' and '))} are among its three highest stats.</small></p>` : ''}</section>` : ''}
       ${['weapon', 'armor'].map(k => { const list = gear.filter(it => !!d.byHash[it.hash] === (k === 'weapon'));
         return list.length ? `<section class="panel"><h2>${k === 'weapon' ? 'Weapons' : 'Armor'}</h2><div class="grid">${list.map(piece).join('')}</div></section>` : ''; }).join('')}
@@ -725,6 +733,20 @@ async function buildPage(id) {
       bar.innerHTML = savedBar(key);
     };
     box.querySelector('[data-save]').addEventListener('click', () => { toggleSave(); draw(p, status); });
+    // your own stat priorities are kept in the saved build's statConstraints, so every page that reads a build's stats uses them
+    const saveStats = list => {
+      if (!savedBuilds().some(b => b.key === key)) toggleSave();
+      P.statConstraints = list;
+      Bungie.store.set('d2c_builds', savedBuilds().map(b => b.key === key ? { ...b, loadout, customStats: list.length > 0 } : b));
+    };
+    box.querySelector('[data-stats-edit]')?.addEventListener('click', () => { P.statConstraints ||= []; editStats = true; draw(p, status); });
+    box.querySelectorAll('[data-stat]').forEach(b => b.addEventListener('click', () => {
+      const h = +b.dataset.stat, list = P.statConstraints.filter(c => c.statHash != h);
+      saveStats(list.length < P.statConstraints.length ? list : [...list, { statHash: h }]);
+      draw(p, status);
+    }));
+    box.querySelector('[data-stats-done]')?.addEventListener('click', () => { editStats = false; draw(p, status); });
+    box.querySelector('[data-stats-clear]')?.addEventListener('click', () => { saveStats([]); draw(p, status); });
     // farming a build saves it too, since the farming plan reads saved builds
     box.querySelector('[data-farmbuild]').addEventListener('click', () => {
       const saved = savedBuilds().some(b => b.key === key), want = !(saved && inFarm('builds', key));

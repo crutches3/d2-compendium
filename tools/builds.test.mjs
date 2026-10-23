@@ -99,6 +99,27 @@ assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('d2c_far
 await p.reload(); await p.waitForSelector('.buildhead');
 assert.ok((await p.locator('#build').innerText()).includes('THE BUILD OF SPITE'));
 
+// a build without stat priorities can get your own; adding them saves the build, and they drive the armor check
+const bare = { ...loadout, id: 'y', name: 'No Stats', parameters: {} };
+await open('https://app.destinyitemmanager.com/loadouts?' + new URLSearchParams({ loadout: JSON.stringify(bare) }));
+assert.ok((await p.locator('#build').innerText()).includes("This build doesn't rank armor stats."));
+assert.ok(!(await p.locator('#build').innerText()).includes('Fits'));
+await p.click('[data-stats-edit]');
+await p.click('[data-stat="392767087"]'); await p.click('[data-stat="2996146975"]');  // Health, then Weapons
+assert.equal(new URL(p.url()).hash, '#/build/saved-y');
+assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Health', 'Weapons']);
+assert.equal(await p.textContent('[data-stat="2996146975"]'), '2. Weapons');
+await p.click('[data-stats-done]');
+assert.equal(await p.textContent('[data-stats-edit]'), 'Change stat priorities');
+assert.ok((await p.locator('#build').innerText()).includes('Fits'));  // the helmet rolled Weapons, Grenade, Health
+await p.reload(); await p.waitForSelector('.statrank');
+assert.deepEqual(await p.$$eval('.statrank li', ls => ls.map(l => l.innerText)), ['Health', 'Weapons']);
+assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('d2c_builds')).find(b => b.key === 'saved-y').loadout.parameters.statConstraints),
+  [{ statHash: 392767087 }, { statHash: 2996146975 }]);
+// links that carry their own priorities can't be changed here
+await p.goto('http://localhost:8765/#/build/saved-x'); await p.waitForSelector('.statrank');
+assert.equal(await p.locator('[data-stats-edit]').count(), 0);
+
 // bad and unknown links explain themselves
 await open('https://example.com/nope');
 assert.equal(await p.isVisible('#linkerr'), true);

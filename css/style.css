@@ -246,3 +246,5 @@ section.panel.priority h2 { color: var(--text); }
 .goalbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: -4px 0 12px; font-size: 13px; color: var(--muted); }
 .goalbar select, .goalbar button { padding: 4px 8px; font-size: 13px; }
 .goalbar button[aria-pressed="true"] { border-color: var(--build); color: var(--build); }
+.statpick { margin: 8px 0 0; }
+.statacts { display: flex; gap: 6px; margin: 10px 0 0; }
