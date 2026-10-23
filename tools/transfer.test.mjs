@@ -10,7 +10,7 @@ const fate = W.find(w => w.n === 'Fatebringer'), gjally = W.find(w => w.n === 'G
 const helm = A.armor.find(x => x.a3 && x.cl === 'Titan' && x.ty === 'Helmet');
 const hunterHelm = A.armor.find(x => x.a3 && x.cl === 'Hunter' && x.ty === 'Helmet');
 const profile = {
-  characters: { data: { T1: { classType: 0 }, W1: { classType: 2 } } },
+  characters: { data: { T1: { classType: 0, light: 481 }, W1: { classType: 2, light: 476 } } },
   profileInventory: { data: { items: [{ itemHash: fate.h, itemInstanceId: '1', bucketHash: 138197802 }, { itemHash: hunterHelm.h, itemInstanceId: '5', bucketHash: 138197802 }] } },
   characterInventories: { data: { T1: { items: [{ itemHash: gjally.h, itemInstanceId: '2', bucketHash: 953998645 }] }, W1: { items: [] } } },
   characterEquipment: { data: { T1: { items: [{ itemHash: ace.h, itemInstanceId: '3', bucketHash: 1498876634 }, { itemHash: helm.h, itemInstanceId: '4', bucketHash: 3448274439 }] }, W1: { items: [] } } },
@@ -34,11 +34,14 @@ const p = await ctx.newPage();
 const errs = []; p.on('pageerror', e => errs.push(e.message));
 await p.goto('http://localhost:8765/'); await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', expires_at: Date.now() + 3e6 })));
 await p.goto('http://localhost:8765/#/inventory/move'); await p.waitForTimeout(3000);
-const placeOf = async id => p.$eval(`.tile[data-id="${id}"]`, t => t.closest('.place').querySelector('h2').firstChild.textContent.trim());
-assert.equal(await placeOf('1'), 'Vault');
+const placeOf = async id => p.$eval(`.tile[data-id="${id}"]`, t => t.closest('.cell').dataset.owner);
+assert.equal(await placeOf('1'), 'vault');
+// each item sits in its own slot row
+assert.equal(await p.$eval('.tile[data-id="4"]', t => t.closest('.cell').dataset.slot), 'Helmet');
+assert.equal(await p.$eval('.tile[data-id="2"]', t => t.closest('.cell').dataset.slot), 'Power');
 // vault -> Warlock (one transfer)
 await p.click('.tile[data-id="1"]'); await p.click('button[data-move="W1"]'); await p.waitForTimeout(300);
-assert.equal(await placeOf('1'), 'Warlock');
+assert.equal(await placeOf('1'), 'W1');
 assert.deepEqual(posts.at(-1), ['TransferItem/', { itemReferenceHash: fate.h, stackSize: 1, transferToVault: false, itemId: '1', characterId: 'W1', membershipType: 3 }]);
 // Warlock -> Titan goes through the vault (two transfers), then equip replaces Ace of Spades
 posts.length = 0;
@@ -56,7 +59,7 @@ assert.equal(await p.$$eval('#actions button[data-move],#actions button[data-equ
 failNext = true;
 await p.click('.tile[data-id="2"]'); await p.click('button[data-move="W1"]'); await p.waitForTimeout(300);
 assert.match(await p.textContent('#actions .err'), /no item slots/);
-assert.equal(await placeOf('2'), 'Titan');
+assert.equal(await placeOf('2'), 'T1');
 await p.screenshot({ path: OUT + 'transfer-d.png' });
 await p.setViewportSize({ width: 390, height: 844 }); await p.waitForTimeout(300);
 await p.screenshot({ path: OUT + 'transfer-m.png' });

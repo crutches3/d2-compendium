@@ -62,7 +62,7 @@ const Bungie = (() => {
     it.location = it.postmaster ? `Postmaster (${cls})` : !it.owner ? 'Vault' : it.equipped ? `${cls} (equipped)` : cls;
   }
 
-  // Returns { name, membershipType, chars: [{ id, cls }], items: [{ itemHash, instanceId, owner (character id, null = vault), equipped,
+  // Returns { name, membershipType, chars: [{ id, cls, emblem, light }], items: [{ itemHash, instanceId, owner (character id, null = vault), equipped,
   // postmaster, location, plugs: Set<plugHash>, power, tier, stats: {statHash: value} }] } for every instanced item.
   async function loadProfile() {
     const m = await call('/User/GetMembershipsForCurrentUser/');
@@ -76,7 +76,8 @@ const Bungie = (() => {
     push(p.profileInventory.data.items, null, false);
     for (const [cid, inv] of Object.entries(p.characterInventories.data || {})) push(inv.items, cid, false);
     for (const [cid, eq] of Object.entries(p.characterEquipment.data || {})) push(eq.items, cid, true);
-    const chars = Object.entries(p.characters?.data || {}).map(([id, c]) => ({ id, cls: ['Titan', 'Hunter', 'Warlock'][c.classType] || 'Character ' + id.slice(-4) }));
+    const chars = Object.entries(p.characters?.data || {}).map(([id, c]) => ({ id, cls: ['Titan', 'Hunter', 'Warlock'][c.classType] || 'Character ' + id.slice(-4),
+      emblem: c.emblemBackgroundPath || '', light: c.light || 0 }));
     const profile = { name: m.bungieNetUser.uniqueName || m.bungieNetUser.displayName, membershipType: dm.membershipType, chars, items };
     const sockets = p.itemComponents.sockets.data || {}, reusable = p.itemComponents.reusablePlugs.data || {}, inst = p.itemComponents.instances.data || {};
     const stats = p.itemComponents.stats?.data || {};
