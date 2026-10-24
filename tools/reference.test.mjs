@@ -63,11 +63,9 @@ assert.ok((await p.innerText('.entry dd')).includes('chain lightning'));
 assert.ok(await p.$('ul.mentions a:text-is("Ions")'));
 assert.equal(await p.textContent('ul.mentions li:has(a:text-is("Ions")) mark'), 'Jolted');
 
-// a raid: its loot and which encounters drop each piece, linked to the weapon page, which links back
-await p.goto("http://localhost:8765/#/wiki/King's%20Fall"); await p.waitForSelector('table.data');
-assert.deepEqual(await p.$$eval('table.data th', ths => ths.map(x => x.textContent)), ['Item', 'Type', 'Element', 'Encounters']);
-assert.equal(await p.textContent('tr:has(a.lootname:text-is("Defiance of Yasmin")) td:last-child'), '2nd, 4th, 5th');
-await p.click('a.lootname:text-is("Defiance of Yasmin")'); await p.waitForSelector('#farmsrc a');
+// a raid's drops link to the weapon page, which links back (raid pages have their own test: tools/raid.test.mjs)
+await p.goto("http://localhost:8765/#/wiki/King's%20Fall"); await p.waitForSelector('.drop');
+await p.click('.dropname:has(b:text-is("Defiance of Yasmin"))'); await p.waitForSelector('#farmsrc a');
 assert.equal(await p.getAttribute('#farmsrc a', 'href'), "#/wiki/King's%20Fall");
 // a perk on the weapon page links to its wiki page
 await p.click('.perk >> nth=0'); await p.waitForSelector('#perkinfo a');

@@ -133,7 +133,7 @@ ul.deltas { list-style: none; margin: 0; padding: 0; }
 .perkcols.showing .perk.have { opacity: 1; background: rgba(108, 184, 255, .14); }
 .perkcols.showing .perk.have.god { background: rgba(76, 209, 138, .16); }
 .perkcols.showing .perk.god:not(.have) { opacity: .9; border-style: dashed; }
-@media (max-width: 860px) { .wtop { grid-template-columns: minmax(0, 1fr); } .wside { display: contents; } .copies, .wtop.wiki .wside > * { order: -1; } }
+@media (max-width: 860px) { .wtop { grid-template-columns: minmax(0, 1fr); } .wside { display: contents; } .copies, .wtop.wiki .wside > * { order: -1; } .wtop.wiki .wside > .raidnotes { order: 1; } }
 .perkinfo.on { position: sticky; bottom: 8px; box-shadow: 0 6px 18px rgba(0, 0, 0, .35); }
 .perkinfo { margin-top: 14px; background: var(--panel2); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; font-size: 13px;
   white-space: pre-wrap; max-height: 40vh; overflow-y: auto; }
@@ -333,3 +333,42 @@ ul.mentions li a { font-weight: 600; color: var(--text); }
 ul.mentions li a:hover { color: var(--accent); }
 ul.mentions li span { color: var(--muted); }
 @media (max-width: 640px) { ul.mentions li { grid-template-columns: minmax(0, 1fr); } }
+
+/* raid pages: drops as cards with the weapon's picture, filters by encounter and by what you own */
+.dropfilter[hidden] { display: none; }
+.dropfilter { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.dropfilter button { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 5px 10px; border-radius: 999px; }
+.dropfilter button small { color: var(--muted); font-variant-numeric: tabular-nums; }
+.dropfilter button .count { color: var(--muted); font-size: 12px; }
+.dropfilter button[aria-pressed="true"] { border-color: var(--accent); background: rgba(108, 184, 255, .12); color: var(--text); }
+.drops { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-top: 4px; }
+.drop { display: flex; flex-direction: column; background: var(--panel2); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+  transition: border-color .15s var(--ease); }
+.drop[hidden] { display: none; }
+.drop:hover { border-color: var(--line-strong); }
+.dropart { display: block; aspect-ratio: 16 / 9; background: linear-gradient(135deg, var(--shell), var(--panel)); overflow: hidden; }
+.dropart img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s var(--ease); }
+.drop:hover .dropart img { transform: scale(1.03); }
+.dropbody { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; flex: 1; }
+.dropname { display: flex; gap: 10px; align-items: center; color: var(--text); margin-top: -34px; }
+.dropname .icon { border: 2px solid var(--panel2); box-shadow: 0 4px 10px rgba(0, 0, 0, .4); }
+.dropname > span { padding-top: 26px; min-width: 0; }
+.dropname b { display: block; line-height: 1.25; }
+.dropname small { display: block; color: var(--muted); font-size: 12px; }
+.dropname:hover { text-decoration: none; }
+.dropname:hover b { color: var(--accent); }
+.dropfacts { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; }
+.dropfacts:empty { display: none; }
+.badge.exotic { color: var(--gold); border-color: rgba(217, 180, 74, .55); }
+p.encs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; }
+.enc { font-size: 12px; padding: 1px 8px; border-radius: 999px; background: rgba(108, 184, 255, .1); color: #bcdcff; }
+.dropnote { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.45; }
+.drop .own { margin: auto 0 0; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.drop .own:empty { display: none; }
+.own .have { color: var(--good); font-weight: 600; }
+.own .need { color: var(--muted); }
+.drop[data-own="need"] .dropart img { filter: grayscale(.6) brightness(.8); }
+dl.armordrops { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; margin: 0; align-items: start; }
+dl.armordrops dt { font-weight: 600; font-size: 14px; }
+dl.armordrops dd { margin: 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.raidnote { white-space: pre-line; font-size: 13px; line-height: 1.55; color: var(--muted); margin: 0 0 10px; }
