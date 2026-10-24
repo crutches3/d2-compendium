@@ -1300,7 +1300,7 @@ async function wikiData() {
       const lines = r[6].split('\n').map(x => x.trim()), title = lines.find(x => /[A-Z]/.test(x) && x === x.toUpperCase() && !/\d/.test(x));
       const act = title && [...acts.values()].find(a => a.kind === 'Raid' && fold(a.name).startsWith(fold(title)));
       const date = k => lines.find(x => x.startsWith(k))?.split(':').slice(1).join(':').trim() || '';
-      raid = act && (act.raid ||= { launched: date('Launched'), refreshed: date('Refreshed'), notes: [], items: [] });
+      raid = act && (act.raid ||= { title, launched: date('Launched'), refreshed: date('Refreshed'), notes: [], items: [] });
       label = lines[0] === title ? '' : lines[0]; cols = null; continue;
     }
     if (!raid) continue;
@@ -1358,7 +1358,7 @@ async function wikiPage(raw) {
   // the loot table links each weapon to its page: the version from this activity if the names repeat, else a rated one
   const lootWeapon = x => { const l = d.weapons.filter(w => w.n.toLowerCase() === x.key); return l.find(w => act && w.src.includes(act.name)) || l.find(w => d.rolls[w.h]) || l[0]; };
   const tags = [act?.kind, champ && 'Champion', weapon && `${weapon.ti} ${weapon.ty}`, armor && `${armor.ti} ${armor.ty}`, ...new Set(defs.map(x => x.where === 'Artifact perks' ? 'Artifact perk' : x.where)), rollers.length && !defs.some(x => x.where === 'Weapon perks') && 'Weapon perk'].filter(Boolean);
-  const raid = act?.raid && raidPage(act, d, rot);
+  const raid = act?.raid && raidPage(act, d, a, rot);
   const loot = act && !raid && `<section class="panel"><h2>Loot <span class="count">${act.loot.length}</span></h2>${act.loot.some(x => x.enc) || act.kind === 'Dungeon' ? '<p class="refsrc">Which encounters drop each item, from the Monument of Triumph and Llama\'s loot sheets.</p>' : ''}
     <div class="datawrap"><table class="data"><thead><tr><th scope="col">Item</th><th scope="col">Type</th><th scope="col">Element</th>${act.loot.some(x => x.enc) ? '<th scope="col">Encounters</th>' : ''}${act.loot.some(x => x.how) ? '<th scope="col">How</th>' : ''}</tr></thead>
     <tbody>${act.loot.map(x => { const w = lootWeapon(x);
@@ -1391,13 +1391,14 @@ async function wikiPage(raw) {
   $app.querySelector('#morerollers')?.addEventListener('click', e => { showRollers(Infinity); e.target.remove(); });
 }
 
-// A raid's page: every drop as a card with its picture, the encounters that drop it (Llama's Raid Loot, then the Monument's list for anything
-// it leaves out), adept and catalyst notes, armor by slot, this week's rotation, and, signed in, which drops you own and your best roll.
-function raidPage(act, d, rot) {
+// A raid's page: every weapon and armor piece as a card with its picture and the encounters that drop it (Llama's Raid Loot, then the
+// Monument's list for anything it leaves out), adept and catalyst notes, this week's rotation, and, signed in, which drops you own.
+function raidPage(act, d, a, rot) {
   const R = act.raid, drops = [], armor = [];
   const find = n => { const l = d.weapons.filter(w => near(w.n, n)); return l.find(w => w.src.includes(act.name)) || l.find(w => d.rolls[w.h]) || l[0]; };
+  const SLOT = { helm: 'Helm', helmet: 'Helm', arms: 'Arms', gauntlets: 'Arms', chest: 'Chest', legs: 'Legs', class: 'Class Item', 'class item': 'Class Item' };
   for (const it of R.items) {
-    if (/^(helm|helmet|arms|gauntlets|chest|legs|class|class item)$/i.test(it.n)) { if (!it.adept && (it.encs.length || it.how.length || it.note)) armor.push(it); continue; }
+    if (SLOT[it.n.toLowerCase()]) { if (!it.adept) armor.push({ ...it, slot: SLOT[it.n.toLowerCase()], epic: /epic/i.test(it.label) }); continue; }
     const cat = it.n.match(/^(.+) Catalyst$/i), base = drops.find(x => near(x.n, cat ? cat[1] : it.n));
     if (cat && base) base.catalyst = [...it.encs, ...it.how].join(', ') || 'Yes';
     else if (it.adept) { if (base) base.adept = it.how.some(h => /master/i.test(h)) ? 'Master encounter challenges' : it.how.join(' · ') || 'Yes'; }
@@ -1410,58 +1411,77 @@ function raidPage(act, d, rot) {
     if (base) { if (isAdept) base.adept ||= x.enc; }
     else if (!isAdept) drops.push({ n: x.n.replace(/\s*\|.*$/, ''), w: find(x.key), encs: x.enc ? x.enc.split(/,\s*/) : [], how: [], note: '' });
   }
-  const slot = /^(helm|helmet|arms|gauntlets|chest|legs|class|class item)$/i;
-  const sets = [...new Set(act.loot.filter(x => x.type === 'Armor').map(x => x.n.replace(/\s+(Helm|Helmet|Arms|Gauntlets|Chest|Legs|Class Item|Armor)$/i, '')))].filter(n => !slot.test(n));
+  // the raid's armor, one piece per slot and class (its Bungie source names the raid), with the encounters Llama lists for that slot
+  const slotOf = ty => /Helmet/.test(ty) ? 'Helm' : /Gauntlets/.test(ty) ? 'Arms' : /Chest/.test(ty) ? 'Chest' : /Leg/.test(ty) ? 'Legs' : 'Class Item';
+  const order = ['Helm', 'Arms', 'Chest', 'Legs', 'Class Item'], CLASSES = ['Hunter', 'Titan', 'Warlock'];
+  const pieces = [...new Map(a.armor.filter(x => x.ti === 'Legendary' && x.cl && fold(x.src).includes(fold(R.title))).map(x => [x.n + x.cl, x])).values()]
+    .map(x => { const epic = /epic/i.test(x.src), row = armor.find(r => r.slot === slotOf(x.ty) && r.epic === epic);
+      return { x, epic, slot: slotOf(x.ty), encs: row?.encs || [], notes: row ? [...row.how, row.note] : [] }; })
+    .sort((p, q) => p.epic - q.epic || order.indexOf(p.slot) - order.indexOf(q.slot));
   const { weeks, cur } = rotationWeeks(rot), on = w => w.raids.find(n => fold(act.name).startsWith(fold(n)));
   const next = weeks.find(w => w.start > cur.start && on(w));
   const fmt = s => new Date(s + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   const chips = l => l.length ? `<p class="encs">${l.map(e => `<span class="enc">${esc(e)}</span>`).join('')}</p>` : '';
-  const dropCard = x => { const w = x.w, href = w ? `#/weapon/${w.h}` : wikiHref(x.n);
-    return `<article class="drop" data-encs="${esc(x.encs.join('|'))}"${w ? ` data-h="${w.h}"` : ''}>
-      <a class="dropart" href="${href}" tabindex="-1" aria-hidden="true">${w?.ss ? `<img loading="lazy" src="${BNET}${w.ss}" alt="">` : ''}</a>
-      <div class="dropbody"><a class="dropname" href="${href}">${w ? icon(w) : ''}<span><b>${esc(x.n)}</b><small>${w ? `${tierBadge(d.rolls[w.h])}${esc(w.ty)}` : ''}</small></span></a>
-        <p class="dropfacts">${w ? `<span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span>` : ''}${w?.ti === 'Exotic' ? '<span class="badge exotic">Exotic</span>' : ''}${x.epic ? '<span class="badge">Epic only</span>' : ''}</p>
-        ${chips(x.encs)}${[x.how.join(' · '), x.adept && `Adept: ${x.adept}`, x.catalyst && `Catalyst: ${x.catalyst}`, x.note].filter(Boolean).map(t => `<p class="dropnote">${esc(t)}</p>`).join('')}
-        <p class="own"></p></div></article>`; };
-  const count = e => drops.filter(x => x.encs.includes(e)).length;
-  const main = `<section class="panel"><h2>Drops <span class="count">${drops.length}</span></h2>
-      <div class="dropfilter" role="group" aria-label="Show drops from"><button type="button" data-enc="" aria-pressed="true">Every encounter</button>${R.encs.map((e, i) =>
-        `<button type="button" data-enc="${esc(e)}" aria-pressed="false"><small>${i + 1}</small>${esc(e)} <span class="count">${count(e)}</span></button>`).join('')}</div>
-      <div class="dropfilter" id="ownfilter" role="group" aria-label="Show" hidden><button type="button" data-own="" aria-pressed="true">All</button><button type="button" data-own="need" aria-pressed="false">Missing</button><button type="button" data-own="have" aria-pressed="false">Owned</button></div>
-      <div class="drops">${drops.map(dropCard).join('')}</div></section>
-    ${armor.length || sets.length ? `<section class="panel"><h2>Armor</h2>${sets.length ? `<p class="refsrc">${esc(sets.join(', '))}</p>` : ''}<dl class="armordrops">${armor.map(it =>
-      `<dt>${esc(it.n)}${/epic/i.test(it.label) ? ' <span class="badge">Epic</span>' : ''}</dt><dd>${chips(it.encs)}${[...it.how, it.note].filter(Boolean).map(t => `<span class="dropnote">${esc(t)}</span>`).join('')}</dd>`).join('')}</dl></section>` : ''}`;
+  const dropCard = (x, href, sub, facts, notes, attrs) => `<article class="drop" data-encs="${esc(x.encs.join('|'))}"${attrs}>
+      <a class="dropart" href="${href}" tabindex="-1" aria-hidden="true">${x.ss ? `<img loading="lazy" src="${BNET}${x.ss}" alt="">` : ''}</a>
+      <div class="dropbody"><a class="dropname" href="${href}">${x.i ? icon(x) : ''}<span class="dropttl"><b>${esc(x.n)}</b><small>${sub}</small></span></a>
+        <p class="dropfacts">${facts}</p>${chips(x.encs)}${notes.filter(Boolean).map(t => `<p class="dropnote">${esc(t)}</p>`).join('')}
+        <p class="own"></p></div></article>`;
+  const gunCard = x => { const w = x.w;
+    return dropCard({ ...w, n: x.n, encs: x.encs }, w ? `#/weapon/${w.h}` : wikiHref(x.n), w ? `${tierBadge(d.rolls[w.h])}${esc(w.ty)}` : '',
+      `${w ? `<span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span>` : ''}${w?.ti === 'Exotic' ? '<span class="badge exotic">Exotic</span>' : ''}${x.epic ? '<span class="badge">Epic only</span>' : ''}`,
+      [x.how.join(' · '), x.adept && `Adept: ${x.adept}`, x.catalyst && `Catalyst: ${x.catalyst}`, x.note], w ? ` data-h="${w.h}"` : ''); };
+  const armorCard = p => dropCard({ ...p.x, encs: p.encs }, `#/armor/${p.x.h}`, esc(p.x.ty), p.epic ? '<span class="badge">Epic only</span>' : '', p.notes, ` data-a="${p.x.h}" data-class="${esc(p.x.cl)}"`);
+  const count = e => drops.filter(x => x.encs.includes(e)).length + (pieces.length ? armor : []).filter(r => r.encs.includes(e)).length;
+  const buttons = (attr, label, l, cur) => `<div class="dropfilter" role="group" aria-label="${label}">${l.map(([v, t]) => `<button type="button" data-${attr}="${esc(v)}" aria-pressed="${v === cur}">${t}</button>`).join('')}</div>`;
+  const main = `<section class="panel"><h2>Drops</h2>
+      ${buttons('enc', 'Show drops from', [['', 'Every encounter'], ...R.encs.map((e, i) => [e, `<small>${i + 1}</small>${esc(e)} <span class="count">${count(e)}</span>`])], '')}
+      <div id="ownfilter" hidden>${buttons('own', 'Show', [['', 'All'], ['need', 'Missing'], ['have', 'Owned']], '')}</div>
+      <h3 class="drophead">Weapons <span class="count">${drops.length}</span></h3><div class="drops">${drops.map(gunCard).join('')}</div>
+      ${pieces.length ? `<h3 class="drophead">Armor</h3>${buttons('cls', 'Armor for', CLASSES.map(c => [c, c]), 'Hunter')}<div class="drops">${pieces.map(armorCard).join('')}</div>`
+        : armor.length ? `<h3 class="drophead">Armor</h3><dl class="armordrops">${armor.map(it => `<dt>${esc(it.n)}</dt><dd>${chips(it.encs)}</dd>`).join('')}</dl>` : ''}</section>`;
   const side = `<section class="panel" id="raidmine"><h2>Your collection</h2><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see which drops you own and how good your best copy is.'}</p></section>
     <section class="panel"><h2>Rotation</h2><p>${on(cur) ? `Featured this week${cur.master.some(n => fold(act.name).startsWith(fold(n))) ? ', with Master' : ''}.` : `Not featured this week.${next ? ` Next featured the week of ${fmt(next.start)}.` : ''}`}</p></section>
     ${R.notes.length ? `<section class="panel raidnotes"><h2>Notes</h2>${R.notes.map(n => `<p class="raidnote">${esc(n)}</p>`).join('')}<p class="refsrc">From Llama's sheets (Raid Loot, by Court).</p></section>` : ''}`;
   const wire = () => {
-    const grid = $app.querySelector('.drops'), filt = { enc: '', own: '' };
-    const apply = () => grid.querySelectorAll('.drop').forEach(c => c.hidden = (filt.enc && !c.dataset.encs.split('|').includes(filt.enc)) || (filt.own && c.dataset.own !== filt.own));
-    $app.querySelectorAll('.dropfilter').forEach(g => g.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
-      g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-      if ('enc' in b.dataset) filt.enc = b.dataset.enc; else filt.own = b.dataset.own; apply(); }));
-    if (Bungie.token()) showRaidCopies(d, grid);
+    const panel = $app.querySelector('.drops').closest('section'), filt = { enc: '', own: '', cls: 'Hunter' };
+    const apply = () => panel.querySelectorAll('.drop').forEach(c => c.hidden = (filt.enc && !c.dataset.encs.split('|').includes(filt.enc))
+      || (c.dataset.class && c.dataset.class !== filt.cls) || (filt.own && c.dataset.own !== filt.own));
+    const pick = (attr, v) => { filt[attr] = v; panel.querySelectorAll(`[data-${attr}]`).forEach(x => x.setAttribute('aria-pressed', String(x.dataset[attr] === v))); apply(); };
+    panel.addEventListener('click', e => { const b = e.target.closest('.dropfilter button'); if (b) for (const k of ['enc', 'own', 'cls']) if (k in b.dataset) pick(k, b.dataset[k]); });
+    apply();
+    // signed in, armor starts on your first character's class
+    if (Bungie.token()) showRaidCopies(d, a, panel).then(cls => CLASSES.includes(cls) && pick('cls', cls));
   };
   return { main, side, wire, flavor: [R.launched && `Launched ${R.launched}`, R.refreshed && `refreshed ${R.refreshed}`].filter(Boolean).join(' · '),
     badge: on(cur) ? '<span class="badge good">Featured this week</span>' : '' };
 }
 
-// On a raid's drop cards: how many copies you own (any version, adept included) and the best one's roll.
-async function showRaidCopies(d, grid) {
+// On a raid's drop cards: how many copies you own (any version, adept included) with the best weapon roll or armor tier.
+// Returns your first character's class.
+async function showRaidCopies(d, a, panel) {
   const box = $app.querySelector('#raidmine');
   try {
     const prof = await profile(); renderAccount();
-    if (!grid.isConnected) return;
-    let have = 0, god = 0;
-    const cards = [...grid.querySelectorAll('.drop[data-h]')];
-    for (const c of cards) {
+    if (!panel.isConnected) return;
+    let guns = 0, god = 0, worn = 0;
+    const gunCards = [...panel.querySelectorAll('.drop[data-h]')], armorCards = [...panel.querySelectorAll('.drop[data-a]')];
+    for (const c of gunCards) {
       const w = d.byHash[c.dataset.h], mine = prof.items.filter(i => { const x = d.byHash[i.itemHash]; return x && baseName(x.n) === baseName(w.n) && x.ty === w.ty; });
       const best = bestFit(mine.map(i => rollFit(d, d.rolls[i.itemHash] || d.rolls[w.h], i.plugs))), adept = mine.filter(i => d.byHash[i.itemHash].n !== baseName(w.n)).length;
-      c.dataset.own = mine.length ? 'have' : 'need'; have += !!mine.length; god += isGod(best);
+      c.dataset.own = mine.length ? 'have' : 'need'; guns += !!mine.length; god += isGod(best);
       c.querySelector('.own').innerHTML = mine.length ? `<span class="have">You have ${mine.length}${adept ? ` · ${adept} adept` : ''}</span>${rollPips(best)}` : '<span class="need">Not in your vault</span>';
     }
+    for (const c of armorCards) {
+      const x = a.byHash[c.dataset.a], mine = prof.items.filter(i => { const y = a.byHash[i.itemHash]; return y && y.n === x.n && y.cl === x.cl; });
+      const tier = Math.max(0, ...mine.map(i => i.tier || 0));
+      c.dataset.own = mine.length ? 'have' : 'need'; worn += !!mine.length;
+      c.querySelector('.own').innerHTML = mine.length ? `<span class="have">You have ${mine.length}</span>${tier ? `<span class="badge${tier === 5 ? ' good' : ''}">Best: Tier ${tier}</span>` : ''}` : '<span class="need">Not in your vault</span>';
+    }
     $app.querySelector('#ownfilter').hidden = false;
-    box.innerHTML = `<h2>Your collection</h2><p><b>${have}</b> of ${cards.length} drops in your vault${god ? `, <b>${god}</b> with a god roll` : ''}.</p><p class="hint">${rollLegend}</p>`;
+    box.innerHTML = `<h2>Your collection</h2><p><b>${guns}</b> of ${gunCards.length} weapons${god ? `, <b>${god}</b> with a god roll` : ''}.</p>
+      ${armorCards.length ? `<p><b>${worn}</b> of ${armorCards.length} armor pieces (all classes).</p>` : ''}<p class="hint">${rollLegend}</p>`;
+    return prof.chars[0]?.cls;
   } catch (e) { box.innerHTML = `<h2>Your collection</h2><p>${esc(e.message)}</p>`; }
 }
 

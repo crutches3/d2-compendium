@@ -7,13 +7,15 @@ import assert from 'assert';
 const W = JSON.parse(fs.readFileSync('data/weapons.json')).weapons;
 const R = JSON.parse(fs.readFileSync('data/godrolls.json')).rolls;
 const rated = n => W.find(w => w.n === n && R[w.h]?.c?.length);
+const A = JSON.parse(fs.readFileSync('data/armor.json')), mask = A.armor.find(x => x.n === 'Darkhollow Mask');
 const doom = rated('Doom of Chelchis'), zaouli = W.find(w => w.n === "Zaouli's Bane (Harrowed)");
 const profile = {
   characters: { data: { H1: { classType: 1, light: 480 } } },
-  profileInventory: { data: { items: [{ itemHash: doom.h, itemInstanceId: '1', bucketHash: 138197802 }, { itemHash: zaouli.h, itemInstanceId: '2', bucketHash: 138197802 }] } },
+  profileInventory: { data: { items: [{ itemHash: doom.h, itemInstanceId: '1', bucketHash: 138197802 }, { itemHash: zaouli.h, itemInstanceId: '2', bucketHash: 138197802 },
+    { itemHash: mask.h, itemInstanceId: '3', bucketHash: 138197802 }] } },
   characterInventories: { data: { H1: { items: [] } } }, characterEquipment: { data: { H1: { items: [] } } },
   // the Doom of Chelchis copy has a Perk 1 and a Perk 2 pick (a god roll); the adept Zaouli's Bane has no perks
-  itemComponents: { sockets: { data: { 1: { sockets: R[doom.h].c.map(col => ({ plugHash: col[0] })) }, 2: { sockets: [] } } }, reusablePlugs: { data: {} }, instances: { data: {} }, stats: { data: {} } },
+  itemComponents: { sockets: { data: { 1: { sockets: R[doom.h].c.map(col => ({ plugHash: col[0] })) }, 2: { sockets: [] } } }, reusablePlugs: { data: {} }, instances: { data: { 3: { gearTier: 4 } } }, stats: { data: {} } },
 };
 const b = await chromium.launch();
 const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
@@ -23,11 +25,11 @@ const p = await ctx.newPage();
 await p.clock.setFixedTime(new Date('2026-10-23T12:00:00Z'));
 const errs = []; p.on('pageerror', e => errs.push(e.message));
 const card = n => `.drop:has(.dropname b:text-is("${n}"))`;
-const visible = () => p.$$eval('.drop', cs => cs.filter(c => !c.hidden).map(c => c.querySelector('b').textContent));
+const visible = (sel = '.drop[data-h]') => p.$$eval(sel, cs => cs.filter(c => !c.hidden).map(c => c.querySelector('b').textContent));
 
 // signed out: every drop as a card with its picture and named encounters, Llama's spelling linked to the game's weapon
 await p.goto("http://localhost:8765/#/wiki/King's%20Fall"); await p.waitForSelector('.drop');
-assert.deepEqual(await p.$$eval('.drop .dropname b', bs => bs.map(x => x.textContent)),
+assert.deepEqual(await p.$$eval('.drop[data-h] .dropname b', bs => bs.map(x => x.textContent)),
   ['Defiance of Yasmin', 'Doom of Chelchis', "Midha's Reckoning", "Qullim's Terminus", 'Smite of Merain', "Zaouli's Bane", 'Touch of Malice']);
 assert.deepEqual(await p.$$eval(`${card('Defiance of Yasmin')} .enc`, es => es.map(x => x.textContent)), ['Warpriest', 'Daughters', 'Oryx']);
 assert.match(await p.getAttribute(`${card("Qullim's Terminus")} .dropname`, 'href'), /^#\/weapon\/\d+$/);
@@ -35,14 +37,24 @@ assert.match(await p.getAttribute(`${card('Defiance of Yasmin')} .dropart img`, 
 assert.ok((await p.innerText(card('Defiance of Yasmin'))).includes('Adept: Master encounter challenges'));
 assert.ok((await p.innerText(card('Touch of Malice'))).includes('Catalyst: Raid Puzzles'));
 // encounters in order, each filtering the cards
+// the small icon sits beside the name, not pushed down under it
+assert.ok(await p.$eval(`${card('Defiance of Yasmin')} .dropname`, a => { const i = a.querySelector('.icon img').getBoundingClientRect(), b = a.querySelector('.icon').getBoundingClientRect(); return Math.abs(i.top - b.top) < 4; }));
+// encounters in order (counting weapons and armor slots), each filtering the cards
 assert.deepEqual(await p.$$eval('.dropfilter button[data-enc]', bs => bs.slice(1).map(x => x.textContent.replace(/\s+/g, ' ').trim())),
-  ['1Totems 2', '2Warpriest 3', '3Golgoroth 2', '4Daughters 4', '5Oryx 7']);
+  ['1Totems 4', '2Warpriest 5', '3Golgoroth 4', '4Daughters 6', '5Oryx 9']);
 await p.click('.dropfilter button[data-enc="Golgoroth"]');
 assert.deepEqual(await visible(), ['Doom of Chelchis', "Midha's Reckoning"]);
 await p.click('.dropfilter button[data-enc=""]'); assert.equal((await visible()).length, 7);
 assert.ok(!(await p.isVisible('#ownfilter')));
-// armor by slot, the rotation and Llama's notes
-assert.deepEqual(await p.$$eval('.armordrops dt:text-is("Helm") + dd .enc', es => es.map(x => x.textContent)), ['Golgoroth', 'Oryx']);
+// armor as cards too, one class at a time: each piece with its picture and the encounters Llama lists for its slot
+assert.deepEqual(await visible('.drop[data-a]'), ['Darkhollow Mask', 'Darkhollow Grasps', 'Darkhollow Chiton', 'Darkhollow Treads', 'Darkhollow Mantle']);
+assert.deepEqual(await p.$$eval(`${card('Darkhollow Mask')} .enc`, es => es.map(x => x.textContent)), ['Golgoroth', 'Oryx']);
+assert.match(await p.getAttribute(`${card('Darkhollow Mask')} .dropname`, 'href'), new RegExp(`^#/armor/${mask.h}$`));
+await p.click('.dropfilter button[data-cls="Titan"]'); assert.equal((await visible('.drop[data-a]')).length, 5);
+assert.ok(!(await visible('.drop[data-a]')).includes('Darkhollow Mask'));
+await p.click('.dropfilter button[data-enc="Golgoroth"]'); assert.equal((await visible('.drop[data-a]')).length, 2);
+await p.click('.dropfilter button[data-enc=""]'); await p.click('.dropfilter button[data-cls="Hunter"]');
+// the rotation and Llama's notes
 assert.ok(await p.$('.hero .badge:text-is("Featured this week")'));
 assert.match(await p.innerText('.wside'), /Featured this week, with Master\./);
 assert.ok((await p.innerText('.wside')).includes('has a vendor after defeating Oryx'));
@@ -54,15 +66,20 @@ assert.match(await p.innerText(`${card('Doom of Chelchis')} .own`), /^You have 1
 assert.ok(await p.$(`${card('Doom of Chelchis')} .own .pips.g-god`));
 assert.equal(await p.innerText(`${card("Zaouli's Bane")} .own .have`), 'You have 1 · 1 adept');
 assert.equal(await p.innerText(`${card('Defiance of Yasmin')} .own`), 'Not in your vault');
-assert.match(await p.innerText('#raidmine'), /2 of 7 drops in your vault, 1 with a god roll\./);
-await p.click('#ownfilter button[data-own="need"]'); assert.equal((await visible()).length, 5);
-await p.click('#ownfilter button[data-own="have"]'); assert.deepEqual(await visible(), ['Doom of Chelchis', "Zaouli's Bane"]);
+assert.match(await p.innerText('#raidmine'), /2 of 7 weapons, 1 with a god roll\.\s+1 of 15 armor pieces/);
+assert.equal(await p.innerText(`${card('Darkhollow Mask')} .own`), 'You have 1\nBest: Tier 4');
+assert.equal(await p.innerText(`${card('Darkhollow Grasps')} .own`), 'Not in your vault');
+await p.click('#ownfilter button[data-own="need"]'); assert.equal((await visible()).length, 5); assert.equal((await visible('.drop[data-a]')).length, 4);
+await p.click('#ownfilter button[data-own="have"]'); assert.deepEqual(await visible(), ['Doom of Chelchis', "Zaouli's Bane"]); assert.deepEqual(await visible('.drop[data-a]'), ['Darkhollow Mask']);
 await p.click('.dropfilter button[data-enc="Golgoroth"]'); assert.deepEqual(await visible(), ['Doom of Chelchis']);
 
 // Desert Perpetual: one page for Standard and Epic, Epic-only drops marked
 await p.goto('http://localhost:8765/#/wiki/Desert%20Perpetual%20%26%20Epic%20DP'); await p.waitForSelector('.drop');
 assert.ok(await p.$(`${card('Cusp Sempiternal')} .badge:text-is("Epic only")`));
 assert.ok(!(await p.$(`${card('Antedate')} .badge:text-is("Epic only")`)));
+// its Standard and Epic armor sets, each with its own encounters
+assert.equal((await visible('.drop[data-a]')).length, 10);
+assert.ok(await p.$('.drop[data-a]:not([hidden]) .badge:text-is("Epic only")'));
 
 assert.deepEqual(errs, []);
 await b.close();
