@@ -1258,7 +1258,7 @@ const wikiHref = n => '#/wiki/' + encodeURIComponent(n);
 const fold = t => t.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[’‘]/g, "'").toLowerCase().replace(/^the /, '').trim();
 // the same name give or take one letter ("Quillim's" in one sheet, "Qullim's" in the game)
 const near = (a, b) => { a = fold(a).replace(/[^a-z0-9]/g, ''); b = fold(b).replace(/[^a-z0-9]/g, '');
-  if (a === b) return true; if (Math.abs(a.length - b.length) > 1 || a.length < 8) return false;
+  if (a === b) return true; if (Math.abs(a.length - b.length) > 1 || a.length < 8 || /\d/.test(a + b)) return false;  // IKELOS_SG and IKELOS_SMG differ
   let i = 0; while (a[i] === b[i]) i++;
   return a.slice(i + 1) === b.slice(i + 1) || a.slice(i + 1) === b.slice(i) || a.slice(i) === b.slice(i + 1); };
 const rxEsc = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1281,47 +1281,42 @@ async function wikiData() {
         enc: r[col('Encounter(s)')] || '', how: r[col('Acquisition Method')] || '' });
     }
   }
-  // dungeon encounters from Llama's Dungeon Loot: a dungeon's name row, a "Loot | 1st | 2nd…" header, then an item with the encounter under each column
-  let dun, encCols;
-  for (const r of tabs.find(t => t.tab === 'Dungeon Loot')?.rows || []) {
-    if (r[0] && acts.get(r[0].toLowerCase())?.kind === 'Dungeon') { dun = acts.get(r[0].toLowerCase()); encCols = null; continue; }
-    if (r.includes('Loot')) { encCols = r.flatMap((c, i) => /^\d+(st|nd|rd|th)$/.test(c) ? [i] : []); continue; }
-    if (!dun || !encCols?.length) continue;
-    const name = r.slice(0, encCols[0]).filter(Boolean).at(-1), item = name && dun.loot.find(x => x.key === name.toLowerCase());
-    const cells = encCols.map(i => (r[i] || '').replace(/\s*\n\s*/g, ' ')).filter(Boolean), named = [...new Set(cells.filter(c => !/^if attuned$/i.test(c)))];
-    if (item && cells.length) item.enc = named.join(', ') + (named.length < cells.length ? `${named.length ? ' · ' : ''}more if attuned` : '');
-  }
-  // raids from Llama's Raid Loot (made by Court): a block per raid (its name in capitals, launch and refresh dates), "Loot | 1st | 2nd…"
-  // headers, then a row per item with the encounter that drops it under each column ("Standard & Epic\nAgraios" is Agraios)
-  let raid, cols, adept, blk = 0, label;
-  const ord = c => /^\d+(st|nd|rd|th)$/.test(c), last = c => c.split('\n').map(x => x.trim()).filter(Boolean).at(-1) || '';
-  for (const r of tabs.find(t => t.tab === 'Raid Loot')?.rows || []) {
+  // raids and dungeons from Llama's Raid Loot and Dungeon Loot (made by Court): a block per activity (its name in capitals, launch and refresh
+  // dates), "Loot | 1st | 2nd…" headers, then a row per item with the encounter that drops it under each column. A cell can open with the
+  // mode ("Standard & Epic\nAgraios" is Agraios) or wrap a name over two lines ("Dredgen\nSere").
+  let llama, cols, adept, blk = 0, label;
+  const ord = c => /^\d+(st|nd|rd|th)$/.test(c), lines = c => c.split('\n').map(x => x.trim()).filter(Boolean);
+  const cellName = c => { const l = lines(c); if (l.length > 1 && /^(standard|epic)\b/i.test(l[0])) l.shift(); return l.join(' ').replace(/\*+$/, ''); };  // "Gahlran**" points at a footnote
+  for (const [tab, kind] of [['Raid Loot', 'Raid'], ['Dungeon Loot', 'Dungeon']]) for (const r of tabs.find(t => t.tab === tab)?.rows || []) {
     if (r[0] && r[6]?.includes('\n')) {
-      const lines = r[6].split('\n').map(x => x.trim()), title = lines.find(x => /[A-Z]/.test(x) && x === x.toUpperCase() && !/\d/.test(x));
-      const act = title && [...acts.values()].find(a => a.kind === 'Raid' && fold(a.name).startsWith(fold(title)));
-      const date = k => lines.find(x => x.startsWith(k))?.split(':').slice(1).join(':').trim() || '';
-      raid = act && (act.raid ||= { title, launched: date('Launched'), refreshed: date('Refreshed'), notes: [], items: [] });
-      label = lines[0] === title ? '' : lines[0]; cols = null; continue;
+      const ls = lines(r[6]), title = ls.find(x => /[A-Z]/.test(x) && x === x.toUpperCase() && !/\d/.test(x));
+      const act = title && [...acts.values()].find(a => a.kind === kind && fold(a.name).startsWith(fold(title)));
+      const date = k => ls.find(x => x.startsWith(k))?.split(':').slice(1).join(':').trim() || '';
+      llama = act && (act.llama ||= { title, tab, launched: date('Launched'), refreshed: date('Refreshed'), notes: [], items: [] });
+      label = ls[0] === title ? '' : ls[0]; cols = null; continue;
     }
-    if (!raid) continue;
+    if (!llama) continue;
     if (/Loot$/.test(r[2]) && r.some(ord)) { cols = r.flatMap((c, i) => ord(c) ? [i] : []); adept = /adept/i.test(r[2]); blk++; continue; }
     const long = r.slice(2).filter(c => c.length > 90 || (c.length > 40 && !r[3] && c === r[2]));
-    long.forEach(c => raid.notes.includes(c) || /@/.test(c) || raid.notes.push(c));
+    long.forEach(c => llama.notes.includes(c) || /@/.test(c) || llama.notes.push(c));
     if (!cols || !r[3]) continue;
-    raid.items.push({ n: last(r[3]), adept, blk, label, cells: cols.map(i => r[i] && r[i] !== '-' && !/@/.test(r[i]) ? last(r[i]) : ''),
+    llama.items.push({ n: lines(r[3]).at(-1).replace(/\*+$/, ''), adept, blk, label, cells: cols.map(i => r[i] && r[i] !== '-' && !/@/.test(r[i]) ? cellName(r[i]) : ''),
       note: r.slice(cols.at(-1) + 1).find(c => c && c.length <= 90) || '' });
   }
-  // a column's encounter is the name most of its rows give; anything else in a cell ("Raid Puzzles", "Complete any Master Encounter Challenge") says how
-  for (const R of [...acts.values()].map(a => a.raid).filter(Boolean)) {
-    const votes = {};
-    const unlock = c => /^after unlock$/i.test(c);
-    for (const it of R.items) if (!it.adept) it.cells.forEach((c, j) => { if (c && !unlock(c)) { const v = (votes[it.blk + '.' + j] ||= {}); v[c] = (v[c] || 0) + 1; } });
+  // A column's encounter is the name most of its rows give. "If attuned" or "If Dungeon is featured" means that encounter drops it only then;
+  // Pantheon weapons unlock from the encounter in their row, then drop "After unlock" from all of them; anything else ("Raid Puzzles",
+  // "Complete any Master Encounter Challenge") says how to get it.
+  for (const R of [...acts.values()].map(a => a.llama).filter(Boolean)) {
+    const votes = {}, when = c => /^(after unlock|if .+)$/i.test(c);
+    for (const it of R.items) if (!it.adept) it.cells.forEach((c, j) => { if (c && !when(c)) { const v = (votes[it.blk + '.' + j] ||= {}); v[c] = (v[c] || 0) + 1; } });
     const enc = k => Object.entries(votes[k] || {}).sort((x, y) => y[1] - x[1])[0]?.[0];
     R.encs = [...new Set(Object.keys(votes).sort((x, y) => parseFloat(x) - parseFloat(y)).map(enc))];
     for (const it of R.items) { it.encs = []; it.how = [];
-      // Pantheon: a weapon first drops from the encounter named in its row, then "After unlock" from all of them
-      const unlocks = it.cells.some(unlock);
-      it.cells.forEach((c, j) => c && !unlock(c) && (!it.adept && (unlocks || c === enc(it.blk + '.' + j)) ? it.encs : it.how).push(c));
+      const unlocks = it.cells.some(c => /^after unlock$/i.test(c)), only = {};
+      it.cells.forEach((c, j) => { if (!c) return; const e = enc(it.blk + '.' + j);
+        if (/^if /i.test(c)) (only[c.toLowerCase()] ||= []).push(e);
+        else if (!when(c)) (!it.adept && (unlocks || c === e) ? it.encs : it.how).push(c); });
+      for (const [c, es] of Object.entries(only)) it.how.push(`Also ${es.filter(Boolean).join(' and ')} ${c.replace('dungeon', 'the dungeon')}`);
       if (unlocks) it.how.push('Unlocks from that encounter, then drops from every encounter'); }
   }
   // everything the sheets and the artifacts define, by name
@@ -1358,7 +1353,7 @@ async function wikiPage(raw) {
   // the loot table links each weapon to its page: the version from this activity if the names repeat, else a rated one
   const lootWeapon = x => { const l = d.weapons.filter(w => w.n.toLowerCase() === x.key); return l.find(w => act && w.src.includes(act.name)) || l.find(w => d.rolls[w.h]) || l[0]; };
   const tags = [act?.kind, champ && 'Champion', weapon && `${weapon.ti} ${weapon.ty}`, armor && `${armor.ti} ${armor.ty}`, ...new Set(defs.map(x => x.where === 'Artifact perks' ? 'Artifact perk' : x.where)), rollers.length && !defs.some(x => x.where === 'Weapon perks') && 'Weapon perk'].filter(Boolean);
-  const raid = act?.raid && raidPage(act, d, a, rot);
+  const raid = act && /Raid|Dungeon|mission/.test(act.kind) && lootPage(act, d, a, rot);
   const loot = act && !raid && `<section class="panel"><h2>Loot <span class="count">${act.loot.length}</span></h2>${act.loot.some(x => x.enc) || act.kind === 'Dungeon' ? '<p class="refsrc">Which encounters drop each item, from the Monument of Triumph and Llama\'s loot sheets.</p>' : ''}
     <div class="datawrap"><table class="data"><thead><tr><th scope="col">Item</th><th scope="col">Type</th><th scope="col">Element</th>${act.loot.some(x => x.enc) ? '<th scope="col">Encounters</th>' : ''}${act.loot.some(x => x.how) ? '<th scope="col">How</th>' : ''}</tr></thead>
     <tbody>${act.loot.map(x => { const w = lootWeapon(x);
@@ -1368,8 +1363,9 @@ async function wikiPage(raw) {
   const counters = W.tabs.find(t => t.tab === 'CHAMP COUNTERS LIST')?.url;
   const title = act?.name || champ || defs[0]?.e.term || weapon?.n || armor?.n || name, plug = d.plugs[[...plugs][0]];
   // laid out like a gun page: a banner (the activity's art, the item, or the perk's icon), the main panels, and a sticky side column
-  const art = weapon || armor || { n: title, ss: W.art.img[key], fl: raid?.flavor || plug?.d,
-    i: plug?.i || W.art.icon[key] || defs.find(x => x.icon)?.icon || W.art.icon[defs[0]?.where.toLowerCase()] };
+  const art = weapon || armor || { n: title, ss: W.art.img[key], fl: raid ? raid.flavor : plug?.d,
+    // an activity named like a perk (the Encore mission) keeps its own banner, not the perk's icon and text
+    i: raid ? null : plug?.i || W.art.icon[key] || defs.find(x => x.icon)?.icon || W.art.icon[defs[0]?.where.toLowerCase()] };
   const main = `${raid?.main || loot || ''}
     ${defs.length ? `<section class="panel"><h2>What it does</h2><dl class="entries">${defs.map(x => entryHtml(x.e, { W, self: name,
       where: x.i != null ? `<a href="#/ref/${x.i}">${esc(x.where)}</a>${x.section ? ' · ' + esc(x.section) : ''}` : `${esc(x.where)} · ${esc(x.section)}` })).join('')}</dl></section>` : ''}
@@ -1391,10 +1387,12 @@ async function wikiPage(raw) {
   $app.querySelector('#morerollers')?.addEventListener('click', e => { showRollers(Infinity); e.target.remove(); });
 }
 
-// A raid's page: every weapon and armor piece as a card with its picture and the encounters that drop it (Llama's Raid Loot, then the
-// Monument's list for anything it leaves out), adept and catalyst notes, this week's rotation, and, signed in, which drops you own.
-function raidPage(act, d, a, rot) {
-  const R = act.raid, drops = [], armor = [];
+// A raid, dungeon or exotic mission page: every weapon and armor piece as a card with its picture and the encounters that drop it (Llama's
+// Raid and Dungeon Loot, then the Monument's list for anything they leave out), adept and catalyst notes, this week's rotation, and, signed
+// in, which drops you own. Exotic missions have no encounter list, so their cards come from the Monument's list and the exotic's source.
+function lootPage(act, d, a, rot) {
+  const R = act.llama || { title: act.name, notes: [], items: [], encs: [] }, drops = [], armor = [], extras = [];
+  const letters = t => fold(t).replace(/[^a-z0-9]/g, '');
   const find = n => { const l = d.weapons.filter(w => near(w.n, n)); return l.find(w => w.src.includes(act.name)) || l.find(w => d.rolls[w.h]) || l[0]; };
   const SLOT = { helm: 'Helm', helmet: 'Helm', arms: 'Arms', gauntlets: 'Arms', chest: 'Chest', legs: 'Legs', class: 'Class Item', 'class item': 'Class Item' };
   for (const it of R.items) {
@@ -1403,7 +1401,8 @@ function raidPage(act, d, a, rot) {
     if (cat && base) base.catalyst = [...it.encs, ...it.how].join(', ') || 'Yes';
     else if (it.adept) { if (base) base.adept = it.how.some(h => /master/i.test(h)) ? 'Master encounter challenges' : it.how.join(' · ') || 'Yes'; }
     else if (base) base.encs = [...new Set([...base.encs, ...it.encs])];
-    else drops.push({ n: it.n, w: find(cat ? cat[1] : it.n), encs: it.encs, how: it.how, note: it.note, epic: /epic/i.test(it.label) });
+    else if (find(cat ? cat[1] : it.n)) drops.push({ n: it.n, w: find(cat ? cat[1] : it.n), encs: it.encs, how: it.how, note: it.note, epic: /epic/i.test(it.label) });
+    else extras.push(`${it.n}: ${[...it.encs, ...it.how].join(', ')}`);  // not a weapon (Equilibrium's crystals)
   }
   for (const x of act.loot) {
     if (x.type === 'Armor') continue;
@@ -1411,14 +1410,20 @@ function raidPage(act, d, a, rot) {
     if (base) { if (isAdept) base.adept ||= x.enc; }
     else if (!isAdept) drops.push({ n: x.n.replace(/\s*\|.*$/, ''), w: find(x.key), encs: x.enc ? x.enc.split(/,\s*/) : [], how: [], note: '' });
   }
+  // an exotic mission's exotic, which only its Bungie source names
+  for (const w of d.weapons) if (w.ti === 'Exotic' && act.kind !== 'Raid' && letters(w.src).includes(letters(act.name)) && !drops.some(x => near(x.n, w.n)))
+    drops.push({ n: w.n, w, encs: [], how: [], note: '' });
   // the raid's armor, one piece per slot and class (its Bungie source names the raid), with the encounters Llama lists for that slot
   const slotOf = ty => /Helmet/.test(ty) ? 'Helm' : /Gauntlets/.test(ty) ? 'Arms' : /Chest/.test(ty) ? 'Chest' : /Leg/.test(ty) ? 'Legs' : 'Class Item';
   const order = ['Helm', 'Arms', 'Chest', 'Legs', 'Class Item'], CLASSES = ['Hunter', 'Titan', 'Warlock'];
-  const pieces = [...new Map(a.armor.filter(x => x.ti === 'Legendary' && x.cl && fold(x.src).includes(fold(R.title))).map(x => [x.n + x.cl, x])).values()]
+  // armor whose Bungie source names the activity, or from a set the Monument lists for it ("Untethered Edge Armor")
+  const sets = act.loot.filter(x => x.type === 'Armor').map(x => x.n.replace(/\s+Armor$/i, '')).filter(n => !SLOT[n.toLowerCase()]);
+  const pieces = [...new Map(a.armor.filter(x => x.ti === 'Legendary' && x.cl && (letters(x.src).includes(letters(R.title)) || sets.some(n => x.n.startsWith(n + ' '))))
+    .map(x => [x.n + x.cl, x])).values()]
     .map(x => { const epic = /epic/i.test(x.src), row = armor.find(r => r.slot === slotOf(x.ty) && r.epic === epic);
       return { x, epic, slot: slotOf(x.ty), encs: row?.encs || [], notes: row ? [...row.how, row.note] : [] }; })
     .sort((p, q) => p.epic - q.epic || order.indexOf(p.slot) - order.indexOf(q.slot));
-  const { weeks, cur } = rotationWeeks(rot), on = w => w.raids.find(n => fold(act.name).startsWith(fold(n)));
+  const list = { Raid: 'raids', Dungeon: 'dungeons' }[act.kind], { weeks, cur } = rotationWeeks(rot), on = w => list && w[list].find(n => fold(act.name).startsWith(fold(n)));
   const next = weeks.find(w => w.start > cur.start && on(w));
   const fmt = s => new Date(s + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   const chips = l => l.length ? `<p class="encs">${l.map(e => `<span class="enc">${esc(e)}</span>`).join('')}</p>` : '';
@@ -1435,14 +1440,15 @@ function raidPage(act, d, a, rot) {
   const count = e => drops.filter(x => x.encs.includes(e)).length + (pieces.length ? armor : []).filter(r => r.encs.includes(e)).length;
   const buttons = (attr, label, l, cur) => `<div class="dropfilter" role="group" aria-label="${label}">${l.map(([v, t]) => `<button type="button" data-${attr}="${esc(v)}" aria-pressed="${v === cur}">${t}</button>`).join('')}</div>`;
   const main = `<section class="panel"><h2>Drops</h2>
-      ${buttons('enc', 'Show drops from', [['', 'Every encounter'], ...R.encs.map((e, i) => [e, `<small>${i + 1}</small>${esc(e)} <span class="count">${count(e)}</span>`])], '')}
+      ${R.encs.length ? buttons('enc', 'Show drops from', [['', 'Every encounter'], ...R.encs.map((e, i) => [e, `<small>${i + 1}</small>${esc(e)} <span class="count">${count(e)}</span>`])], '') : ''}
       <div id="ownfilter" hidden>${buttons('own', 'Show', [['', 'All'], ['need', 'Missing'], ['have', 'Owned']], '')}</div>
       <h3 class="drophead">Weapons <span class="count">${drops.length}</span></h3><div class="drops">${drops.map(gunCard).join('')}</div>
       ${pieces.length ? `<h3 class="drophead">Armor</h3>${buttons('cls', 'Armor for', CLASSES.map(c => [c, c]), 'Hunter')}<div class="drops">${pieces.map(armorCard).join('')}</div>`
         : armor.length ? `<h3 class="drophead">Armor</h3><dl class="armordrops">${armor.map(it => `<dt>${esc(it.n)}</dt><dd>${chips(it.encs)}</dd>`).join('')}</dl>` : ''}</section>`;
   const side = `<section class="panel" id="raidmine"><h2>Your collection</h2><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see which drops you own and how good your best copy is.'}</p></section>
-    <section class="panel"><h2>Rotation</h2><p>${on(cur) ? `Featured this week${cur.master.some(n => fold(act.name).startsWith(fold(n))) ? ', with Master' : ''}.` : `Not featured this week.${next ? ` Next featured the week of ${fmt(next.start)}.` : ''}`}</p></section>
-    ${R.notes.length ? `<section class="panel raidnotes"><h2>Notes</h2>${R.notes.map(n => `<p class="raidnote">${esc(n)}</p>`).join('')}<p class="refsrc">From Llama's sheets (Raid Loot, by Court).</p></section>` : ''}`;
+    ${list ? `<section class="panel"><h2>Rotation</h2><p>${on(cur) ? `Featured this week${cur.master.some(n => fold(act.name).startsWith(fold(n))) ? ', with Master' : ''}.` : `Not featured this week.${next ? ` Next featured the week of ${fmt(next.start)}.` : ''}`}</p></section>` : ''}
+    ${R.notes.length || extras.length ? `<section class="panel raidnotes"><h2>Notes</h2>${[...extras, ...R.notes].map(n => `<p class="raidnote">${esc(n)}</p>`).join('')}
+      ${R.tab ? `<p class="refsrc">From Llama's sheets (${R.tab}, by Court).</p>` : ''}</section>` : ''}`;
   const wire = () => {
     const panel = $app.querySelector('.drops').closest('section'), filt = { enc: '', own: '', cls: 'Hunter' };
     const apply = () => panel.querySelectorAll('.drop').forEach(c => c.hidden = (filt.enc && !c.dataset.encs.split('|').includes(filt.enc))

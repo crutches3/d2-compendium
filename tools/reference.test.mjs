@@ -63,7 +63,7 @@ assert.ok((await p.innerText('.entry dd')).includes('chain lightning'));
 assert.ok(await p.$('ul.mentions a:text-is("Ions")'));
 assert.equal(await p.textContent('ul.mentions li:has(a:text-is("Ions")) mark'), 'Jolted');
 
-// a raid's drops link to the weapon page, which links back (raid pages have their own test: tools/raid.test.mjs)
+// a raid's drops link to the weapon page, which links back (raid, dungeon and mission pages have their own test: tools/raid.test.mjs)
 await p.goto("http://localhost:8765/#/wiki/King's%20Fall"); await p.waitForSelector('.drop');
 await p.click('.dropname:has(b:text-is("Defiance of Yasmin"))'); await p.waitForSelector('#farmsrc a');
 assert.equal(await p.getAttribute('#farmsrc a', 'href'), "#/wiki/King's%20Fall");
@@ -77,10 +77,6 @@ assert.match(await p.getAttribute('.hero', 'style'), /raid_kings_fall/);
 await p.goto('http://localhost:8765/#/wiki/Arrowhead%20Brake'); await p.waitForSelector('.hero h1');
 assert.ok(await p.$('.hero.plain .icon img') && (await p.textContent('.hero .flavor')).includes('vented'));
 assert.deepEqual(await p.$$eval('.wside .deltas li', ls => ls.map(l => l.textContent)), ['+30 Recoil Direction', '+10 Handling']);
-
-// a dungeon's encounters come from Llama's sheet
-await p.goto('http://localhost:8765/#/wiki/Equilibrium'); await p.waitForSelector('table.data');
-assert.match(await p.textContent('tr:has(a.lootname:text-is("Bitter End")) td:last-child'), /Harrow, Dredgen Sere/);
 
 // a perk: one tag, and the weapons that can roll it, 24 at first
 await p.goto('http://localhost:8765/#/wiki/Kill%20Clip'); await p.waitForSelector('#rollers .card');

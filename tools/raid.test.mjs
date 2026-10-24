@@ -1,4 +1,4 @@
-// Browser test for raid pages: drop cards from Llama's Raid Loot (named encounters, adept and catalyst notes), filters, the rotation,
+// Browser test for raid, dungeon and exotic mission pages: drop cards from Llama's Raid Loot (named encounters, adept and catalyst notes), filters, the rotation,
 // and, against a mocked Bungie API, which drops you own. Pinned to week 20 (Oct 20 2026 reset: King's Fall featured).
 // Run from the repo root: python3 -m http.server 8765 & npm i --no-save playwright && node tools/raid.test.mjs
 import { chromium } from 'playwright';
@@ -80,6 +80,20 @@ assert.ok(!(await p.$(`${card('Antedate')} .badge:text-is("Epic only")`)));
 // its Standard and Epic armor sets, each with its own encounters
 assert.equal((await visible('.drop[data-a]')).length, 10);
 assert.ok(await p.$('.drop[data-a]:not([hidden]) .badge:text-is("Epic only")'));
+
+// a dungeon gets the same page: Llama's Dungeon Loot encounters, attunement and catalyst notes, its armor, and the rotation
+await p.goto('http://localhost:8765/#/wiki/Equilibrium'); await p.waitForSelector('.drop');
+assert.deepEqual(await p.$$eval(`${card('Bitter End')} .enc`, es => es.map(x => x.textContent)), ['Harrow', 'Dredgen Sere']);
+assert.ok((await p.innerText(card('Bitter End'))).includes('Also Assault if attuned'));
+assert.ok(await p.$(`${card('Heirloom')} .badge:text-is("Exotic")`) && (await p.innerText(card('Heirloom'))).includes('Catalyst:'));
+assert.deepEqual(await visible('.drop[data-a]'), ['Sage Protector Cowl', 'Sage Protector Grips', 'Sage Protector Vest', 'Sage Protector Strides', 'Sage Protector Cloak']);
+assert.match(await p.innerText('.wside'), /Featured this week/);
+// an exotic mission: the Monument's list plus its exotic, with no encounters or rotation, and the mission's banner rather than the Encore perk's icon
+await p.goto('http://localhost:8765/#/wiki/Encore'); await p.waitForSelector('.drop');
+assert.ok(await p.$(`${card('Choir of One')} .badge:text-is("Exotic")`));
+assert.equal((await visible('.drop[data-a]')).length, 5);
+assert.ok(!(await p.$('.dropfilter button[data-enc]')) && !(await p.$$eval('.wside h2', hs => hs.map(h => h.textContent))).includes('Rotation'));
+assert.ok(!(await p.$('.hero .icon')) && !(await p.$('.hero .flavor')));
 
 assert.deepEqual(errs, []);
 await b.close();
