@@ -1,4 +1,4 @@
-// Browser test for raid, dungeon and exotic mission pages: drop cards from Llama's Raid Loot (named encounters, adept and catalyst notes), filters, the rotation,
+// Browser test for raid, dungeon, exotic mission and destination pages: drop cards from Llama's Raid Loot (named encounters, adept and catalyst notes), filters, the rotation,
 // and, against a mocked Bungie API, which drops you own. Pinned to week 20 (Oct 20 2026 reset: King's Fall featured).
 // Run from the repo root: python3 -m http.server 8765 & npm i --no-save playwright && node tools/raid.test.mjs
 import { chromium } from 'playwright';
@@ -94,6 +94,23 @@ assert.ok(await p.$(`${card('Choir of One')} .badge:text-is("Exotic")`));
 assert.equal((await visible('.drop[data-a]')).length, 5);
 assert.ok(!(await p.$('.dropfilter button[data-enc]')) && !(await p.$$eval('.wside h2', hs => hs.map(h => h.textContent))).includes('Rotation'));
 assert.ok(!(await p.$('.hero .icon')) && !(await p.$('.hero .flavor')));
+
+// a destination: its surface weapons and armor sets, public events with how to make each Heroic, lost sectors with entrances, and Distortions
+await p.goto('http://localhost:8765/#/wiki/European%20Dead%20Zone'); await p.waitForSelector('.drop');
+assert.equal((await visible()).length, 6);
+assert.deepEqual(await visible('.drop[data-a]'), ['Wildwood Mask', 'Wildwood Grips', 'Wildwood Vest', 'Wildwood Strides', 'Wildwood Cloak']);
+assert.ok((await p.innerText('.entry:has(b:text-is("Glimmer Extraction"))')).includes('Destroy all three'));
+assert.equal(await p.$$eval('.drop.lost', cs => cs.length), 4);
+assert.ok((await p.innerText('.drop.lost:has(b:text-is("Excavation Site XII"))')).includes('Entrance: Firebase Hades'));
+assert.ok(await p.$('.drop.lost a.badge[href="#/wiki/Barrier"]'));
+assert.ok(await p.$('.hero .badge:text-is("Distortions")') && (await p.innerText('.wside')).includes('Distortion Breaches'));
+// Nessus's banner comes from its patrol zone; the Lawless Frontier has no public events or lost sectors, just its jobs, and two armor sets one after the other
+await p.goto('http://localhost:8765/#/wiki/Nessus'); await p.waitForSelector('.drop');
+assert.match(await p.getAttribute('.hero', 'style'), /patrol_nessus/);
+await p.goto('http://localhost:8765/#/wiki/The%20Lawless%20Frontier'); await p.waitForSelector('.drop');
+assert.deepEqual((await visible('.drop[data-a]')).slice(0, 3), ['Shrewd Survivor Cowl', 'Shrewd Survivor Grips', 'Shrewd Survivor Vest']);
+assert.ok(!(await p.$('.drop.lost')) && !(await p.$('.hero .badge:text-is("Distortions")')));
+assert.ok(await p.$('.entry b:text-is("Invasions")'));
 
 assert.deepEqual(errs, []);
 await b.close();

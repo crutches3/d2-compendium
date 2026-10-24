@@ -1341,7 +1341,7 @@ async function wikiData() {
 
 async function wikiPage(raw) {
   const name = decodeURIComponent(raw), key = name.toLowerCase();
-  const [W, d, a, rot] = await live(Promise.all([wikiData(), data(), armorData(), load('rotation')]));
+  const [W, d, a, rot, places] = await live(Promise.all([wikiData(), data(), armorData(), load('rotation'), load('destinations')]));
   const act = W.acts.get(key), defs = W.terms.get(key) || [], champ = CHAMPIONS.find(c => c.toLowerCase() === key);
   const weapon = d.weapons.find(w => w.n.toLowerCase() === key), armor = a.armor.find(x => x.n.toLowerCase() === key);
   // weapons that can roll a perk or frame of this name, one per weapon name, best rated first
@@ -1353,7 +1353,7 @@ async function wikiPage(raw) {
   // the loot table links each weapon to its page: the version from this activity if the names repeat, else a rated one
   const lootWeapon = x => { const l = d.weapons.filter(w => w.n.toLowerCase() === x.key); return l.find(w => act && w.src.includes(act.name)) || l.find(w => d.rolls[w.h]) || l[0]; };
   const tags = [act?.kind, champ && 'Champion', weapon && `${weapon.ti} ${weapon.ty}`, armor && `${armor.ti} ${armor.ty}`, ...new Set(defs.map(x => x.where === 'Artifact perks' ? 'Artifact perk' : x.where)), rollers.length && !defs.some(x => x.where === 'Weapon perks') && 'Weapon perk'].filter(Boolean);
-  const raid = act && /Raid|Dungeon|mission/.test(act.kind) && lootPage(act, d, a, rot);
+  const raid = act && /Raid|Dungeon|mission|Destination/.test(act.kind) && lootPage(act, d, a, rot, act.kind === 'Destination' && { ...places.places[act.name], how: places.events, distortions: places.distortions, art: W.art.places[fold(act.name)] });
   const loot = act && !raid && `<section class="panel"><h2>Loot <span class="count">${act.loot.length}</span></h2>${act.loot.some(x => x.enc) || act.kind === 'Dungeon' ? '<p class="refsrc">Which encounters drop each item, from the Monument of Triumph and Llama\'s loot sheets.</p>' : ''}
     <div class="datawrap"><table class="data"><thead><tr><th scope="col">Item</th><th scope="col">Type</th><th scope="col">Element</th>${act.loot.some(x => x.enc) ? '<th scope="col">Encounters</th>' : ''}${act.loot.some(x => x.how) ? '<th scope="col">How</th>' : ''}</tr></thead>
     <tbody>${act.loot.map(x => { const w = lootWeapon(x);
@@ -1363,7 +1363,7 @@ async function wikiPage(raw) {
   const counters = W.tabs.find(t => t.tab === 'CHAMP COUNTERS LIST')?.url;
   const title = act?.name || champ || defs[0]?.e.term || weapon?.n || armor?.n || name, plug = d.plugs[[...plugs][0]];
   // laid out like a gun page: a banner (the activity's art, the item, or the perk's icon), the main panels, and a sticky side column
-  const art = weapon || armor || { n: title, ss: W.art.img[key], fl: raid ? raid.flavor : plug?.d,
+  const art = weapon || armor || { n: title, ss: W.art.img[key] || W.art.places[fold(name)]?.img, fl: raid ? raid.flavor : plug?.d,
     // an activity named like a perk (the Encore mission) keeps its own banner, not the perk's icon and text
     i: raid ? null : plug?.i || W.art.icon[key] || defs.find(x => x.icon)?.icon || W.art.icon[defs[0]?.where.toLowerCase()] };
   const main = `${raid?.main || loot || ''}
@@ -1390,7 +1390,8 @@ async function wikiPage(raw) {
 // A raid, dungeon or exotic mission page: every weapon and armor piece as a card with its picture and the encounters that drop it (Llama's
 // Raid and Dungeon Loot, then the Monument's list for anything they leave out), adept and catalyst notes, this week's rotation, and, signed
 // in, which drops you own. Exotic missions have no encounter list, so their cards come from the Monument's list and the exotic's source.
-function lootPage(act, d, a, rot) {
+// A destination (place: data/destinations.json plus the manifest's lost sectors) adds its public events, lost sectors and other activities.
+function lootPage(act, d, a, rot, place) {
   const R = act.llama || { title: act.name, notes: [], items: [], encs: [] }, drops = [], armor = [], extras = [];
   const letters = t => fold(t).replace(/[^a-z0-9]/g, '');
   const find = n => { const l = d.weapons.filter(w => near(w.n, n)); return l.find(w => w.src.includes(act.name)) || l.find(w => d.rolls[w.h]) || l[0]; };
@@ -1411,18 +1412,20 @@ function lootPage(act, d, a, rot) {
     else if (!isAdept) drops.push({ n: x.n.replace(/\s*\|.*$/, ''), w: find(x.key), encs: x.enc ? x.enc.split(/,\s*/) : [], how: [], note: '' });
   }
   // an exotic mission's exotic, which only its Bungie source names
-  for (const w of d.weapons) if (w.ti === 'Exotic' && act.kind !== 'Raid' && letters(w.src).includes(letters(act.name)) && !drops.some(x => near(x.n, w.n)))
+  for (const w of d.weapons) if (w.ti === 'Exotic' && !place && act.kind !== 'Raid' && letters(w.src).includes(letters(act.name)) && !drops.some(x => near(x.n, w.n)))
     drops.push({ n: w.n, w, encs: [], how: [], note: '' });
   // the raid's armor, one piece per slot and class (its Bungie source names the raid), with the encounters Llama lists for that slot
   const slotOf = ty => /Helmet/.test(ty) ? 'Helm' : /Gauntlets/.test(ty) ? 'Arms' : /Chest/.test(ty) ? 'Chest' : /Leg/.test(ty) ? 'Legs' : 'Class Item';
   const order = ['Helm', 'Arms', 'Chest', 'Legs', 'Class Item'], CLASSES = ['Hunter', 'Titan', 'Warlock'];
   // armor whose Bungie source names the activity, or from a set the Monument lists for it ("Untethered Edge Armor")
   const sets = act.loot.filter(x => x.type === 'Armor').map(x => x.n.replace(/\s+Armor$/i, '')).filter(n => !SLOT[n.toLowerCase()]);
-  const pieces = [...new Map(a.armor.filter(x => x.ti === 'Legendary' && x.cl && (letters(x.src).includes(letters(R.title)) || sets.some(n => x.n.startsWith(n + ' '))))
-    .map(x => [x.n + x.cl, x])).values()]
+  const setOf = x => sets.findIndex(n => fold(x.n).startsWith(fold(n) + ' '));
+  // one piece per name and class, the current (Armor 3.0) version when a set was reissued
+  const pieces = [...new Map(a.armor.filter(x => x.ti === 'Legendary' && x.cl && (!place && letters(x.src).includes(letters(R.title)) || sets.some(n => fold(x.n).startsWith(fold(n) + ' '))))
+    .sort((p, q) => (p.a3 || 0) - (q.a3 || 0)).map(x => [x.n + x.cl, x])).values()]
     .map(x => { const epic = /epic/i.test(x.src), row = armor.find(r => r.slot === slotOf(x.ty) && r.epic === epic);
       return { x, epic, slot: slotOf(x.ty), encs: row?.encs || [], notes: row ? [...row.how, row.note] : [] }; })
-    .sort((p, q) => p.epic - q.epic || order.indexOf(p.slot) - order.indexOf(q.slot));
+    .sort((p, q) => p.epic - q.epic || setOf(p.x) - setOf(q.x) || order.indexOf(p.slot) - order.indexOf(q.slot));
   const list = { Raid: 'raids', Dungeon: 'dungeons' }[act.kind], { weeks, cur } = rotationWeeks(rot), on = w => list && w[list].find(n => fold(act.name).startsWith(fold(n)));
   const next = weeks.find(w => w.start > cur.start && on(w));
   const fmt = s => new Date(s + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -1444,13 +1447,18 @@ function lootPage(act, d, a, rot) {
       <div id="ownfilter" hidden>${buttons('own', 'Show', [['', 'All'], ['need', 'Missing'], ['have', 'Owned']], '')}</div>
       <h3 class="drophead">Weapons <span class="count">${drops.length}</span></h3><div class="drops">${drops.map(gunCard).join('')}</div>
       ${pieces.length ? `<h3 class="drophead">Armor</h3>${buttons('cls', 'Armor for', CLASSES.map(c => [c, c]), 'Hunter')}<div class="drops">${pieces.map(armorCard).join('')}</div>`
-        : armor.length ? `<h3 class="drophead">Armor</h3><dl class="armordrops">${armor.map(it => `<dt>${esc(it.n)}</dt><dd>${chips(it.encs)}</dd>`).join('')}</dl>` : ''}</section>`;
+        : armor.length ? `<h3 class="drophead">Armor</h3><dl class="armordrops">${armor.map(it => `<dt>${esc(it.n)}</dt><dd>${chips(it.encs)}</dd>`).join('')}</dl>` : ''}</section>
+    ${place ? placePanels(place) : ''}`;
   const side = `<section class="panel" id="raidmine"><h2>Your collection</h2><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see which drops you own and how good your best copy is.'}</p></section>
+    ${place?.distorted ? `<section class="panel raidnotes"><h2>Distortions</h2><dl class="sidelist">${place.distortions.map(([t, x]) => `<dt>${esc(t)}</dt><dd>${esc(x)}</dd>`).join('')}</dl>
+      <p class="refsrc">From Bungie's Monument of Triumph notes.</p></section>` : ''}
     ${list ? `<section class="panel"><h2>Rotation</h2><p>${on(cur) ? `Featured this week${cur.master.some(n => fold(act.name).startsWith(fold(n))) ? ', with Master' : ''}.` : `Not featured this week.${next ? ` Next featured the week of ${fmt(next.start)}.` : ''}`}</p></section>` : ''}
     ${R.notes.length || extras.length ? `<section class="panel raidnotes"><h2>Notes</h2>${[...extras, ...R.notes].map(n => `<p class="raidnote">${esc(n)}</p>`).join('')}
       ${R.tab ? `<p class="refsrc">From Llama's sheets (${R.tab}, by Court).</p>` : ''}</section>` : ''}`;
   const wire = () => {
     const panel = $app.querySelector('.drops').closest('section'), filt = { enc: '', own: '', cls: 'Hunter' };
+    // a few of Bungie's screenshots are missing; leave the card's plain background instead of a broken image
+    $app.querySelectorAll('.dropart img').forEach(i => i.addEventListener('error', () => i.remove()));
     const apply = () => panel.querySelectorAll('.drop').forEach(c => c.hidden = (filt.enc && !c.dataset.encs.split('|').includes(filt.enc))
       || (c.dataset.class && c.dataset.class !== filt.cls) || (filt.own && c.dataset.own !== filt.own));
     const pick = (attr, v) => { filt[attr] = v; panel.querySelectorAll(`[data-${attr}]`).forEach(x => x.setAttribute('aria-pressed', String(x.dataset[attr] === v))); apply(); };
@@ -1459,8 +1467,29 @@ function lootPage(act, d, a, rot) {
     // signed in, armor starts on your first character's class
     if (Bungie.token()) showRaidCopies(d, a, panel).then(cls => CLASSES.includes(cls) && pick('cls', cls));
   };
-  return { main, side, wire, flavor: [R.launched && `Launched ${R.launched}`, R.refreshed && `refreshed ${R.refreshed}`].filter(Boolean).join(' · '),
-    badge: on(cur) ? '<span class="badge good">Featured this week</span>' : '' };
+  return { main, side, wire, flavor: place ? (place.art?.d.length > 40 ? place.art.d : '') : [R.launched && `Launched ${R.launched}`, R.refreshed && `refreshed ${R.refreshed}`].filter(Boolean).join(' · '),
+    badge: on(cur) ? '<span class="badge good">Featured this week</span>' : place?.distorted ? '<span class="badge">Distortions</span>' : '' };
+}
+
+// A destination's public events (with how to make each Heroic), its lost sectors as cards (entrance, difficulties, champions, shields,
+// modifiers) and its other activities and encounters.
+function placePanels(place) {
+  const lost = place.art?.lost || [];
+  const lostCard = x => `<article class="drop lost"><div class="dropart">${x.img ? `<img loading="lazy" src="${BNET}${x.img}" alt="">` : ''}</div>
+    <div class="dropbody"><p class="dropname"><span class="dropttl"><b>${esc(x.n)}</b><small>${place.lost?.[x.n] ? `Entrance: ${esc(place.lost[x.n])}` : 'Entrance not listed'}</small></span></p>
+      <p class="dropfacts">${x.champs.map(c => `<a class="badge" href="${wikiHref(c)}">${esc(c)}</a>`).join('')}${x.shields.map(e => `<span class="badge dmg-${esc(e)}">${esc(e)} shields</span>`).join('')}</p>
+      <p class="encs">${x.diffs.map(t => `<span class="enc">${esc(t)}</span>`).join('')}</p>
+      ${x.threat.length ? `<p class="dropnote">Threat: ${esc(x.threat.join(', '))}</p>` : ''}${x.mods.length ? `<p class="dropnote">Modifiers: ${esc(x.mods.join(', '))}</p>` : ''}</div></article>`;
+  const events = place.events || [];
+  return `${events.length ? `<section class="panel"><h2>Public events <span class="count">${events.length}</span></h2>
+      <p class="refsrc">A normal clear drops this destination's gear at Tier 3 and a Heroic clear at Tier 4, each with a chance to roll higher (Bungie, 9.7.0).</p>
+      <dl class="entries">${events.map(([n, bungie]) => `<div class="entry"><dt><b>${esc(n)}</b><small>${bungie ? 'Listed here by Bungie' : 'Listed here by community guides'}</small></dt>
+        <dd><b>Make it Heroic:</b> ${esc(place.how[n])}</dd></div>`).join('')}</dl>
+      <p class="refsrc">Heroic steps are from community guides, since Bungie doesn't publish them.</p></section>` : ''}
+    ${lost.length ? `<section class="panel"><h2>Lost sectors <span class="count">${lost.length}</span></h2>
+      <p class="refsrc">Champions, shields and modifiers are from the hardest version in Bungie's data. Entrances are from community guides.</p>
+      <div class="drops">${lost.map(lostCard).join('')}</div></section>` : ''}
+    ${place.also?.length ? `<section class="panel"><h2>Also here</h2><dl class="entries">${place.also.map(([t, x]) => `<div class="entry"><dt><b>${esc(t)}</b></dt><dd>${esc(x)}</dd></div>`).join('')}</dl></section>` : ''}`;
 }
 
 // On a raid's drop cards: how many copies you own (any version, adept included) with the best weapon roll or armor tier.

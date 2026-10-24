@@ -1,0 +1,87 @@
+{
+  "_about": "Hand-kept facts the Bungie API doesn't carry, for the wiki's destination pages (checked October 2026). Which public events run where: Bungie's own triumph text where it names one (bungie: true), otherwise community guides. Heroic triggers and lost sector entrances: community guides (Shacknews, GamesRadar, blueberries.gg, Destinypedia, ProGameTalk). Distortions, jobs and the other activities: Bungie's Monument of Triumph articles, 9.7.0 patch notes, Lawless Frontier guide and triumphs.",
+  "events": {
+    "Glimmer Extraction": "Each phase spawns a Glimmer refiner near the drill site. Destroy all three before the event ends.",
+    "Injection Rig": "Kill the Elite Psion that spawns, then destroy the vents it opens on the rig.",
+    "Cabal Excavation": "Once the drill is about a third done, a Thresher flies over. Shoot it down and a Cabal boss spawns.",
+    "Ether Resupply": "Partway through, three small Servitors appear next to the big one. Kill all three quickly, before they leave.",
+    "Taken Blight": "Step into one of the small blights on the ground to get Blight Receding, then shoot the big Blight in the sky while it lasts. Enough damage spawns the Blightmaker.",
+    "Fallen Walker": "Break one of the Walker's legs so it drops Arc charges, and dunk them into the receivers on the shields. A second Walker drops in; destroy both before time runs out.",
+    "Spire Integration": "Before the timer reaches 1:00, stand on the three Vex plates around the spire until each is captured. Follow the white data lines out of the spire to find them.",
+    "Crux Convergence": "Destroy the three scanner drones flying around each Darkness Crux.",
+    "Rift Generator": "After each wave a Blight appears over the water. Destroy it all three times, then kill the Wizards around the giant Blight to reach the Ascendant Realm and its Taken boss.",
+    "Ether Harvest": "Shoot down every Ether cloud before it reaches the harvester, wave after wave.",
+    "Hive Ritual": "Stand on the plates to drop the Wizards' shields, kill both Wizards, then destroy the two crystals above the portal.",
+    "Resonant Destruction": "Scorn drop orange orbs. Throw five of them into the escorted pyramid before the event ends."
+  },
+  "distortions": [
+    ["Every hour", "One of the seven destinations is distorted for an hour; the Destinations screen shows which one and the time left. Enemies are tougher and the sky turns red."],
+    ["Better public event loot", "Public events drop one gear tier higher than usual: Tier 4 for a normal clear and Tier 5 for a Heroic one."],
+    ["Expunging, Stitching and Cleansing", "Distortion-only events with their own weapon set."],
+    ["Distortion Breaches", "Can open after a public event finishes on a distorted destination."],
+    ["Strange Caches and Strange Signals", "Hidden caches to open, and an extradimensional signal whose rough location is marked on your map."],
+    ["Case Files", "Collectibles scattered around each distorted destination, for a Monument of Triumph triumph."]
+  ],
+  "places": {
+    "European Dead Zone": {
+      "distorted": true,
+      "events": [["Glimmer Extraction", true], ["Injection Rig", true], ["Cabal Excavation"], ["Ether Resupply"], ["Taken Blight"]],
+      "lost": { "Excavation Site XII": "Firebase Hades", "Scavenger's Den": "The Outskirts", "Skydock IV": "Sunken Isles", "The Quarry": "Sunken Isles" },
+      "also": [["Interceptors", "Grab an Interceptor and run over combatants anywhere in the EDZ (a Monument of Triumph triumph)."]]
+    },
+    "Cosmodrome": {
+      "distorted": true,
+      "events": [["Glimmer Extraction", true], ["Fallen Walker", true]],
+      "lost": { "Exodus Garden 2A": "The Divide", "Veles Labyrinth": "Forgotten Shore" },
+      "also": [["Spider Tanks", "Fallen Spider Tanks roam anywhere in the Cosmodrome."], ["Randal the Vandal", "A named Fallen target in the Forgotten Shore."], ["Skywatch remains", "Disturb the remains in Skywatch, then defeat the remnants of the past that show up."]]
+    },
+    "Moon": {
+      "distorted": true,
+      "events": [["Fallen Walker", true], ["Ether Resupply"]],
+      "lost": { "K1 Communion": "Anchor of Light", "K1 Crew Quarters": "Hellmouth", "K1 Logistics": "Archer's Line", "K1 Revelation": "Sorrow's Harbor" },
+      "also": [["Altars of Sorrow", "Repeatable wave defense near the Scarlet Keep; drops tiered loot since Monument of Triumph."], ["Tire Game", "Score or watch a perfect round of the tire game."]]
+    },
+    "Nessus": {
+      "distorted": true,
+      "events": [["Injection Rig", true], ["Cabal Excavation"], ["Ether Resupply"], ["Spire Integration"]],
+      "lost": { "The Conflux": "The Cistern", "The Rift": "Exodus Black" },
+      "also": [["Assimilated Demolishers", "Roaming Vex-converted enemies to hunt down."], ["Vex Craniums", "Pick them up in the Ancient's Haunt and use them on combatants."]]
+    },
+    "Europa": {
+      "distorted": true,
+      "events": [["Crux Convergence", true], ["Spire Integration", true], ["Ether Resupply", true]],
+      "lost": { "Bunker E15": "Eventide Ruins", "Concealed Void": "Asterion Abyss", "Perdition": "Cadmus Ridge" },
+      "also": [["Empire Hunts", "Hunt one of Eramis's lieutenants: The Technocrat, The Warrior or The Dark Priestess."]]
+    },
+    "The Dreaming City": {
+      "distorted": true,
+      "events": [["Rift Generator", true], ["Taken Blight"]],
+      "lost": { "Aphelion's Rest": "The Strand", "Bay of Drowned Wishes": "Divalian Mists", "Chamber of Starlight": "Rheasilvia" },
+      "also": [["Blind Well", "Wave defense in the Divalian Mists; drops tiered loot since Monument of Triumph."], ["Ascendant chests", "Open them with Tincture of Queensfoil."]]
+    },
+    "Savathun's Throne World": {
+      "distorted": true,
+      "events": [["Ether Harvest", true], ["Hive Ritual", true], ["Resonant Destruction", true]],
+      "lost": { "Extraction": "Quagmire", "Metamorphosis": "Miasma", "Sepulcher": "Florescent Canal" },
+      "also": [["The Wellspring", "Attack and Defend versions, launched from the Throne World."], ["Altars of Reflection", "Four memory missions entered from inside the Throne World."], ["Imbaru chest", "A hidden chest in the Queen's Bailey."]]
+    },
+    "Neomuna": {
+      "events": [["Spire Integration", true], ["Cabal Excavation", true], ["Injection Rig", true]],
+      "lost": { "Gilded Precept": "Ahimsa Park", "Hydroponics Delta": "Zephyr Concourse", "Thrilladrome": "Liming Harbor" },
+      "also": [["Terminal Overload", "A zone takeover that moves around Neomuna. It drops tiered loot, and once you have every crafting pattern its weapons drop from more places too."], ["Vex Incursion Zone", "A Vex-held part of Neomuna with its own public events and Strand sources to harness."]]
+    },
+    "The Pale Heart": {
+      "lost": { "The Blooming Deep": "The Blooming", "The Broken Deep": "The Impasse", "The Forgotten Deep": "The Landing" },
+      "also": [["Stitching", "Platforming event in the Landing, the Lost City and the Blooming."], ["Expunging", "Demolition event in the Landing, the Impasse and the Transgression."], ["Cleansing", "Event in the Seclusion and the Impasse."], ["Pathfinder", "Complete a Pathfinder journey."]]
+    },
+    "Kepler": {
+      "also": [["The Sieve", "A zone event that only runs at certain times of day. Bungie names it, with Time Latch missions, as the best source of higher-tier Kepler gear."], ["Time Latch missions", "The playlist with the best odds at higher-tier Kepler gear."]]
+    },
+    "The Lawless Frontier": {
+      "also": [["Jobs", "Pick a job on the Holomap: a mix of destination, Syndicate and job type (Sabotage, Bounty Hunt or Smuggle)."], ["Higher difficulty, better loot", "Raising a job's difficulty raises the gear tier it can drop, and higher difficulties hide more chests."], ["Exfil", "Reach the exfil point at the end, with the whole fireteam if you can. Some loot only counts if you exfil with it."], ["Invasions", "Jobs with a yellow frame are invadable: at Master or Grandmaster another player may invade you, and surviving gives better loot."]]
+    },
+    "Eternity": {
+      "also": [["Dares of Eternity", "Xûr's game show, launched from Eternity."]]
+    }
+  }
+}

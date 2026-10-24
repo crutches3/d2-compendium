@@ -11,7 +11,10 @@ BNET = 'https://www.bungie.net'
 ENDGAME = '1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY'  # Google Sheet id of Destiny 2: Endgame Analysis
 TABLES = ['DestinyInventoryItemDefinition', 'DestinyPlugSetDefinition', 'DestinyStatDefinition', 'DestinyCollectibleDefinition',
           'DestinyLoreDefinition', 'DestinySocketCategoryDefinition', 'DestinyDamageTypeDefinition', 'DestinyStatGroupDefinition',
-          'DestinyEquipableItemSetDefinition', 'DestinySandboxPerkDefinition', 'DestinyActivityDefinition', 'DestinyVendorDefinition']
+          'DestinyEquipableItemSetDefinition', 'DestinySandboxPerkDefinition', 'DestinyActivityDefinition', 'DestinyVendorDefinition',
+          'DestinyDestinationDefinition', 'DestinyActivityTypeDefinition']
+LOST_SECTOR = 103143560  # DestinyActivityTypeDefinition "Lost Sector"
+PLACE_ALIAS = {'arcadian valley': 'nessus'}  # the manifest's name for Nessus's patrol zone
 SKIP_STATS = {1480404414, 1935470627}  # Attack, Power
 AMMO = {1: 'Primary', 2: 'Special', 3: 'Heavy'}
 SLOT = {1498876634: 'Kinetic', 2465295065: 'Energy', 953998645: 'Power'}
@@ -138,7 +141,40 @@ def build_wiki(d, tabs):
     for t in DMG.values():
         dp = t.get('displayProperties', {})
         if dp.get('icon') and dp.get('name'): icons[dp['name'].lower()] = dp['icon']
-    return {'img': img, 'icon': icons}
+    return {'img': img, 'icon': icons, 'places': build_places(d)}
+
+
+def build_places(d):
+    """Each destination's banner and Bungie description, plus its lost sectors: picture, difficulties, champions, shields and modifiers.
+    Keyed like the site's fold() (lowercase, no accents, no leading "the")."""
+    A, D, AT = d['DestinyActivityDefinition'], d['DestinyDestinationDefinition'], d['DestinyActivityTypeDefinition']
+    key = lambda n: PLACE_ALIAS.get(re.sub(r'^the ', '', fold(n)), re.sub(r'^the ', '', fold(n)))
+    places = {}
+    for dest in D.values():
+        n, fr = dest['displayProperties'].get('name', ''), A.get(str(dest.get('defaultFreeroamActivityHash')), {})
+        if n and fr.get('pgcrImage') and 'placeholder' not in fr['pgcrImage']:
+            places.setdefault(key(n), {'img': fr['pgcrImage'], 'd': dest['displayProperties'].get('description', ''), 'lost': {}})
+    # a place without a destination of its own (the Lawless Frontier) takes the banner of an activity of its type
+    for h, t in AT.items():
+        k = key(t.get('displayProperties', {}).get('name', '') or '-')
+        if k in places or not any(a.get('activityTypeHash') == int(h) for a in A.values()): continue
+        pg = next((a['pgcrImage'] for a in A.values() if a.get('activityTypeHash') == int(h) and 'pgcr/' in a.get('pgcrImage', '')), '')
+        if pg and k in ('lawless frontier',): places[k] = {'img': pg, 'd': '', 'lost': {}}
+    rank = {'Expert': 0, 'Legend': 1, 'Master': 2}
+    for a in A.values():
+        m = re.match(r'^(.+): (Expert|Legend|Master)$', a['displayProperties'].get('name', ''))
+        p = places.get(key(D.get(str(a.get('destinationHash')), {}).get('displayProperties', {}).get('name', '')))
+        if a.get('activityTypeHash') != LOST_SECTOR or not m or p is None: continue
+        ls = p['lost'].setdefault(m[1], {'n': m[1], 'img': a.get('pgcrImage', ''), 'diffs': []})
+        if m[2] not in ls['diffs']: ls['diffs'].append(m[2])
+        # the hardest version's description lists its champions, shields and modifiers ("Champions: [Disruption] Overload, ...")
+        if rank[m[2]] >= max(rank[x] for x in ls['diffs']):
+            f = dict(re.findall(r'^(\w+): (.+)$', a['displayProperties'].get('description', ''), re.M))
+            clean = lambda v: [re.sub(r'\[[^\]]*\]\s*', '', x).strip() for x in v.split(',') if x.strip()] if v else []
+            ls.update(champs=clean(f.get('Champions')), shields=clean(f.get('Shields')), threat=clean(f.get('Threat') or f.get('Burn')), mods=clean(f.get('Modifiers')))
+    for p in places.values():
+        p['lost'] = sorted(({**x, 'diffs': sorted(x['diffs'], key=rank.get)} for x in p['lost'].values()), key=lambda x: x['n'])
+    return places
 
 
 def build_armor(d):
@@ -268,6 +304,7 @@ def main():
     assert len(weapons) > 1000 and len(rolls) > 500 and sum(bool(r.get('c')) for r in rolls.values()) > 300, 'manifest or Endgame Analysis parse looks broken'
     assert len(armor['armor']) > 1000 and len(armor['sets']) > 20 and len(armor['archetypes']) >= 6, 'armor parse looks broken'
     assert len(scales) > 10 and "king's fall" in wiki['img'] and 'arc' in wiki['icon'], 'stat curve or wiki art parse looks broken'
+    assert len(wiki['places']['moon']['lost']) >= 4 and wiki['places']['nessus']['img'], 'destination or lost sector parse looks broken'
     assert artifacts and all(len(a['tiers']) == 3 and all(t['perks'] for t in a['tiers']) for a in artifacts), 'artifact parse looks broken'
 
 
