@@ -254,7 +254,8 @@ async function weaponPage(hash) {
     const extra = await sheetRows(p.n, t => t.source === 'Destiny Data Compendium');
     info.innerHTML = `<b>${esc(p.n)}</b> <span class="muted">${esc(p.t)}</span>\n${esc(p.d)}` +
       (p.s.length ? `\n${p.s.map(([n, v]) => `${v > 0 ? '+' : ''}${v} ${esc(n)}`).join(', ')}` : '') +
-      (extra.length ? `\n\n<b>Destiny Data Compendium</b>\n${esc(extra[0].row.filter(c => c && c !== extra[0].row[0]).join('\n'))}` : '');
+      (extra.length ? `\n\n<b>Destiny Data Compendium</b>\n${esc(extra[0].row.filter(c => c && c !== extra[0].row[0]).join('\n'))}` : '') +
+      `\n<a href="${wikiHref(p.n)}">Everything about ${esc(p.n)} in the wiki</a>`;
     el.setAttribute('aria-pressed', 'true');
   }));
 
@@ -266,7 +267,7 @@ async function weaponPage(hash) {
   const frameName = frame && d.plugs[frame.p[0]]?.n;
   const hits = [...await sheetRows(w.n),
     ...(frameName && w.ti !== 'Exotic' ? await sheetRows(frameName, (t, r) => t.tab === 'Weapons' && r.some(c => c.toLowerCase() === w.ty.toLowerCase())) : [])];
-  document.getElementById('farmsrc').textContent = (await whereToFarm(w)).join(' · also: ') || 'Unknown';
+  document.getElementById('farmsrc').innerHTML = await sourcesHtml(w, await wikiData()) || 'Unknown';
   document.getElementById('sheetsrc').innerHTML = hits.length ? rowTable(hits) : 'Not mentioned in the community sheets.';
 }
 
@@ -1134,8 +1135,9 @@ function refDoc(t) {
 }
 
 const markText = (text, q) => { const h = esc(text); return q ? h.replace(new RegExp(esc(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), m => `<mark>${m}</mark>`) : h; };
-const entryHtml = (e, q, where) => `<div class="entry"><dt><b>${markText(e.term, q)}</b>${e.sub.map(x => `<small>${markText(x, q)}</small>`).join('')}${where ? `<small>${esc(where)}</small>` : ''}
-  ${e.meta.length ? `<span class="facts">${e.meta.map(m => `<span class="badge">${markText(m, q)}</span>`).join('')}</span>` : ''}</dt><dd>${markText(e.desc, q)}</dd></div>`;
+// o.q marks search matches; o.W links the names the wiki knows (except o.self); o.where says where the entry comes from, as html
+const entryHtml = (e, o = {}) => `<div class="entry"><dt><b><a href="${wikiHref(e.term)}">${markText(e.term, o.q)}</a></b>${e.sub.map(x => `<small>${markText(x, o.q)}</small>`).join('')}${o.where ? `<small>${o.where}</small>` : ''}
+  ${e.meta.length ? `<span class="facts">${e.meta.map(m => `<span class="badge">${markText(m, o.q)}</span>`).join('')}</span>` : ''}</dt><dd>${o.W ? linkify(o.W, esc(e.desc), o.self) : markText(e.desc, o.q)}</dd></div>`;
 const isNum = c => /^[-+~]?[\d.,]+\s?(%|x|s|m)?$/.test(c);
 function dataTable(head, rows, q) {
   // mostly-number columns line up on the right; columns with long text get room so rows stay short
@@ -1146,38 +1148,44 @@ function dataTable(head, rows, q) {
 }
 const entryText = e => [e.term, ...e.sub, e.desc, ...e.meta].join('\n').toLowerCase();
 
-function refDocHtml(doc) {
+function refDocHtml(doc, W) {
   if (doc.head) return dataTable(doc.head, doc.rows);
   const secs = doc.sections, majors = secs.filter(s => s.major && s.title), jump = majors.length > 1 ? majors : secs.filter(s => s.title);
   return `${jump.length > 2 ? `<nav class="refjump" aria-label="Sections">${jump.map(s => `<button type="button" data-jump="${secs.indexOf(s)}">${esc(s.title)}</button>`).join('')}</nav>` : ''}
-    ${secs.map((s, k) => `<section class="refsec${s.major ? ' major' : ''}" id="refsec-${k}">${s.title ? `<h3>${esc(s.title)}</h3>` : ''}${s.notes.map(n => `<p class="refnote">${esc(n)}</p>`).join('')}
-      ${s.entries.length ? `<dl class="entries">${s.entries.map(e => entryHtml(e)).join('')}</dl>` : ''}</section>`).join('')}`;
+    ${secs.map((s, k) => `<section class="refsec${s.major ? ' major' : ''}" id="refsec-${k}">${s.title ? `<h3>${esc(s.title)}</h3>` : ''}${s.notes.map(n => `<p class="refnote">${linkify(W, esc(n))}</p>`).join('')}
+      ${s.entries.length ? `<dl class="entries">${s.entries.map(e => entryHtml(e, { W, self: e.term })).join('')}</dl>` : ''}</section>`).join('')}`;
 }
 
 async function reference(idx) {
-  const tabs = await sheets();
+  const [tabs, W] = await Promise.all([sheets(), wikiData()]);
   const kept = Object.entries(REF_TOPICS).map(([topic, names]) => [topic, Object.entries(names).map(([tab, name]) => ({ name, i: tabs.findIndex(t => t.tab === tab), ext: REF_EXTERNAL.has(tab) }))
     .filter(x => x.i >= 0 && (!x.ext || tabs[x.i].url))]);
   const own = kept.flatMap(([, ts]) => ts).filter(x => !x.ext), t = own.some(x => x.i === idx) && tabs[idx], nameOf = i => own.find(x => x.i === i).name;
-  $app.innerHTML = `<h1>Reference</h1><p class="muted">Perks, mods, abilities and damage numbers from the community sheets. Loot sources, the weekly reset and set bonuses live in Weapons, Farming and Armor sets. ↗ opens the original sheet.</p>
-    <div class="filters"><input type="search" id="q" aria-label="Search every table" placeholder="Search perks, mods, abilities, bosses…"></div>
+  const chips = l => `<div class="tabs">${l.map(x => `<a href="${wikiHref(x)}">${esc(x)}</a>`).join('')}</div>`;
+  $app.innerHTML = `<h1>Wiki</h1><p class="muted">Every raid, dungeon, perk, status, ability and exotic has a page: click a name anywhere to see everything about it. ↗ opens the original sheet.</p>
+    <div class="filters"><input type="search" id="q" aria-label="Search the wiki" placeholder="Search raids, perks, statuses, exotics, bosses…"></div>
+    <h2 class="wikihead">Activities</h2>${Object.values(WIKI_KINDS).map(([kind, plural]) => [plural, [...W.acts.values()].filter(x => x.kind === kind).map(x => x.name)]).filter(([, l]) => l.length)
+      .map(([plural, l]) => `<h3>${esc(plural)}</h3>${chips(l)}`).join('')}
+    <h3>Champions</h3>${chips(CHAMPIONS)}
+    <h2 class="wikihead">Perks, abilities and damage</h2>
     ${kept.map(([topic, ts]) => `<h3>${esc(topic)}</h3><div class="tabs">${ts.map(x => x.ext ? `<a href="${esc(tabs[x.i].url)}" target="_blank" rel="noopener" title="Opens the original sheet">${esc(x.name)} ↗</a>`
       : `<a ${x.i === idx ? 'class="on" aria-current="page"' : ''} href="#/ref/${x.i}">${esc(x.name)}</a>`).join('')}</div>`).join('')}
     <div id="refbody"></div>`;
   const body = $app.querySelector('#refbody'), open = t ? `<section class="panel refdoc" id="sheet"><h2>${esc(nameOf(idx))}</h2>
-      <p class="refsrc">From ${esc(t.source)}${t.url ? ` · <a href="${esc(t.url)}" target="_blank" rel="noopener">open the original sheet</a>` : ''}</p>${refDocHtml(refDoc(t))}</section>` : '<p class="empty">Pick a table or search them all.</p>';
+      <p class="refsrc">From ${esc(t.source)}${t.url ? ` · <a href="${esc(t.url)}" target="_blank" rel="noopener">open the original sheet</a>` : ''}</p>${refDocHtml(refDoc(t), W)}</section>` : '<p class="empty">Pick a page or search them all.</p>';
   const draw = () => {
     const q = $app.querySelector('#q').value.trim().toLowerCase();
     if (!q) { body.innerHTML = open; return; }
     const hits = own.map(x => {
       const doc = refDoc(tabs[x.i]);
       if (doc.head) { const rows = doc.rows.filter(r => r.some(c => c.toLowerCase().includes(q))); return { ...x, n: rows.length, html: rows.length && dataTable(doc.head, rows.slice(0, 25), q) }; }
-      const found = doc.sections.flatMap(s => s.entries.filter(e => entryText(e).includes(q)).map(e => entryHtml(e, q, s.title)));
+      const found = doc.sections.flatMap(s => s.entries.filter(e => entryText(e).includes(q)).map(e => entryHtml(e, { q, where: esc(s.title) })));
       return { ...x, n: found.length, html: found.length && `<dl class="entries">${found.slice(0, 25).join('')}</dl>` };
     }).filter(x => x.n);
-    body.innerHTML = hits.length ? hits.map(x => `<section class="panel refdoc"><h2><a href="#/ref/${x.i}">${esc(x.name)}</a> <span class="count">${x.n}</span></h2>
+    const pages = W.names.filter(n => n.toLowerCase().includes(q)).sort((x, y) => !y.toLowerCase().startsWith(q) - !x.toLowerCase().startsWith(q) || x.length - y.length).slice(0, 18);
+    body.innerHTML = (pages.length ? `<section class="panel refdoc"><h2>Pages</h2>${chips(pages)}</section>` : '') + (hits.length || pages.length ? hits.map(x => `<section class="panel refdoc"><h2><a href="#/ref/${x.i}">${esc(x.name)}</a> <span class="count">${x.n}</span></h2>
         ${x.html}${x.n > 25 ? `<p class="refsrc"><a href="#/ref/${x.i}">See all of ${esc(x.name)}</a></p>` : ''}</section>`).join('')
-      : `<p class="empty">Nothing in the tables matches “${esc(q)}”.</p>`;
+      : `<p class="empty">Nothing in the wiki matches “${esc(q)}”.</p>`);
   };
   $app.querySelector('#q').addEventListener('input', draw);
   body.addEventListener('click', e => { const b = e.target.closest('[data-jump]'); if (b) $app.querySelector('#refsec-' + b.dataset.jump).scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); });
@@ -1185,6 +1193,109 @@ async function reference(idx) {
   // on phones the tab list is long, so bring the chosen sheet into view
   const sheet = $app.querySelector('#sheet');
   if (sheet && sheet.getBoundingClientRect().top > innerHeight * 0.6) sheet.scrollIntoView();
+}
+
+// ---------- wiki ----------
+// One page per name with everything the site knows about it: an activity's loot and the encounters that drop it, what a perk, status,
+// ability or exotic does in every sheet that defines it, the weapons that can roll a perk, and every entry that mentions it.
+const WIKI_KINDS = { Raids: ['Raid', 'Raids'], Dungeons: ['Dungeon', 'Dungeons'], 'Legacy Exotic Mission Gear (Cla': ['Exotic mission', 'Exotic missions'],
+  'Portal Attuneable Gear': ['Portal activity', 'Portal'], Destinations: ['Destination', 'Destinations'], Vendors: ['Vendor', 'Vendors'] };
+const CHAMPIONS = ['Barrier', 'Overload', 'Unstoppable'];
+const wikiHref = n => '#/wiki/' + encodeURIComponent(n);
+const rxEsc = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// a name on its own, not inside a longer word ("Shock" but not "Shockwave")
+const nameRe = (alts, flags) => new RegExp(`(?<![\\w'’])(${alts})(?![\\w'’])`, flags);
+const linkify = (W, html, self = '') => html.replace(W.linkRe, n => n === esc(self) ? n : `<a href="${wikiHref(W.linkNames.get(n))}">${n}</a>`);
+
+let wikiIndex;
+async function wikiData() {
+  if (wikiIndex) return wikiIndex;
+  const [tabs, arts] = await Promise.all([sheets(), load('artifacts')]);
+  const acts = new Map(), terms = new Map();
+  // activities and their loot from the Monument of Triumph tabs, where a row with only a second cell starts a group
+  for (const t of tabs) {
+    const kind = t.source.startsWith('Monument') && WIKI_KINDS[t.tab]?.[0], col = n => t.rows[0].indexOf(n);
+    let act;
+    if (kind) for (const r of t.rows.slice(1)) {
+      if (!r[0] && r[1]) acts.set(r[1].toLowerCase(), act = { name: r[1], kind, loot: [] });
+      else if (r[0] && act) act.loot.push({ n: r[0], key: r[0].replace(/\s*(\|.*|\(Adept\))$/i, '').trim().toLowerCase(), type: r[col('Loot Type')] || '', el: r[col('Element')] || '',
+        enc: r[col('Encounter(s)')] || '', how: r[col('Acquisition Method')] || '' });
+    }
+  }
+  // dungeon encounters from Llama's Dungeon Loot: a dungeon's name row, a "Loot | 1st | 2nd…" header, then an item with the encounter under each column
+  let dun, encCols;
+  for (const r of tabs.find(t => t.tab === 'Dungeon Loot')?.rows || []) {
+    if (r[0] && acts.get(r[0].toLowerCase())?.kind === 'Dungeon') { dun = acts.get(r[0].toLowerCase()); encCols = null; continue; }
+    if (r.includes('Loot')) { encCols = r.flatMap((c, i) => /^\d+(st|nd|rd|th)$/.test(c) ? [i] : []); continue; }
+    if (!dun || !encCols?.length) continue;
+    const name = r.slice(0, encCols[0]).filter(Boolean).at(-1), item = name && dun.loot.find(x => x.key === name.toLowerCase());
+    const cells = encCols.map(i => (r[i] || '').replace(/\s*\n\s*/g, ' ')).filter(Boolean), named = [...new Set(cells.filter(c => !/^if attuned$/i.test(c)))];
+    if (item && cells.length) item.enc = named.join(', ') + (named.length < cells.length ? `${named.length ? ' · ' : ''}more if attuned` : '');
+  }
+  // everything the sheets and the artifacts define, by name
+  const add = (k, v) => terms.set(k.toLowerCase(), [...(terms.get(k.toLowerCase()) || []), v]);
+  for (const [tab, name] of Object.values(REF_TOPICS).flatMap(Object.entries)) {
+    const i = tabs.findIndex(x => x.tab === tab);
+    if (i < 0 || REF_TABLES.has(tab) || REF_EXTERNAL.has(tab)) continue;
+    for (const sec of refDoc(tabs[i]).sections) for (const e of sec.entries) add(e.term, { e, where: name, section: sec.title, i, glossary: /glossary/i.test(sec.title) });
+  }
+  for (const x of arts) for (const t of x.tiers) for (const k of t.perks) {
+    const same = terms.get(k.n.toLowerCase())?.find(y => y.where === 'Artifact perks' && y.e.desc === k.d);
+    if (same) same.section += ', ' + x.n; else add(k.n, { e: { term: k.n, sub: [], desc: k.d, meta: [] }, where: 'Artifact perks', section: x.n });
+  }
+  // linked in running text: raids, dungeons, missions, champions, statuses from the subclass glossaries, exotics, and names of two or more words
+  // (single-word perk names like "Focus" or "Momentum" read as plain words too often)
+  const linkable = [...[...acts.values()].filter(x => /Raid|Dungeon|mission/.test(x.kind)).map(x => x.name), ...CHAMPIONS,
+    ...[...terms.values()].flat().filter(x => x.glossary || /^Exotic/.test(x.where) || x.e.term.includes(' ')).map(x => x.e.term)].filter(n => n.length > 3);
+  const linkNames = new Map(linkable.map(n => [esc(n), n]));
+  const names = [...new Set([...[...acts.values()].map(x => x.name), ...CHAMPIONS, ...[...terms.values()].map(l => l[0].e.term)])];
+  return wikiIndex = { tabs, acts, terms, names, linkNames, linkRe: nameRe([...linkNames.keys()].sort((x, y) => y.length - x.length).map(rxEsc).join('|'), 'g') };
+}
+
+async function wikiPage(raw) {
+  const name = decodeURIComponent(raw), key = name.toLowerCase();
+  const [W, d, a] = await live(Promise.all([wikiData(), data(), armorData()]));
+  const act = W.acts.get(key), defs = W.terms.get(key) || [], champ = CHAMPIONS.find(c => c.toLowerCase() === key);
+  const weapon = d.weapons.find(w => w.n.toLowerCase() === key), armor = a.armor.find(x => x.n.toLowerCase() === key);
+  // weapons that can roll a perk or frame of this name, one per weapon name, best rated first
+  const plugs = new Set(Object.keys(d.plugs).filter(h => d.plugs[h].n.toLowerCase() === key).map(Number)), rank = w => 'SABCDF'.indexOf(d.rolls[w.h]?.t) + 1 || 9;
+  const rollers = plugs.size ? [...new Map(d.weapons.filter(w => w.cols.some(c => c.c !== 'Weapon Mods' && c.p.some(h => plugs.has(h)))).map(w => [w.n, w])).values()]
+    .sort((x, y) => rank(x) - rank(y) || x.n.localeCompare(y.n)) : [];
+  const re = nameRe(rxEsc(name), 'i'), mentions = [...W.terms.values()].flat().filter(x => x.e.term.toLowerCase() !== key && re.test(x.e.desc));
+  const srcHtml = await sourcesHtml(weapon, W);
+  // the loot table links each weapon to its page: the version from this activity if the names repeat, else a rated one
+  const lootWeapon = x => { const l = d.weapons.filter(w => w.n.toLowerCase() === x.key); return l.find(w => act && w.src.includes(act.name)) || l.find(w => d.rolls[w.h]) || l[0]; };
+  const tags = [act?.kind, champ && 'Champion', weapon && `${weapon.ti} ${weapon.ty}`, armor && `${armor.ti} ${armor.ty}`, ...new Set(defs.map(x => x.where === 'Artifact perks' ? 'Artifact perk' : x.where)), rollers.length && !defs.some(x => x.where === 'Weapon perks') && 'Weapon perk'].filter(Boolean);
+  const loot = act && `<section class="panel"><h2>Loot <span class="count">${act.loot.length}</span></h2>${act.loot.some(x => x.enc) || act.kind === 'Dungeon' ? '<p class="refsrc">Which encounters drop each item, from the Monument of Triumph and Llama\'s loot sheets.</p>' : ''}
+    <div class="datawrap"><table class="data"><thead><tr><th scope="col">Item</th><th scope="col">Type</th><th scope="col">Element</th>${act.loot.some(x => x.enc) ? '<th scope="col">Encounters</th>' : ''}${act.loot.some(x => x.how) ? '<th scope="col">How</th>' : ''}</tr></thead>
+    <tbody>${act.loot.map(x => { const w = lootWeapon(x);
+      return `<tr><td class="wide">${w ? `<a class="lootname" href="#/weapon/${w.h}">${img(w.i)}${esc(x.n)}</a>` : esc(x.n)}</td><td>${esc(x.type)}</td><td>${x.el && x.el !== 'Armor' ? `<span class="badge dmg-${esc(x.el)}">${esc(x.el)}</span>` : ''}</td>
+        ${act.loot.some(y => y.enc) ? `<td class="wide">${esc(x.enc)}</td>` : ''}${act.loot.some(y => y.how) ? `<td class="wide">${esc(x.how)}</td>` : ''}</tr>`; }).join('')}</tbody></table></div></section>`;
+  const byWhere = Object.entries(Object.groupBy(mentions, x => x.where));
+  const counters = W.tabs.find(t => t.tab === 'CHAMP COUNTERS LIST')?.url;
+  $app.innerHTML = `<p class="crumbs"><a href="#/wiki">Wiki</a></p><h1>${esc(act?.name || champ || defs[0]?.e.term || weapon?.n || armor?.n || name)}</h1>
+    <div class="perks wikitags">${tags.map(t => `<span class="badge">${esc(t)}</span>`).join('')}</div>
+    ${loot || ''}
+    ${weapon || armor ? `<section class="panel"><h2>${weapon ? 'Weapon' : 'Armor'}</h2><div class="grid">${weapon ? card(weapon, `<small>${tierBadge(d.rolls[weapon.h])}${esc(weapon.ty)}</small>${srcHtml ? `<small>${srcHtml}</small>` : ''}`) : ''}${armor ? card(armor, `<small>${esc(armor.ty)}</small>`, 'armor') : ''}</div></section>` : ''}
+    ${champ ? `<section class="panel"><h2>Counters</h2><p>Everything below mentions ${esc(champ)} champions.${counters ? ` Court's full list of what stuns them is in the <a href="${esc(counters)}" target="_blank" rel="noopener">Champion counters sheet ↗</a>.` : ''}</p></section>` : ''}
+    ${defs.length ? `<section class="panel refdoc"><h2>What it does</h2><dl class="entries">${defs.map(x => entryHtml(x.e, { W, self: name,
+      where: x.i != null ? `<a href="#/ref/${x.i}">${esc(x.where)}</a>${x.section ? ' · ' + esc(x.section) : ''}` : `${esc(x.where)} · ${esc(x.section)}` })).join('')}</dl></section>` : ''}
+    ${rollers.length ? `<section class="panel"><h2>Weapons that can roll it <span class="count">${rollers.length}</span></h2><div class="grid" id="rollers"></div>
+      ${rollers.length > 24 ? `<p><button type="button" id="morerollers">Show all ${rollers.length}</button></p>` : ''}</section>` : ''}
+    ${mentions.length ? `<section class="panel refdoc"><h2>Mentioned in <span class="count">${mentions.length}</span></h2>${byWhere.map(([where, l]) => `<h3 class="mentionhead">${esc(where)}</h3><ul class="mentions">${l.map(x => {
+      const line = x.e.desc.split('\n').find(t => re.test(t)) || '';
+      return `<li><a href="${wikiHref(x.e.term)}">${esc(x.e.term)}</a><span>${esc(line).replace(nameRe(rxEsc(esc(name)), 'gi'), m => `<mark>${m}</mark>`)}</span></li>`; }).join('')}</ul>`).join('')}</section>` : ''}
+    ${act || champ || defs.length || weapon || armor || rollers.length || mentions.length ? '' : `<p class="empty">The wiki has nothing on “${esc(name)}” yet. <a href="#/wiki">Search the wiki</a></p>`}`;
+  const showRollers = n => { const box = $app.querySelector('#rollers'); if (box) box.innerHTML = rollers.slice(0, n).map(w => card(w, `<small>${tierBadge(d.rolls[w.h])}${esc(w.ty)}</small>`)).join(''); };
+  showRollers(24);
+  $app.querySelector('#morerollers')?.addEventListener('click', e => { showRollers(Infinity); e.target.remove(); });
+}
+
+// a weapon's drop sources, with each activity linked to its wiki page
+async function sourcesHtml(w, W) {
+  if (!w) return '';
+  return (await whereToFarm(w)).map(s => { const [, pre = '', act, rest = ''] = s.match(/^(.*? · )?(.*?)( \(.*\))?$/);
+    return W.acts.has(act.toLowerCase()) ? `${esc(pre)}<a href="${wikiHref(act)}">${esc(act)}</a>${esc(rest)}` : esc(s); }).join(' · also: ');
 }
 
 function images() {
@@ -1200,7 +1311,7 @@ async function route() {
   const parts = path.split('/').filter(Boolean);
   const params = new URLSearchParams(query);
   renderAccount();
-  document.querySelectorAll('.top nav a').forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href').slice(2).split('/')[0] === (/^weapons?$/.test(parts[0]) ? '' : parts[0] || '')));
+  document.querySelectorAll('.top nav a').forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href').slice(2).split('/')[0] === (/^weapons?$/.test(parts[0]) ? '' : parts[0] === 'ref' ? 'wiki' : parts[0] || '')));
   window.scrollTo(0, 0);
   try {
     if (!parts[0] || parts[0] === 'weapons') await weaponList(params);
@@ -1211,6 +1322,7 @@ async function route() {
     else if (parts[0] === 'build') await buildPage(parts[1]);
     else if (parts[0] === 'farm') await farm();
     else if (parts[0] === 'ref') await reference(parts[1] ? +parts[1] : -1);
+    else if (parts[0] === 'wiki') await (parts[1] ? wikiPage(parts[1]) : reference(-1));
     else if (parts[0] === 'images') images();
     else $app.innerHTML = '<p class="empty">Page not found. <a href="#/">Back to weapons</a></p>';
   } catch (e) {
