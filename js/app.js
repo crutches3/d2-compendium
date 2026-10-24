@@ -1257,10 +1257,13 @@ const wikiHref = n => '#/wiki/' + encodeURIComponent(n);
 // names as the sheets and Bungie spell them differently: case, accents, curly quotes, a leading "The"
 const fold = t => t.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[’‘]/g, "'").toLowerCase().replace(/^the /, '').trim();
 // the same name give or take one letter ("Quillim's" in one sheet, "Qullim's" in the game)
+// a sheet's typo: one letter off, or two in a long name ("Dimensional Hypertrochoid" for Hypotrochoid)
 const near = (a, b) => { a = fold(a).replace(/[^a-z0-9]/g, ''); b = fold(b).replace(/[^a-z0-9]/g, '');
-  if (a === b) return true; if (Math.abs(a.length - b.length) > 1 || a.length < 8 || /\d/.test(a + b)) return false;  // IKELOS_SG and IKELOS_SMG differ
-  let i = 0; while (a[i] === b[i]) i++;
-  return a.slice(i + 1) === b.slice(i + 1) || a.slice(i + 1) === b.slice(i) || a.slice(i) === b.slice(i + 1); };
+  if (a === b) return true; if (a.length < 8 || /\d/.test(a + b)) return false;  // IKELOS_SG and IKELOS_SMG differ
+  const k = Math.min(a.length, b.length) >= 16 ? 2 : 1;
+  const within = (x, y, k) => { let i = 0; while (i < x.length && x[i] === y[i]) i++; x = x.slice(i); y = y.slice(i);
+    return !x || !y ? Math.max(x.length, y.length) <= k : k > 0 && (within(x.slice(1), y.slice(1), k - 1) || within(x.slice(1), y, k - 1) || within(x, y.slice(1), k - 1)); };
+  return Math.abs(a.length - b.length) <= k && within(a, b, k); };
 const rxEsc = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // a name on its own, not inside a longer word ("Shock" but not "Shockwave")
 const nameRe = (alts, flags) => new RegExp(`(?<![\\w'’])(${alts})(?![\\w'’])`, flags);
@@ -1436,7 +1439,7 @@ function lootPage(act, d, a, rot, place) {
         <p class="dropfacts">${facts}</p>${chips(x.encs)}${notes.filter(Boolean).map(t => `<p class="dropnote">${esc(t)}</p>`).join('')}
         <p class="own"></p></div></article>`;
   const gunCard = x => { const w = x.w;
-    return dropCard({ ...w, n: x.n, encs: x.encs }, w ? `#/weapon/${w.h}` : wikiHref(x.n), w ? `${tierBadge(d.rolls[w.h])}${esc(w.ty)}` : '',
+    return dropCard({ ...w, n: w ? baseName(w.n) : x.n, encs: x.encs }, w ? `#/weapon/${w.h}` : wikiHref(x.n), w ? `${tierBadge(d.rolls[w.h])}${esc(w.ty)}` : '',
       `${w ? `<span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span>` : ''}${w?.ti === 'Exotic' ? '<span class="badge exotic">Exotic</span>' : ''}${x.epic ? '<span class="badge">Epic only</span>' : ''}`,
       [x.how.join(' · '), x.adept && `Adept: ${x.adept}`, x.catalyst && `Catalyst: ${x.catalyst}`, x.note], w ? ` data-h="${w.h}"` : ''); };
   const armorCard = p => dropCard({ ...p.x, encs: p.encs }, `#/armor/${p.x.h}`, esc(p.x.ty), p.epic ? '<span class="badge">Epic only</span>' : '', p.notes, ` data-a="${p.x.h}" data-class="${esc(p.x.cl)}"`);

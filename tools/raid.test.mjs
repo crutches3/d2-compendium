@@ -25,6 +25,8 @@ const p = await ctx.newPage();
 await p.clock.setFixedTime(new Date('2026-10-23T12:00:00Z'));
 const errs = []; p.on('pageerror', e => errs.push(e.message));
 const card = n => `.drop:has(.dropname b:text-is("${n}"))`;
+// the wiki routes by hash, so wait for the new page's title rather than cards the last page also had
+const openWiki = async name => { await p.goto(`http://localhost:8765/#/wiki/${encodeURIComponent(name)}`); await p.waitForSelector(`.hero h1:text-is("${name}")`); };
 const visible = (sel = '.drop[data-h]') => p.$$eval(sel, cs => cs.filter(c => !c.hidden).map(c => c.querySelector('b').textContent));
 
 // signed out: every drop as a card with its picture and named encounters, Llama's spelling linked to the game's weapon
@@ -82,21 +84,21 @@ assert.equal((await visible('.drop[data-a]')).length, 10);
 assert.ok(await p.$('.drop[data-a]:not([hidden]) .badge:text-is("Epic only")'));
 
 // a dungeon gets the same page: Llama's Dungeon Loot encounters, attunement and catalyst notes, its armor, and the rotation
-await p.goto('http://localhost:8765/#/wiki/Equilibrium'); await p.waitForSelector('.drop');
+await openWiki('Equilibrium');
 assert.deepEqual(await p.$$eval(`${card('Bitter End')} .enc`, es => es.map(x => x.textContent)), ['Harrow', 'Dredgen Sere']);
 assert.ok((await p.innerText(card('Bitter End'))).includes('Also Assault if attuned'));
 assert.ok(await p.$(`${card('Heirloom')} .badge:text-is("Exotic")`) && (await p.innerText(card('Heirloom'))).includes('Catalyst:'));
 assert.deepEqual(await visible('.drop[data-a]'), ['Sage Protector Cowl', 'Sage Protector Grips', 'Sage Protector Vest', 'Sage Protector Strides', 'Sage Protector Cloak']);
 assert.match(await p.innerText('.wside'), /Featured this week/);
 // an exotic mission: the Monument's list plus its exotic, with no encounters or rotation, and the mission's banner rather than the Encore perk's icon
-await p.goto('http://localhost:8765/#/wiki/Encore'); await p.waitForSelector('.drop');
+await openWiki('Encore');
 assert.ok(await p.$(`${card('Choir of One')} .badge:text-is("Exotic")`));
 assert.equal((await visible('.drop[data-a]')).length, 5);
 assert.ok(!(await p.$('.dropfilter button[data-enc]')) && !(await p.$$eval('.wside h2', hs => hs.map(h => h.textContent))).includes('Rotation'));
 assert.ok(!(await p.$('.hero .icon')) && !(await p.$('.hero .flavor')));
 
 // a destination: its surface weapons and armor sets, public events with how to make each Heroic, lost sectors with entrances, and Distortions
-await p.goto('http://localhost:8765/#/wiki/European%20Dead%20Zone'); await p.waitForSelector('.drop');
+await openWiki('European Dead Zone');
 assert.equal((await visible()).length, 6);
 assert.deepEqual(await visible('.drop[data-a]'), ['Wildwood Mask', 'Wildwood Grips', 'Wildwood Vest', 'Wildwood Strides', 'Wildwood Cloak']);
 assert.ok((await p.innerText('.entry:has(b:text-is("Glimmer Extraction"))')).includes('Destroy all three'));
@@ -105,12 +107,15 @@ assert.ok((await p.innerText('.drop.lost:has(b:text-is("Excavation Site XII"))')
 assert.ok(await p.$('.drop.lost a.badge[href="#/wiki/Barrier"]'));
 assert.ok(await p.$('.hero .badge:text-is("Distortions")') && (await p.innerText('.wside')).includes('Distortion Breaches'));
 // Nessus's banner comes from its patrol zone; the Lawless Frontier has no public events or lost sectors, just its jobs, and two armor sets one after the other
-await p.goto('http://localhost:8765/#/wiki/Nessus'); await p.waitForSelector('.drop');
+await openWiki('Nessus');
 assert.match(await p.getAttribute('.hero', 'style'), /patrol_nessus/);
-await p.goto('http://localhost:8765/#/wiki/The%20Lawless%20Frontier'); await p.waitForSelector('.drop');
+await openWiki('The Lawless Frontier');
 assert.deepEqual((await visible('.drop[data-a]')).slice(0, 3), ['Shrewd Survivor Cowl', 'Shrewd Survivor Grips', 'Shrewd Survivor Vest']);
 assert.ok(!(await p.$('.drop.lost')) && !(await p.$('.hero .badge:text-is("Distortions")')));
 assert.ok(await p.$('.entry b:text-is("Invasions")'));
+// a sheet's typo two letters off still finds the gun, shown under Bungie's name
+await openWiki('Neomuna');
+assert.match(await p.getAttribute(`${card('Dimensional Hypotrochoid')} .dropart img`, 'src'), /screenshots/);
 
 assert.deepEqual(errs, []);
 await b.close();
