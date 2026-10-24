@@ -1068,29 +1068,119 @@ function cleanRows(t) {
   refRows.set(t, out);
   return out;
 }
-const sheetTable = rows => `<div class="tablewrap"><table class="sheet">${rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+// Each tab reads as entries (a name, what it does, a few facts) under headings, or as a data table for the number-heavy sheets.
+const REF_TABLES = new Set(['Weapons', 'Abilties', 'Sustained', 'Swap', 'Bosses', 'Armor Archetypes', 'Game Mechanics']);
+// sheets set side by side as name/effect column pairs; a name with no effect is a heading, or on exotic armor the perk of the piece above
+const REF_PAIRS = { 'Armor Mods': 'heading', 'Exotic Armors': 'perk' };
+// "Ace of Spades\n\nMemento Mori" is a name with its perks underneath; "[3 Energy]" a mod's cost
+const refEntry = (name, desc = '') => { const [term, ...sub] = name.split('\n').map(x => x.trim()).filter(Boolean); return { term, sub: sub.map(x => x.replace(/^\[(.*)\]$/, '$1')), desc, meta: [] }; };
+const refSection = (title = '', major = false) => ({ title, major, notes: [], entries: [] });
+
+function entrySections(rows) {
+  const items = [];
+  for (const r of rows) {
+    const c = r.filter(Boolean), short = c.every(x => x.length <= 25);
+    // "Hunter | Hunters" names a class; "Fragments | Information | Stat Changes" is a column header naming the section below
+    const cls = c.length === 2 && short && c[1].toLowerCase().startsWith(c[0].toLowerCase().replace(/s$/, ''));
+    if (c.length === 1 ? c[0].length <= 60 && !c[0].includes('\n') : cls || short && c.slice(1).some(x => /^(information|description|effects?|notes?|stat changes|fragment slots)$/i.test(x))) items.push({ head: c[0], cls });
+    else if (c.length === 1) items.push({ note: c[0] });
+    else if (short && c.length > 2) items.push({ note: c.join(' · ') });  // a list of names, like the abilities a class shares
+    else for (let i = 0; i < c.length; i += 2) {
+      if (c[i].split('\n')[0].length > 50) { items.push(...c.slice(i, i + 2).map(note => ({ note }))); continue; }  // a remark, not a name
+      const e = refEntry(c[i], c[i + 1]);
+      // one cell left after a name and its effect is a fact about it (stat change, cooldown), or more of the effect
+      if (i + 3 === c.length) { c[i + 2].length <= 80 ? e.meta.push(c[i + 2]) : e.desc += '\n\n' + c[i + 2]; i++; }
+      items.push({ entry: e });
+    }
+  }
+  // the sheet's title and navigation rows come before the first real effect: of those, only notes and the last heading stay
+  const first = items.findIndex(x => x.entry?.desc.length > 25), lead = items.slice(0, first).findLastIndex(x => x.head);
+  const kept = items.filter((x, k) => k >= first || x.note || k === lead), out = [];
+  kept.forEach((x, k) => {
+    if (x.head || !out.length) out.push(refSection(x.head, !!x.cls || !!x.head && !!kept[k + 1]?.head));
+    if (x.note) out.at(-1).notes.push(x.note);
+    if (x.entry) out.at(-1).entries.push(x.entry);
+  });
+  return out;
+}
+
+function pairSections(rows, lone) {
+  const first = rows.findIndex(r => r.some((c, i) => i % 2 && c.length > 25)), blocks = Math.ceil(rows[0].length / 2);
+  // block names: the first title row naming every block differently (Helmet, Arms… or Hunters, Titans, Warlocks)
+  const names = rows.slice(0, first).find(r => { const l = [...Array(blocks).keys()].map(k => r[2 * k]); return l.every(Boolean) && new Set(l).size === blocks; });
+  const same = k => k > 0 && names?.[2 * k].toLowerCase().replace(/\W/g, '') === names[2 * k - 2].toLowerCase().replace(/\W/g, '');
+  return [...Array(blocks).keys()].flatMap(k => {
+    const secs = [same(k) ? refSection() : refSection(names?.[2 * k], true)];  // "Raid-Specific" and "Raid Specific" side by side are one group
+    let prev = null;
+    for (const r of rows.slice(first)) {
+      const [name, eff] = [r[2 * k], r[2 * k + 1]];
+      if (name && eff) { secs.at(-1).entries.push(prev = refEntry(name, eff)); continue; }
+      if (name && lone === 'perk' && prev) prev.sub.push(name);
+      else if (name) secs.push(refSection(name));
+      else if (eff) secs.at(-1).notes.push(eff);
+      prev = null;
+    }
+    return secs;
+  });
+}
+
+const refDocs = new Map();
+function refDoc(t) {
+  if (!refDocs.has(t)) {
+    const rows = cleanRows(t), h = REF_TABLES.has(t.tab) && rows.indexOf(headerRow({ rows }));
+    refDocs.set(t, REF_TABLES.has(t.tab) ? { head: rows[h], rows: rows.slice(h + 1) } : { sections: REF_PAIRS[t.tab] ? pairSections(rows, REF_PAIRS[t.tab]) : entrySections(rows) });
+  }
+  return refDocs.get(t);
+}
+
+const markText = (text, q) => { const h = esc(text); return q ? h.replace(new RegExp(esc(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), m => `<mark>${m}</mark>`) : h; };
+const entryHtml = (e, q, where) => `<div class="entry"><dt><b>${markText(e.term, q)}</b>${e.sub.map(x => `<small>${markText(x, q)}</small>`).join('')}${where ? `<small>${esc(where)}</small>` : ''}
+  ${e.meta.length ? `<span class="facts">${e.meta.map(m => `<span class="badge">${markText(m, q)}</span>`).join('')}</span>` : ''}</dt><dd>${markText(e.desc, q)}</dd></div>`;
+const isNum = c => /^[-+~]?[\d.,]+\s?(%|x|s|m)?$/.test(c);
+function dataTable(head, rows, q) {
+  // mostly-number columns line up on the right; columns with long text get room so rows stay short
+  const cls = head.map((_, i) => { const col = rows.map(r => r[i]).filter(Boolean);
+    return col.length && col.filter(isNum).length >= col.length * .6 ? ' class="num"' : col.some(c => c.length > 30) ? ' class="wide"' : ''; });
+  return `<div class="datawrap"><table class="data"><thead><tr>${head.map((c, i) => `<th scope="col"${cls[i]}>${esc(c)}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r => `<tr>${r.map((c, i) => `<td${cls[i]}>${markText(c, q)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+const entryText = e => [e.term, ...e.sub, e.desc, ...e.meta].join('\n').toLowerCase();
+
+function refDocHtml(doc) {
+  if (doc.head) return dataTable(doc.head, doc.rows);
+  const secs = doc.sections, majors = secs.filter(s => s.major && s.title), jump = majors.length > 1 ? majors : secs.filter(s => s.title);
+  return `${jump.length > 2 ? `<nav class="refjump" aria-label="Sections">${jump.map(s => `<button type="button" data-jump="${secs.indexOf(s)}">${esc(s.title)}</button>`).join('')}</nav>` : ''}
+    ${secs.map((s, k) => `<section class="refsec${s.major ? ' major' : ''}" id="refsec-${k}">${s.title ? `<h3>${esc(s.title)}</h3>` : ''}${s.notes.map(n => `<p class="refnote">${esc(n)}</p>`).join('')}
+      ${s.entries.length ? `<dl class="entries">${s.entries.map(e => entryHtml(e)).join('')}</dl>` : ''}</section>`).join('')}`;
+}
 
 async function reference(idx) {
   const tabs = await sheets();
   const kept = Object.entries(REF_TOPICS).map(([topic, names]) => [topic, Object.entries(names).map(([tab, name]) => ({ name, i: tabs.findIndex(t => t.tab === tab), ext: REF_EXTERNAL.has(tab) }))
     .filter(x => x.i >= 0 && (!x.ext || tabs[x.i].url))]);
   const own = kept.flatMap(([, ts]) => ts).filter(x => !x.ext), t = own.some(x => x.i === idx) && tabs[idx], nameOf = i => own.find(x => x.i === i).name;
-  $app.innerHTML = `<h1>Reference</h1><p class="muted">Lookup tables from the community sheets. Loot sources, the weekly reset and set bonuses live in Weapons, Farming and Armor sets. ↗ opens the original sheet.</p>
+  $app.innerHTML = `<h1>Reference</h1><p class="muted">Perks, mods, abilities and damage numbers from the community sheets. Loot sources, the weekly reset and set bonuses live in Weapons, Farming and Armor sets. ↗ opens the original sheet.</p>
     <div class="filters"><input type="search" id="q" aria-label="Search every table" placeholder="Search perks, mods, abilities, bosses…"></div>
     ${kept.map(([topic, ts]) => `<h3>${esc(topic)}</h3><div class="tabs">${ts.map(x => x.ext ? `<a href="${esc(tabs[x.i].url)}" target="_blank" rel="noopener" title="Opens the original sheet">${esc(x.name)} ↗</a>`
       : `<a ${x.i === idx ? 'class="on" aria-current="page"' : ''} href="#/ref/${x.i}">${esc(x.name)}</a>`).join('')}</div>`).join('')}
     <div id="refbody"></div>`;
-  const body = $app.querySelector('#refbody'), open = t ? `<section class="panel" id="sheet"><h2>${esc(nameOf(idx))}</h2>
-      <p><small class="muted">From ${esc(t.source)}${t.url ? ` · <a href="${esc(t.url)}" target="_blank" rel="noopener">open the original sheet</a>` : ''}</small></p>${sheetTable(cleanRows(t))}</section>` : '<p class="empty">Pick a table or search them all.</p>';
+  const body = $app.querySelector('#refbody'), open = t ? `<section class="panel refdoc" id="sheet"><h2>${esc(nameOf(idx))}</h2>
+      <p class="refsrc">From ${esc(t.source)}${t.url ? ` · <a href="${esc(t.url)}" target="_blank" rel="noopener">open the original sheet</a>` : ''}</p>${refDocHtml(refDoc(t))}</section>` : '<p class="empty">Pick a table or search them all.</p>';
   const draw = () => {
     const q = $app.querySelector('#q').value.trim().toLowerCase();
     if (!q) { body.innerHTML = open; return; }
-    const hits = own.map(x => ({ ...x, rows: cleanRows(tabs[x.i]).filter(r => r.some(c => c.toLowerCase().includes(q))) })).filter(x => x.rows.length);
-    body.innerHTML = hits.length ? hits.map(x => `<section class="panel"><h2><a href="#/ref/${x.i}">${esc(x.name)}</a> <span class="count">${x.rows.length}</span></h2>
-        ${sheetTable(x.rows.slice(0, 25))}${x.rows.length > 25 ? `<p><a href="#/ref/${x.i}">See all of ${esc(x.name)}</a></p>` : ''}</section>`).join('')
+    const hits = own.map(x => {
+      const doc = refDoc(tabs[x.i]);
+      if (doc.head) { const rows = doc.rows.filter(r => r.some(c => c.toLowerCase().includes(q))); return { ...x, n: rows.length, html: rows.length && dataTable(doc.head, rows.slice(0, 25), q) }; }
+      const found = doc.sections.flatMap(s => s.entries.filter(e => entryText(e).includes(q)).map(e => entryHtml(e, q, s.title)));
+      return { ...x, n: found.length, html: found.length && `<dl class="entries">${found.slice(0, 25).join('')}</dl>` };
+    }).filter(x => x.n);
+    body.innerHTML = hits.length ? hits.map(x => `<section class="panel refdoc"><h2><a href="#/ref/${x.i}">${esc(x.name)}</a> <span class="count">${x.n}</span></h2>
+        ${x.html}${x.n > 25 ? `<p class="refsrc"><a href="#/ref/${x.i}">See all of ${esc(x.name)}</a></p>` : ''}</section>`).join('')
       : `<p class="empty">Nothing in the tables matches “${esc(q)}”.</p>`;
   };
   $app.querySelector('#q').addEventListener('input', draw);
+  body.addEventListener('click', e => { const b = e.target.closest('[data-jump]'); if (b) $app.querySelector('#refsec-' + b.dataset.jump).scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); });
   draw();
   // on phones the tab list is long, so bring the chosen sheet into view
   const sheet = $app.querySelector('#sheet');
