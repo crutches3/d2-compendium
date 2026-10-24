@@ -27,8 +27,9 @@ assert.ok((await p.textContent('#sheet .entry dd')).includes('Intrinsic Arc Subc
 assert.ok(await p.$('#sheet .entry:has(dt a:text-is("Resistance")) .badge:text-is("+10 Melee")'));
 // the class sections can be jumped to
 assert.deepEqual(await p.$$eval('.refjump button', bs => bs.map(x => x.textContent)), ['Hunter', 'Titan', 'Warlocks']);
-await p.click('.refjump button:text-is("Warlocks")'); await p.waitForTimeout(800);
-assert.ok(await p.$eval('.refsec.major:has(h3:text-is("Warlocks"))', el => Math.abs(el.getBoundingClientRect().top) < 120));
+// smooth scroll over a long sheet can take a couple of seconds, so wait for it to land rather than a fixed time
+await p.click('.refjump button:text-is("Warlocks")');
+await p.waitForFunction(() => [...document.querySelectorAll('.refsec.major')].some(el => el.querySelector('h3')?.textContent === 'Warlocks' && Math.abs(el.getBoundingClientRect().top) < 120), null, { timeout: 5000 });
 // side-by-side sheets: each exotic shows its perk under its name, split by class; armor mods by slot, the two raid columns as one group
 await p.goto(`http://localhost:8765/#/ref/${at('Exotic Armors')}`); await p.waitForSelector('#sheet .entry');
 assert.equal(await p.innerText('#sheet .entry dt'), "Assassin's Cowl\nVanishing Execution");
