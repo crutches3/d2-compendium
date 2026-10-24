@@ -1,17 +1,17 @@
-"""Builds data/weapons.json, data/plugs.json, data/armor.json, data/artifacts.json and data/godrolls.json from the Bungie manifest and
+"""Builds data/weapons.json, data/plugs.json, data/armor.json, data/artifacts.json, data/wiki.json and data/godrolls.json from the Bungie manifest and
 Aegis's Destiny 2: Endgame Analysis sheet (tiers and recommended rolls).
 
 Usage: python3 tools/build_data.py [manifest_cache_dir]
 Standard library only, so the weekly GitHub Action can run it as is.
 """
-import csv, io, json, os, re, sys, urllib.request
+import csv, io, json, os, re, sys, unicodedata, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BNET = 'https://www.bungie.net'
 ENDGAME = '1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY'  # Google Sheet id of Destiny 2: Endgame Analysis
 TABLES = ['DestinyInventoryItemDefinition', 'DestinyPlugSetDefinition', 'DestinyStatDefinition', 'DestinyCollectibleDefinition',
           'DestinyLoreDefinition', 'DestinySocketCategoryDefinition', 'DestinyDamageTypeDefinition', 'DestinyStatGroupDefinition',
-          'DestinyEquipableItemSetDefinition', 'DestinySandboxPerkDefinition']
+          'DestinyEquipableItemSetDefinition', 'DestinySandboxPerkDefinition', 'DestinyActivityDefinition', 'DestinyVendorDefinition']
 SKIP_STATS = {1480404414, 1935470627}  # Attack, Power
 AMMO = {1: 'Primary', 2: 'Special', 3: 'Heavy'}
 SLOT = {1498876634: 'Kinetic', 2465295065: 'Energy', 953998645: 'Power'}
@@ -56,7 +56,7 @@ def build(d):
     COL, LORE, CAT = d['DestinyCollectibleDefinition'], d['DestinyLoreDefinition'], d['DestinySocketCategoryDefinition']
     DMG, SG = d['DestinyDamageTypeDefinition'], d['DestinyStatGroupDefinition']
     stat_name = lambda h: ST.get(str(h), {}).get('displayProperties', {}).get('name', '')
-    weapons, plugs = [], {}
+    weapons, plugs, scales = [], {}, []
 
     def add_plug(h):
         p = I.get(str(h))
@@ -78,6 +78,13 @@ def build(d):
         order = [s['statHash'] for s in group.get('scaledStats', [])]
         numeric = {s['statHash'] for s in group.get('scaledStats', []) if s.get('displayAsNumeric')}
         stats = [[stat_name(h), it['stats']['stats'][str(h)]['value'], 1 if h in numeric else 0] for h in order if str(h) in it['stats']['stats'] and h not in SKIP_STATS]
+        # perks add to the investment value; a stat whose display curve isn't 1:1 (magazine, RPM, impact) also gets that value and its curve's index
+        inv = {s['statTypeHash']: s['value'] for s in it.get('investmentStats', [])}
+        for st, sc in zip(stats, [next(s for s in group['scaledStats'] if s['statHash'] == h) for h in order if str(h) in it['stats']['stats'] and h not in SKIP_STATS]):
+            pts = [[p['value'], p['weight']] for p in sc['displayInterpolation']]
+            if pts and pts != [[0, 0], [100, 100]]:
+                if pts not in scales: scales.append(pts)
+                st += [inv.get(sc['statHash'], 0), scales.index(pts)]
         columns = []
         sockets = it.get('sockets', {})
         for cat in sockets.get('socketCategories', []):
@@ -99,7 +106,39 @@ def build(d):
                         'am': AMMO.get(it.get('equippingBlock', {}).get('ammoType'), ''), 'sl': SLOT.get(it['inventory'].get('bucketTypeHash'), ''),
                         'fl': it.get('flavorText', ''), 'src': col.get('sourceString', ''), 'lore': lore, 'st': stats, 'cols': columns})
     weapons.sort(key=lambda w: (w['n'], -w['h']))
-    return weapons, plugs
+    return weapons, plugs, scales
+
+
+def fold(t):
+    return unicodedata.normalize('NFKD', t).encode('ascii', 'ignore').decode().lower().strip()
+
+
+def build_wiki(d, tabs):
+    """Art for wiki pages, keyed by the lowercased names the community sheets use: activity banners, vendor art and item icons
+    (abilities, aspects, fragments, mods), plus each element's icon."""
+    A, V, I, DMG = d['DestinyActivityDefinition'], d['DestinyVendorDefinition'], d['DestinyInventoryItemDefinition'], d['DestinyDamageTypeDefinition']
+    cells = {c.strip().split('\n')[0].strip().lower() for t in tabs for r in t['rows'] for c in r if c and c.strip()}
+    cells = {c for c in cells if len(c) <= 60}
+    acts, vendors, icons = {}, {}, {}
+    for a in A.values():
+        n, pg = a.get('displayProperties', {}).get('name', ''), a.get('pgcrImage', '')
+        if n and pg and 'missing' not in pg:
+            for k in (fold(n), fold(n.split(':')[0])): acts.setdefault(k, pg)
+    for v in V.values():
+        dp = v.get('displayProperties', {})
+        if dp.get('name') and dp.get('largeIcon'): vendors.setdefault(fold(dp['name']), dp['largeIcon'])
+    for it in I.values():
+        dp = it.get('displayProperties', {})
+        if dp.get('icon') and it.get('itemType') not in (2, 3) and dp.get('name', '').lower() in cells: icons.setdefault(dp['name'].lower(), dp['icon'])
+    img = {}
+    for c in cells:
+        f = fold(c)
+        for k in (f, 'the ' + f, re.sub(r'^the ', '', f), f.split(' & ')[0], 'the ' + f.split(' & ')[0], f.split(' | ')[0]):
+            if k in acts or k in vendors: img[c] = acts.get(k) or vendors[k]; break
+    for t in DMG.values():
+        dp = t.get('displayProperties', {})
+        if dp.get('icon') and dp.get('name'): icons[dp['name'].lower()] = dp['icon']
+    return {'img': img, 'icon': icons}
 
 
 def build_armor(d):
@@ -210,14 +249,16 @@ def parse_endgame(tabs, weapons, plugs):
 def main():
     cache = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, '.cache')
     version, d = load_manifest(cache)
-    weapons, plugs = build(d)
+    weapons, plugs, scales = build(d)
+    wiki = build_wiki(d, json.load(open(os.path.join(ROOT, 'data', 'tabs.json'), encoding='utf-8')))
     armor = build_armor(d)
     artifacts = build_artifacts(d)
     rolls, missing = parse_endgame(list(endgame_tabs()), weapons, plugs)
     if missing: print('Endgame Analysis names not in the manifest:', missing)
     os.makedirs(os.path.join(ROOT, 'data'), exist_ok=True)
     dump = lambda name, obj: json.dump(obj, open(os.path.join(ROOT, 'data', name), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
-    dump('weapons.json', {'version': version, 'weapons': weapons})
+    dump('weapons.json', {'version': version, 'scales': scales, 'weapons': weapons})
+    dump('wiki.json', wiki)
     dump('plugs.json', plugs)
     dump('godrolls.json', {'source': f'https://docs.google.com/spreadsheets/d/{ENDGAME}', 'rolls': rolls})
     dump('armor.json', armor)
@@ -226,6 +267,7 @@ def main():
           len(armor['armor']), 'armor', len(armor['sets']), 'sets', len(armor['archetypes']), 'archetypes')
     assert len(weapons) > 1000 and len(rolls) > 500 and sum(bool(r.get('c')) for r in rolls.values()) > 300, 'manifest or Endgame Analysis parse looks broken'
     assert len(armor['armor']) > 1000 and len(armor['sets']) > 20 and len(armor['archetypes']) >= 6, 'armor parse looks broken'
+    assert len(scales) > 10 and "king's fall" in wiki['img'] and 'arc' in wiki['icon'], 'stat curve or wiki art parse looks broken'
     assert artifacts and all(len(a['tiers']) == 3 and all(t['perks'] for t in a['tiers']) for a in artifacts), 'artifact parse looks broken'
 
 

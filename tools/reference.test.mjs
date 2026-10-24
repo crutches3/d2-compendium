@@ -73,6 +73,13 @@ assert.equal(await p.getAttribute('#farmsrc a', 'href'), "#/wiki/King's%20Fall")
 await p.click('.perk >> nth=0'); await p.waitForSelector('#perkinfo a');
 assert.match(await p.textContent('#perkinfo a'), /^Everything about .+ in the wiki$/);
 
+// pages look like gun pages: a banner with the raid's art, or the perk's icon and Bungie's description, and a perk's stat changes
+await p.goto("http://localhost:8765/#/wiki/King's%20Fall"); await p.waitForSelector('.hero h1');
+assert.match(await p.getAttribute('.hero', 'style'), /raid_kings_fall/);
+await p.goto('http://localhost:8765/#/wiki/Arrowhead%20Brake'); await p.waitForSelector('.hero h1');
+assert.ok(await p.$('.hero.plain .icon img') && (await p.textContent('.hero .flavor')).includes('vented'));
+assert.deepEqual(await p.$$eval('.wside .deltas li', ls => ls.map(l => l.textContent)), ['+30 Recoil Direction', '+10 Handling']);
+
 // a dungeon's encounters come from Llama's sheet
 await p.goto('http://localhost:8765/#/wiki/Equilibrium'); await p.waitForSelector('table.data');
 assert.match(await p.textContent('tr:has(a.lootname:text-is("Bitter End")) td:last-child'), /Harrow, Dredgen Sere/);

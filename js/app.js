@@ -18,13 +18,16 @@ const card = (w, sub, kind = 'weapon') => `<a class="card" href="#/${kind}/${w.h
 const select = (id, label, vals, cur = '') => `<select id="${id}" aria-label="${label}"><option value="">${label}</option>${vals.map(v => {
   const [val, text] = Array.isArray(v) ? v : [v, v];
   return `<option value="${esc(val)}"${String(val) === cur ? ' selected' : ''}>${esc(text)}</option>`; }).join('')}</select>`;
-const hero = (x, badges) => `<div class="hero" style="background-image:url('${BNET}${x.ss}')"><div class="shade">${icon(x)}<div>
+// a perk's stat changes, green when they help
+const lowerBetter = /Charge Time|Draw Time|Heat Generated/;
+const deltaList = s => s.length ? `<ul class="deltas">${s.map(([n, v]) => `<li class="${(v > 0) !== lowerBetter.test(n) ? 'up' : 'down'}">${v > 0 ? '+' : '−'}${Math.abs(v)} ${esc(n)}</li>`).join('')}</ul>` : '';
+const hero = (x, badges) => `<div class="hero${x.ss ? '' : ' plain'}"${x.ss ? ` style="background-image:url('${BNET}${x.ss}')"` : ''}><div class="shade">${x.i ? icon(x) : ''}<div>
   <h1>${esc(x.n)}</h1><div>${badges}</div>${x.fl ? `<p class="flavor">${esc(x.fl)}</p>` : ''}</div></div></div>`;
 
 async function data() {
   const [w, plugs, gr] = await Promise.all([load('weapons'), load('plugs'), load('godrolls')]);
   w.byHash ||= Object.fromEntries(w.weapons.map(x => [x.h, x]));
-  return { weapons: w.weapons, byHash: w.byHash, version: w.version, plugs, rolls: gr.rolls, source: gr.source };
+  return { weapons: w.weapons, byHash: w.byHash, version: w.version, scales: w.scales, plugs, rolls: gr.rolls, source: gr.source };
 }
 
 // d.rolls[hash] is Aegis's Endgame Analysis rating; exotics are rated but have no roll to match.
@@ -185,14 +188,29 @@ async function weaponPage(hash) {
   const mw = { c: 'Masterwork', p: w.cols.flatMap(c => c.p).filter(h => stats.has(mwName(h)) && (mwName(h) !== 'Impact' || w.ty === 'Sword')) };
   const mwPicks = (er?.mw || '').toLowerCase().split(' or ').filter(Boolean);  // "Handling or Reload"
   mw.p.forEach(h => mwPicks.some(x => mwName(h).toLowerCase().startsWith(x)) && godNames.add(d.plugs[h].n));
-  const perk = (h, col) => { const p = d.plugs[h];
-    return `<button type="button" class="perk${godNames.has(p.n) ? ' god' : ''}${col.cur === h ? ' cur' : ''}" data-h="${h}"${perkCol(w, h) && col.c === 'Weapon Perks' ? ` data-col="${perkCol(w, h)}"` : ''}>${img(p.i)}<span>${esc(mwName(h) || p.n)}${p.e ? ' <span class="enh">enhanced</span>' : ''}</span></button>`; };
+  const perk = (h, col, ci) => { const p = d.plugs[h];
+    return `<button type="button" class="perk${godNames.has(p.n) ? ' god' : ''}${col.cur === h ? ' cur' : ''}" data-h="${h}" data-ci="${ci}"${perkCol(w, h) && col.c === 'Weapon Perks' ? ` data-col="${perkCol(w, h)}"` : ''}>${img(p.i)}<span>${esc(mwName(h) || p.n)}${p.e ? ' <span class="enh">enhanced</span>' : ''}</span></button>`; };
   // enhanced versions share a name with the base perk, so show one entry per name (the first, usually the base);
   // "Empty ... Socket" plugs are placeholders, not choices
   const dedupe = hs => hs.filter((h, i) => d.plugs[h] && !/^Empty .*Socket$/.test(d.plugs[h].n) && hs.findIndex(x => d.plugs[x]?.n === d.plugs[h].n) === i);
-  const perkCols = cols => cols.map(c => [c, dedupe(c.p)]).filter(([, hs]) => hs.length)
-    .map(([c, hs]) => `<div class="perkcol"><h3>${esc(d.plugs[c.p[0]]?.t || c.c)}</h3>${hs.map(h => perk(h, c)).join('')}</div>`).join('');
+  const perkCols = cols => cols.map((c, ci) => [c, dedupe(c.p), ci]).filter(([, hs]) => hs.length)
+    .map(([c, hs, ci]) => `<div class="perkcol"><h3>${esc(d.plugs[c.p[0]]?.t || c.c)}</h3>${hs.map(h => perk(h, c, ci)).join('')}</div>`).join('');
   const maxStat = Math.max(100, ...w.st.filter(s => !s[2]).map(s => s[1]));
+  // Stats as light.gg shows them: the picked perks (and the hovered one, in place of its column's pick) against the bare weapon.
+  // Perks add to a stat's investment value; most stats show it 1:1 (0-100), the rest (magazine, RPM, impact) follow the weapon's curve.
+  const curve = (pts, v) => { const i = pts.findIndex(x => x[0] >= v); if (i < 1) return pts.at(i)[1]; const [a, b] = pts[i - 1], [c, e] = pts[i]; return b + (e - b) * (v - a) / (c - a); };
+  const statAt = (st, add) => st[4] != null ? Math.round(curve(d.scales[st[4]], st[3] + add)) : Math.max(0, Math.min(100, st[1] + add));
+  const sum = hs => { const t = {}; for (const h of hs) for (const [n, v] of d.plugs[h]?.s || []) t[n] = (t[n] || 0) + v; return t; };
+  const always = sum(w.cols.filter(c => c.c === 'Intrinsic Traits').map(c => c.cur || c.p[0]));  // the frame is always on, and the definition leaves it out
+  const picked = new Map();
+  const pct = v => Math.min(100, v / maxStat * 100);
+  const statRows = hover => {
+    const add = sum([...new Map([...picked, ...(hover ? [[hover.dataset.ci, +hover.dataset.h]] : [])]).values()]);
+    return w.st.map(st => { const [n, , num] = st, base = statAt(st, always[n] || 0), now = statAt(st, (always[n] || 0) + (add[n] || 0)), diff = now - base;
+      const tone = diff && (diff > 0) !== lowerBetter.test(n) ? 'up' : 'down';
+      return `<div class="stat${diff ? ' changed' : ''}" data-stat="${esc(n)}"><span class="muted">${esc(n)}</span>${num ? '<span></span>' : `<div class="bar"><span style="width:${pct(Math.min(base, now))}%"></span>${diff ? `<span class="${diff > 0 ? 'more' : 'less'} ${tone}" style="left:${pct(Math.min(base, now))}%;width:${Math.abs(pct(now) - pct(base))}%"></span>` : ''}</div>`}
+        <b>${now}</b><small class="${tone}">${diff ? (diff > 0 ? '+' : '−') + Math.abs(diff) : ''}</small></div>`; }).join('');
+  };
   // build roll: pick a saved build that uses this weapon and its perks become the goal; "Pick perks" sets them on the grid
   const goalBuilds = savedBuilds().filter(b => usesWeapon(d, b, w));
   let goalKey = goalBuilds.some(b => b.key === Bungie.store.get('d2c_goal')?.[baseName(w.n)]) ? Bungie.store.get('d2c_goal')[baseName(w.n)] : '', editing = false;
@@ -200,14 +218,18 @@ async function weaponPage(hash) {
   $app.innerHTML = `
     ${hero(w, `<span class="badge">${esc(w.ti)}</span><span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span><span class="badge">${esc(w.ty)}</span><span class="badge">${esc(w.sl)} · ${esc(w.am)}</span>${tierBadge(er)}`)}
     ${same.length ? `<p class="versions">Other versions: ${same.map((x, i) => `<a href="#/weapon/${x.h}">${esc(bungieSource(x) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
-    <section class="panel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll <span class="key cur"></span> Curated roll${goalBuilds.length ? ' <span class="key goal"></span> Build roll' : ''}</p>
+    <div class="wtop"><section class="panel perkpanel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll <span class="key cur"></span> Curated roll${goalBuilds.length ? ' <span class="key goal"></span> Build roll' : ''}</p>
       ${goalBuilds.length ? `<div class="goalbar"><label for="goal">Build roll</label><select id="goal"><option value="">None</option>${goalBuilds.map(b => `<option value="${esc(b.key)}"${b.key === goalKey ? ' selected' : ''}>${esc(b.name)}</option>`).join('')}</select>
         <button type="button" id="editgoal"${goalKey ? '' : ' hidden'}>Pick perks</button><small class="muted" id="goalhint"></small></div>` : ''}
-      <div class="perkwrap"><div class="perkcols">${perkCols([...w.cols.filter(c => c.c !== 'Weapon Mods'), mw])}</div>
-      <aside class="copies" id="mine"><h3>Your copies</h3><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies here.'}</p></aside></div>
-      <div class="perkinfo" id="perkinfo" aria-live="polite"><span class="muted">Select a perk to see what it does.</span></div></section>
+      <div class="perkcols">${perkCols([...w.cols.filter(c => c.c !== 'Weapon Mods'), mw])}</div>
+      <div class="perktip" id="perktip" hidden></div>
+      <div class="perkinfo" id="perkinfo" aria-live="polite"><span class="muted">Hover a perk to preview its stats. Click one per column to build a roll.</span></div></section>
+    <div class="wside">
+      <section class="panel" id="stats"><h2>Stats</h2><div id="statrows">${statRows()}</div>
+        <p class="statacts">${w.cols.some(c => c.cur) ? '<button type="button" id="curated">Curated roll</button>' : ''}<button type="button" id="clearroll" disabled>Clear roll</button></p></section>
+      <section class="panel copies" id="mine"><h3>Your copies</h3><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies here.'}</p></section>
+    </div></div>
     <div class="cols2"><div>
-      <section class="panel"><h2>Stats</h2>${w.st.map(([n, v, num]) => `<div class="stat"><span class="muted">${esc(n)}</span>${num ? '<span></span>' : `<div class="bar"><span style="width:${Math.min(100, v / maxStat * 100)}%"></span></div>`}<b>${v}</b></div>`).join('')}</section>
       <section class="panel"><h2>Source</h2><p id="farmsrc">${esc(bungieSource(w) || 'Unknown')}</p><div id="sheetsrc" class="muted">Looking up community sheets…</div><p>${farmButton(w.h)}</p></section>
     </div><div>
       <section class="panel"><h2>Endgame Analysis</h2>${endgamePanel(d, er)}</section>
@@ -245,9 +267,11 @@ async function weaponPage(hash) {
     if (editing) { if (el.dataset.col) toggleGoalPerk(el); return; }
     const info = document.getElementById('perkinfo');
     const wasOn = el.classList.contains('sel');
-    $app.querySelectorAll('.perk.sel').forEach(x => { x.classList.remove('sel'); x.removeAttribute('aria-pressed'); });
-    // clicking the selected perk again closes the details box
-    if (wasOn) { info.classList.remove('on'); info.innerHTML = '<span class="muted">Select a perk to see what it does.</span>'; return; }
+    // one pick per column, which the stats add up; clicking the pick again takes it out and closes the details box
+    grid.querySelectorAll(`.perk.sel[data-ci="${el.dataset.ci}"]`).forEach(x => { x.classList.remove('sel'); x.removeAttribute('aria-pressed'); });
+    if (wasOn) picked.delete(el.dataset.ci); else picked.set(el.dataset.ci, +el.dataset.h);
+    drawStats();
+    if (wasOn) { info.classList.remove('on'); info.innerHTML = '<span class="muted">Hover a perk to preview its stats. Click one per column to build a roll.</span>'; return; }
     el.classList.add('sel');
     info.classList.add('on');
     const p = d.plugs[el.dataset.h];
@@ -258,6 +282,31 @@ async function weaponPage(hash) {
       `\n<a href="${wikiHref(p.n)}">Everything about ${esc(p.n)} in the wiki</a>`;
     el.setAttribute('aria-pressed', 'true');
   }));
+  // hovering (or tabbing to) a perk previews the stats with it in place of its column's pick, with a light.gg-style card beside it
+  const statBox = $app.querySelector('#statrows'), tip = $app.querySelector('#perktip'), panel = $app.querySelector('.perkpanel');
+  const drawStats = hover => {
+    statBox.innerHTML = statRows(hover);
+    $app.querySelector('#clearroll').disabled = !picked.size;
+  };
+  let shown = null;
+  const preview = el => {
+    shown = el; drawStats(el);
+    const p = d.plugs[el.dataset.h], r = el.getBoundingClientRect(), pr = panel.getBoundingClientRect();
+    tip.innerHTML = `<b>${esc(p.n)}</b><small>${esc(p.t)}</small>${p.d ? `<p>${esc(p.d)}</p>` : ''}${deltaList(p.s)}`;
+    tip.hidden = false;
+    tip.style.top = `${r.bottom - pr.top + 6}px`;
+    tip.style.left = `${Math.max(8, Math.min(r.left - pr.left, pr.width - tip.offsetWidth - 8))}px`;
+  };
+  const unpreview = () => { shown = null; tip.hidden = true; drawStats(); };
+  grid.addEventListener('pointerover', e => { const el = e.target.closest('.perk');
+    if (e.pointerType === 'mouse' && !editing && el !== shown) el ? preview(el) : unpreview(); });
+  grid.addEventListener('pointerleave', unpreview);
+  grid.addEventListener('focusin', e => { const el = e.target.closest('.perk'); if (el && !editing) preview(el); });
+  grid.addEventListener('focusout', unpreview);
+  const pickAll = els => { picked.clear(); grid.querySelectorAll('.perk.sel').forEach(x => { x.classList.remove('sel'); x.removeAttribute('aria-pressed'); });
+    els.forEach(x => { picked.set(x.dataset.ci, +x.dataset.h); x.classList.add('sel'); x.setAttribute('aria-pressed', 'true'); }); drawStats(); };
+  $app.querySelector('#curated')?.addEventListener('click', () => pickAll([...grid.querySelectorAll('.perk.cur')]));
+  $app.querySelector('#clearroll').addEventListener('click', () => pickAll([]));
 
   wireFarmButton();
   if (Bungie.token()) showCopies(d, w, er, mw.p.filter(h => godNames.has(d.plugs[h].n)).map(h => d.plugs[h].n), goal);  // runs alongside the slower sheet lookups below
@@ -1210,7 +1259,7 @@ const linkify = (W, html, self = '') => html.replace(W.linkRe, n => n === esc(se
 let wikiIndex;
 async function wikiData() {
   if (wikiIndex) return wikiIndex;
-  const [tabs, arts] = await Promise.all([sheets(), load('artifacts')]);
+  const [tabs, arts, art] = await Promise.all([sheets(), load('artifacts'), load('wiki')]);
   const acts = new Map(), terms = new Map();
   // activities and their loot from the Monument of Triumph tabs, where a row with only a second cell starts a group
   for (const t of tabs) {
@@ -1241,7 +1290,7 @@ async function wikiData() {
   }
   for (const x of arts) for (const t of x.tiers) for (const k of t.perks) {
     const same = terms.get(k.n.toLowerCase())?.find(y => y.where === 'Artifact perks' && y.e.desc === k.d);
-    if (same) same.section += ', ' + x.n; else add(k.n, { e: { term: k.n, sub: [], desc: k.d, meta: [] }, where: 'Artifact perks', section: x.n });
+    if (same) same.section += ', ' + x.n; else add(k.n, { e: { term: k.n, sub: [], desc: k.d, meta: [] }, where: 'Artifact perks', section: x.n, icon: k.i });
   }
   // linked in running text: raids, dungeons, missions, champions, statuses from the subclass glossaries, exotics, and names of two or more words
   // (single-word perk names like "Focus" or "Momentum" read as plain words too often)
@@ -1249,7 +1298,7 @@ async function wikiData() {
     ...[...terms.values()].flat().filter(x => x.glossary || /^Exotic/.test(x.where) || x.e.term.includes(' ')).map(x => x.e.term)].filter(n => n.length > 3);
   const linkNames = new Map(linkable.map(n => [esc(n), n]));
   const names = [...new Set([...[...acts.values()].map(x => x.name), ...CHAMPIONS, ...[...terms.values()].map(l => l[0].e.term)])];
-  return wikiIndex = { tabs, acts, terms, names, linkNames, linkRe: nameRe([...linkNames.keys()].sort((x, y) => y.length - x.length).map(rxEsc).join('|'), 'g') };
+  return wikiIndex = { tabs, art, acts, terms, names, linkNames, linkRe: nameRe([...linkNames.keys()].sort((x, y) => y.length - x.length).map(rxEsc).join('|'), 'g') };
 }
 
 async function wikiPage(raw) {
@@ -1273,19 +1322,25 @@ async function wikiPage(raw) {
         ${act.loot.some(y => y.enc) ? `<td class="wide">${esc(x.enc)}</td>` : ''}${act.loot.some(y => y.how) ? `<td class="wide">${esc(x.how)}</td>` : ''}</tr>`; }).join('')}</tbody></table></div></section>`;
   const byWhere = Object.entries(Object.groupBy(mentions, x => x.where));
   const counters = W.tabs.find(t => t.tab === 'CHAMP COUNTERS LIST')?.url;
-  $app.innerHTML = `<p class="crumbs"><a href="#/wiki">Wiki</a></p><h1>${esc(act?.name || champ || defs[0]?.e.term || weapon?.n || armor?.n || name)}</h1>
-    <div class="perks wikitags">${tags.map(t => `<span class="badge">${esc(t)}</span>`).join('')}</div>
-    ${loot || ''}
-    ${weapon || armor ? `<section class="panel"><h2>${weapon ? 'Weapon' : 'Armor'}</h2><div class="grid">${weapon ? card(weapon, `<small>${tierBadge(d.rolls[weapon.h])}${esc(weapon.ty)}</small>${srcHtml ? `<small>${srcHtml}</small>` : ''}`) : ''}${armor ? card(armor, `<small>${esc(armor.ty)}</small>`, 'armor') : ''}</div></section>` : ''}
-    ${champ ? `<section class="panel"><h2>Counters</h2><p>Everything below mentions ${esc(champ)} champions.${counters ? ` Court's full list of what stuns them is in the <a href="${esc(counters)}" target="_blank" rel="noopener">Champion counters sheet ↗</a>.` : ''}</p></section>` : ''}
-    ${defs.length ? `<section class="panel refdoc"><h2>What it does</h2><dl class="entries">${defs.map(x => entryHtml(x.e, { W, self: name,
+  const title = act?.name || champ || defs[0]?.e.term || weapon?.n || armor?.n || name, plug = d.plugs[[...plugs][0]];
+  // laid out like a gun page: a banner (the activity's art, the item, or the perk's icon), the main panels, and a sticky side column
+  const art = weapon || armor || { n: title, ss: W.art.img[key], fl: plug?.d,
+    i: plug?.i || W.art.icon[key] || defs.find(x => x.icon)?.icon || W.art.icon[defs[0]?.where.toLowerCase()] };
+  const main = `${loot || ''}
+    ${defs.length ? `<section class="panel"><h2>What it does</h2><dl class="entries">${defs.map(x => entryHtml(x.e, { W, self: name,
       where: x.i != null ? `<a href="#/ref/${x.i}">${esc(x.where)}</a>${x.section ? ' · ' + esc(x.section) : ''}` : `${esc(x.where)} · ${esc(x.section)}` })).join('')}</dl></section>` : ''}
     ${rollers.length ? `<section class="panel"><h2>Weapons that can roll it <span class="count">${rollers.length}</span></h2><div class="grid" id="rollers"></div>
       ${rollers.length > 24 ? `<p><button type="button" id="morerollers">Show all ${rollers.length}</button></p>` : ''}</section>` : ''}
-    ${mentions.length ? `<section class="panel refdoc"><h2>Mentioned in <span class="count">${mentions.length}</span></h2>${byWhere.map(([where, l]) => `<h3 class="mentionhead">${esc(where)}</h3><ul class="mentions">${l.map(x => {
+    ${mentions.length ? `<section class="panel"><h2>Mentioned in <span class="count">${mentions.length}</span></h2>${byWhere.map(([where, l]) => `<h3 class="mentionhead">${esc(where)}</h3><ul class="mentions">${l.map(x => {
       const line = x.e.desc.split('\n').find(t => re.test(t)) || '';
-      return `<li><a href="${wikiHref(x.e.term)}">${esc(x.e.term)}</a><span>${esc(line).replace(nameRe(rxEsc(esc(name)), 'gi'), m => `<mark>${m}</mark>`)}</span></li>`; }).join('')}</ul>`).join('')}</section>` : ''}
-    ${act || champ || defs.length || weapon || armor || rollers.length || mentions.length ? '' : `<p class="empty">The wiki has nothing on “${esc(name)}” yet. <a href="#/wiki">Search the wiki</a></p>`}`;
+      return `<li><a href="${wikiHref(x.e.term)}">${esc(x.e.term)}</a><span>${esc(line).replace(nameRe(rxEsc(esc(name)), 'gi'), m => `<mark>${m}</mark>`)}</span></li>`; }).join('')}</ul>`).join('')}</section>` : ''}`.trim();
+  const side = `${weapon || armor ? `<section class="panel"><h2>${weapon ? 'Gun page' : 'Armor page'}</h2><div class="grid">${weapon ? card(weapon, `<small>${tierBadge(d.rolls[weapon.h])}${esc(weapon.ty)}</small>${srcHtml ? `<small>${srcHtml}</small>` : ''}`) : ''}${armor ? card(armor, `<small>${esc(armor.ty)}</small>`, 'armor') : ''}</div></section>` : ''}
+    ${plug?.s.length ? `<section class="panel"><h2>Stat changes</h2>${deltaList(plug.s)}</section>` : ''}
+    ${champ ? `<section class="panel"><h2>Counters</h2><p>Everything here mentions ${esc(champ)} champions.${counters ? ` Court's full list of what stuns them is in the <a href="${esc(counters)}" target="_blank" rel="noopener">Champion counters sheet ↗</a>.` : ''}</p></section>` : ''}`.trim();
+  const found = main || side;
+  $app.innerHTML = `<p class="crumbs"><a href="#/wiki">Wiki</a></p>${found ? hero({ ...art, n: title }, `<span class="wikitags">${tags.map(t => `<span class="badge">${esc(t)}</span>`).join('')}</span>`) : `<h1>${esc(title)}</h1>`}
+    ${main && side ? `<div class="wtop wiki"><div>${main}</div><div class="wside">${side}</div></div>` : main || side}
+    ${found ? '' : `<p class="empty">The wiki has nothing on “${esc(name)}” yet. <a href="#/wiki">Search the wiki</a></p>`}`;
   const showRollers = n => { const box = $app.querySelector('#rollers'); if (box) box.innerHTML = rollers.slice(0, n).map(w => card(w, `<small>${tierBadge(d.rolls[w.h])}${esc(w.ty)}</small>`)).join(''); };
   showRollers(24);
   $app.querySelector('#morerollers')?.addEventListener('click', e => { showRollers(Infinity); e.target.remove(); });
