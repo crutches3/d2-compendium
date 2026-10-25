@@ -622,7 +622,7 @@ async function transferPage() {
   const order = (m, n) => n.equipped - m.equipped || def(m).n.localeCompare(def(n).n);
   const narrow = matchMedia('(max-width: 720px)');
   let sel = null, busy = false, msg = '', view = p.chars[0]?.id;  // view: the one character shown on phones
-  $app.innerHTML = `<h1>My gear</h1>${gearTabs('Transfer')}<p class="muted">Drag an item to another character or the vault, or pick an item, then choose where it goes. Moves happen in the game straight away.</p>
+  $app.innerHTML = `<h1>My gear</h1>${gearTabs('Transfer')}<p class="muted">Drag an item to another character or the vault, or pick an item, then choose where it goes. Pull gear out of the Postmaster the same way. Moves happen in the game straight away.</p>
     <div class="filters"><input type="search" id="q" aria-label="Find an item" placeholder="Find an item">${select('kind', 'Weapons and armor', [['w', 'Weapons'], ['a', 'Armor']])}
     <button type="button" id="reload">Reload from Bungie</button></div><div id="places"></div><div id="actions" class="actionbar" aria-live="polite" hidden></div>`;
   const f = id => $app.querySelector('#' + id);
@@ -633,15 +633,18 @@ async function transferPage() {
     const items = p.items.filter(i => def(i) && (!kind || (kind === 'w') === !!d.byHash[i.itemHash]) && (!q || def(i).n.toLowerCase().includes(q)));
     const chars = narrow.matches ? p.chars.filter(c => c.id === view) : p.chars;
     const slots = [...(kind !== 'a' ? weaponSlots : []), ...(kind !== 'w' ? armorSlots : [])];
-    const vault = items.filter(i => !i.owner), postmaster = items.filter(i => i.postmaster);
+    const vault = items.filter(i => !i.owner);
+    // each character's Postmaster sits above its gear; the count is every slot in use, engrams and materials included
+    const pm = c => { const used = p.postmasterUsed?.[c.id] || 0;
+      return `<div class="cell pm" data-owner="${c.id}" data-slot="Postmaster"><small class="pmcount${used >= 18 ? ' full' : ''}" title="Postmaster slots in use, counting engrams and materials not shown here">${used} of 21</small>${items.filter(i => i.owner === c.id && i.postmaster).sort(order).map(tile).join('')}</div>`; };
     f('places').innerHTML = `${narrow.matches ? `<div class="tabs charpick">${p.chars.map(c => `<button type="button" data-view="${c.id}"${c.id === view ? ' class="on" aria-pressed="true"' : ''}>${esc(c.cls)}</button>`).join('')}</div>` : ''}
       <div class="loadout" style="--chars:${chars.length}"><div></div>
         ${chars.map(c => `<div class="charhead" style="background-image:url('${c.emblem ? BNET + c.emblem : ''}')"><b>${esc(c.cls)}</b>${c.light ? `<span>${c.light}</span>` : ''}</div>`).join('')}
         <div class="charhead vault"><b>Vault</b><span>${vault.length}</span></div>
+        <div class="slotname">Postmaster</div>${chars.map(pm).join('')}<div class="cell pm"></div>
         ${slots.map(slot => `<div class="slotname">${slot}</div>${chars.map(c => cell(items.filter(i => i.owner === c.id && !i.postmaster && slotOf(i) === slot), c.id, slot)).join('')}
           ${cell(vault.filter(i => slotOf(i) === slot), 'vault', slot)}`).join('')}
-      </div>
-      ${postmaster.length ? `<section class="panel"><h2>Postmaster <span class="count">${postmaster.length}</span></h2><div class="cell" data-owner="postmaster">${postmaster.map(tile).join('')}</div></section>` : ''}`;
+      </div>`;
     drawBar();
   };
   // the action bar redraws on its own so picking an item doesn't rebuild every icon in the grid
@@ -651,12 +654,14 @@ async function transferPage() {
     if (!sel) return;
     const cls = a.byHash[sel.itemHash]?.cl;  // class armor can only go to that class
     const targets = p.chars.filter(c => !cls || c.cls === cls);
-    const stuck = sel.equipped ? 'Equipped items can\'t be moved. Equip something else in that slot in game first.' : sel.postmaster ? 'Pull this from the Postmaster in game first.'
-      : !targets.length ? `Only a ${cls} can hold this, and there's no ${cls} on this account.` : '';
+    const stuck = sel.equipped ? 'Equipped items can\'t be moved. Equip something else in that slot in game first.'
+      : !sel.postmaster && !targets.length ? `Only a ${cls} can hold this, and there's no ${cls} on this account.` : '';
     const btn = (attr, label) => `<button type="button" ${attr}${busy || stuck ? ' disabled' : ''}>${esc(label)}</button>`;
-    bar.innerHTML = `${icon(def(sel))}<div class="what"><b>${esc(def(sel).n)}</b><small>${esc(sel.location)}</small><small class="${/^(Done|Moving)/.test(msg) ? '' : 'err'}">${esc(stuck || msg)}</small></div>
-      <div class="acts">${sel.owner ? btn('data-move="vault"', 'To Vault') : ''}${targets.filter(c => c.id !== sel.owner).map(c => btn(`data-move="${c.id}"`, `To ${c.cls}`)).join('')}
-      <button type="button" data-close>Close</button></div>`;
+    // a Postmaster item can only be pulled to the character whose Postmaster it's in; after that it moves like anything else
+    const acts = sel.postmaster ? btn('data-pull class="primary"', `Pull to ${p.chars.find(c => c.id === sel.owner)?.cls}`)
+      : `${sel.owner ? btn('data-move="vault"', 'To Vault') : ''}${targets.filter(c => c.id !== sel.owner).map(c => btn(`data-move="${c.id}"`, `To ${c.cls}`)).join('')}`;
+    bar.innerHTML = `${icon(def(sel))}<div class="what"><b>${esc(def(sel).n)}</b><small>${esc(sel.location)}</small><small class="${/^(Done|Moving|Pulling)/.test(msg) ? '' : 'err'}">${esc(stuck || msg)}</small></div>
+      <div class="acts">${acts}<button type="button" data-close>Close</button></div>`;
   };
   const run = async (label, fn) => {
     busy = true; msg = label; drawBar();
@@ -671,21 +676,24 @@ async function transferPage() {
     f('places').querySelectorAll('.tile.sel').forEach(x => x.classList.remove('sel')); t.classList.add('sel'); drawBar();
   });
   const act = (it, to) => run(`Moving to ${p.chars.find(c => c.id === to)?.cls || 'Vault'}…`, () => Bungie.move(p, it, to));
+  const pull = it => run(`Pulling to ${p.chars.find(c => c.id === it.owner)?.cls}…`, () => Bungie.pull(p, it));
   f('actions').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b || b.disabled) return;
     if (b.hasAttribute('data-close')) { sel = null; f('places').querySelector('.tile.sel')?.classList.remove('sel'); drawBar(); return; }
     if (b.dataset.move) act(sel, b.dataset.move);
+    else if (b.hasAttribute('data-pull')) pull(sel);
   });
-  // Drag and drop: onto another cell in the item's row to move it there. Touch needs a
-  // long press first, so a swipe still scrolls the page. Dropping shows the move in the action bar like the buttons do.
+  // Drag and drop: onto another cell in the item's row to move it there, or a Postmaster item onto its own character's row to pull it.
+  // Touch needs a long press first, so a swipe still scrolls the page. Dropping shows the move in the action bar like the buttons do.
   let drag = null, dragged = false;
   const blocked = (it, to) => { const cls = a.byHash[it.itemHash]?.cl, c = p.chars.find(x => x.id === to);
-    return it.postmaster ? 'Pull this from the Postmaster in game first.' : it.equipped ? 'Equipped items can\'t be moved. Equip something else in that slot in game first.'
+    return it.postmaster ? (to === it.owner ? '' : `Pull this to your ${p.chars.find(x => x.id === it.owner)?.cls} first.`)
+      : it.equipped ? 'Equipped items can\'t be moved. Equip something else in that slot in game first.'
       : c && cls && c.cls !== cls ? `Only a ${cls} can hold this.` : ''; };
   const targetAt = (x, y) => { const el = document.elementFromPoint(x, y), cell = el?.closest('#places .cell[data-slot]');
     if (!cell || cell.dataset.slot !== slotOf(drag.it)) return null;
     const to = cell.dataset.owner;
-    return to === drag.it.owner ? null : { cell, to };  // dropping where it already is does nothing
+    return to === drag.it.owner && !drag.it.postmaster ? null : { cell, to };  // dropping where it already is does nothing
   };
   const mark = t => { f('places').querySelectorAll('.drop-ok,.drop-no').forEach(x => x.classList.remove('drop-ok', 'drop-no'));
     if (t) t.cell.classList.add(blocked(drag.it, t.to) ? 'drop-no' : 'drop-ok'); };
@@ -703,7 +711,7 @@ async function transferPage() {
     const { it, target: t, ghost } = drag; end();
     if (!ghost || !t) return;
     sel = it; msg = blocked(it, t.to);
-    if (msg) drawBar(); else act(it, t.to);
+    if (msg) drawBar(); else if (it.postmaster) pull(it); else act(it, t.to);
   };
   const end = () => { clearTimeout(drag.timer); drag.ghost?.remove(); drag.tile.classList.remove('dragging'); mark(null); drag = null;
     removeEventListener('pointermove', onMove); removeEventListener('pointerup', onUp); removeEventListener('pointercancel', end);

@@ -79,7 +79,9 @@ const Bungie = (() => {
     for (const [cid, eq] of Object.entries(p.characterEquipment.data || {})) push(eq.items, cid, true);
     const chars = Object.entries(p.characters?.data || {}).map(([id, c]) => ({ id, cls: ['Titan', 'Hunter', 'Warlock'][c.classType] || 'Character ' + id.slice(-4),
       emblem: c.emblemBackgroundPath || '', light: c.light || 0 }));
-    const profile = { name: m.bungieNetUser.uniqueName || m.bungieNetUser.displayName, membershipType: dm.membershipType, chars, items };
+    // Postmaster slots used per character (it holds 21), counting engrams and materials the site doesn't list
+    const postmasterUsed = Object.fromEntries(Object.entries(p.characterInventories.data || {}).map(([cid, inv]) => [cid, inv.items.filter(i => i.bucketHash === POSTMASTER).length]));
+    const profile = { name: m.bungieNetUser.uniqueName || m.bungieNetUser.displayName, membershipType: dm.membershipType, chars, items, postmasterUsed };
     const sockets = p.itemComponents.sockets.data || {}, reusable = p.itemComponents.reusablePlugs.data || {}, inst = p.itemComponents.instances.data || {};
     const stats = p.itemComponents.stats?.data || {};
     for (const it of items) {
@@ -103,6 +105,12 @@ const Bungie = (() => {
     if (to !== 'vault' && it.owner !== to) { await transfer(to, false); it.owner = to; locate(p, it); }
   }
 
+  // Pulls an item out of its character's Postmaster into that character's inventory.
+  async function pull(p, it) {
+    await call('/Destiny2/Actions/Items/PullFromPostmaster/', { itemReferenceHash: it.itemHash, stackSize: 1, itemId: it.instanceId, characterId: it.owner, membershipType: p.membershipType });
+    it.postmaster = false; p.postmasterUsed[it.owner]--; locate(p, it);
+  }
+
   // Equips several items on one character in one call, so exotic swaps resolve together. Returns the items that failed.
   async function equipAll(p, items, characterId) {
     if (!items.length) return [];
@@ -114,5 +122,5 @@ const Bungie = (() => {
   // One DestinyInventoryItemDefinition, for hashes the site's data files don't cover (subclasses, mods, artifact perks).
   const item = hash => call(`/Destiny2/Manifest/DestinyInventoryItemDefinition/${hash}/`);
 
-  return { token, signIn, signOut, handleRedirect, loadProfile, move, equipAll, item, locate, store };
+  return { token, signIn, signOut, handleRedirect, loadProfile, move, pull, equipAll, item, locate, store };
 })();

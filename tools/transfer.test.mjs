@@ -9,10 +9,13 @@ const A = JSON.parse(fs.readFileSync('data/armor.json'));
 const fate = W.find(w => w.n === 'Fatebringer'), gjally = W.find(w => w.n === 'Gjallarhorn'), ace = W.find(w => w.n === 'Ace of Spades');
 const helm = A.armor.find(x => x.a3 && x.cl === 'Titan' && x.ty === 'Helmet');
 const hunterHelm = A.armor.find(x => x.a3 && x.cl === 'Hunter' && x.ty === 'Helmet');
+const energy = W.find(w => w.sl === 'Energy' && w.ti === 'Legendary'), kinetic = W.find(w => w.sl === 'Kinetic' && w.ti === 'Legendary' && w !== fate);
 const profile = {
   characters: { data: { T1: { classType: 0, light: 481 }, W1: { classType: 2, light: 476 } } },
   profileInventory: { data: { items: [{ itemHash: fate.h, itemInstanceId: '1', bucketHash: 138197802 }, { itemHash: hunterHelm.h, itemInstanceId: '5', bucketHash: 138197802 }] } },
-  characterInventories: { data: { T1: { items: [{ itemHash: gjally.h, itemInstanceId: '2', bucketHash: 953998645 }] }, W1: { items: [] } } },
+  characterInventories: { data: { T1: { items: [{ itemHash: gjally.h, itemInstanceId: '2', bucketHash: 953998645 },
+    // the Titan's Postmaster: two weapons and a stack of materials (no instance, so it only counts toward the 21)
+    { itemHash: energy.h, itemInstanceId: '6', bucketHash: 215593132 }, { itemHash: kinetic.h, itemInstanceId: '7', bucketHash: 215593132 }, { itemHash: 1, quantity: 5, bucketHash: 215593132 }] }, W1: { items: [] } } },
   characterEquipment: { data: { T1: { items: [{ itemHash: ace.h, itemInstanceId: '3', bucketHash: 1498876634 }, { itemHash: helm.h, itemInstanceId: '4', bucketHash: 3448274439 }] }, W1: { items: [] } } },
   itemComponents: { sockets: { data: {} }, reusablePlugs: { data: {} }, instances: { data: {} }, stats: { data: {} } },
 };
@@ -89,6 +92,27 @@ await dragTo('2', '.cell[data-owner="W1"][data-slot="Kinetic"]');
 assert.equal(await placeOf('2'), 'vault');
 assert.deepEqual(posts, []);
 assert.equal(await p.$$eval('.dragghost', g => g.length), 0);
+// Postmaster: a row per character above the gear, with how full it is (the materials count too)
+const rowOf = async id => p.$eval(`.tile[data-id="${id}"]`, t => t.closest('.cell').dataset.slot);
+assert.equal(await rowOf('6'), 'Postmaster');
+assert.equal(await p.textContent('.cell.pm[data-owner="T1"] .pmcount'), '3 of 21');
+assert.equal(await p.textContent('.cell.pm[data-owner="W1"] .pmcount'), '0 of 21');
+// picked, its only way out is a pull to its own character
+await p.click('.tile[data-id="6"]');
+assert.equal(await p.$$eval('#actions button', bs => bs.map(x => x.textContent).join('|')), 'Pull to Titan|Close');
+posts.length = 0;
+await p.click('#actions button[data-pull]'); await p.waitForTimeout(300);
+assert.deepEqual(posts, [['PullFromPostmaster/', { itemReferenceHash: energy.h, stackSize: 1, itemId: '6', characterId: 'T1', membershipType: 3 }]]);
+assert.equal(await rowOf('6'), 'Energy'); assert.equal(await placeOf('6'), 'T1');
+assert.equal(await p.textContent('.cell.pm[data-owner="T1"] .pmcount'), '2 of 21');
+// dragged onto another character it says to pull first; onto its own character's row it's pulled
+posts.length = 0;
+assert.match(await dragTo('7', '.cell[data-owner="W1"][data-slot="Kinetic"]'), /drop-no/);
+assert.match(await p.textContent('#actions .err'), /Pull this to your Titan first/);
+assert.deepEqual(posts, []);
+assert.match(await dragTo('7', '.cell[data-owner="T1"][data-slot="Kinetic"]'), /drop-ok/);
+assert.deepEqual(posts.map(x => x[0]), ['PullFromPostmaster/']);
+assert.equal(await rowOf('7'), 'Kinetic');
 await p.screenshot({ path: OUT + 'transfer-d.png' });
 await p.setViewportSize({ width: 390, height: 844 }); await p.waitForTimeout(300);
 await p.screenshot({ path: OUT + 'transfer-m.png' });
