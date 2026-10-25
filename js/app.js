@@ -464,17 +464,36 @@ const setBonus = set => set.perks.map(([n, name, desc, ic]) => `<div class="bonu
 // Bungie's own class logos (the Hunter, Titan and Warlock nodes in Collections): white on transparent
 const CLASS_LOGOS = { Hunter: '/common/destiny2_content/icons/05e32a388d9a65a0ef59b2193eee2db4.png',
   Titan: '/common/destiny2_content/icons/46a19ddd00d0f6ca822230943103b54a.png', Warlock: '/common/destiny2_content/icons/e4006d9a8fe167bd7e83193d7601c89a.png' };
+// Both armor lists (the Armor page and My gear's Armor tab) pick a class with the logos and list armor in a section per class: with no
+// class picked, every class with its first `cap` pieces and a "Show all"; with one picked, just that class, up to `full`.
+const classPick = cl => `<div class="classpick" role="group" aria-label="Class">${Object.entries(CLASS_LOGOS).map(([c, i]) =>
+  `<button type="button" data-cl="${c}" aria-pressed="${c === cl}" aria-label="${c}" data-tip="${c}"><img src="${BNET}${i}" alt=""></button>`).join('')}</div>`;
+const classSections = (cl, items, cardOf, cap = 48, full = 400) => Object.keys(CLASS_LOGOS).filter(c => !cl || c === cl).map(c => {
+  const mine = items.filter(o => o.x.cl === c), n = cl ? full : cap; if (!mine.length) return '';
+  return `<section class="classgroup"><h2 class="classhead"><img src="${BNET}${CLASS_LOGOS[c]}" alt="">${c} <span class="count">${mine.length}</span></h2>
+    <div class="grid">${mine.slice(0, n).map(cardOf).join('')}</div>
+    ${mine.length > n && !cl ? `<button type="button" class="showall" data-cl="${c}">Show all ${mine.length} ${c} pieces</button>` : ''}</section>`;
+}).join('');
+// a logo picks that class (again shows every class); "Show all" picks its class and goes back up to the filters
+const wireClassPick = (get, set) => {
+  const pick = e => {
+    const b = e.target.closest('[data-cl]'); if (!b) return;
+    const cl = b.classList.contains('showall') || get() !== b.dataset.cl ? b.dataset.cl : '';
+    $app.querySelectorAll('.classpick button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.cl === cl)));
+    set(cl);
+    if (b.classList.contains('showall')) $app.querySelector('.filters').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  };
+  [$app.querySelector('.classpick'), $app.querySelector('#list')].forEach(el => el.addEventListener('click', pick));
+};
 
 async function armorList(params) {
   const a = await armorData();
   const uniq = k => [...new Set(a.armor.map(x => x[k]).filter(Boolean))].sort();
   const sets = Object.entries(a.sets).map(([h, st]) => [h, st.n]).sort((x, y) => x[1].localeCompare(y[1]));
-  // no class picked: a section per class, each showing its first pieces; a class picked: just that class, in full
   let cl = CLASS_LOGOS[params.get('cl')] ? params.get('cl') : '';
   $app.innerHTML = `<h1>Armor</h1><p class="muted">Every armor piece, with set bonuses, archetypes, exotic perks and where it drops.</p><div class="filters">
     <input type="search" id="q" aria-label="Search armor" placeholder="Search armor, sets or exotic perks" value="${esc(params.get('q') || '')}">
-    <div class="classpick" role="group" aria-label="Class">${Object.entries(CLASS_LOGOS).map(([c, i]) => `<button type="button" data-cl="${c}" aria-pressed="${c === cl}" aria-label="${c}" data-tip="${c}"><img src="${BNET}${i}" alt=""></button>`).join('')}</div>
-    ${select('ty', 'All slots', uniq('ty'))}${select('ti', 'All rarities', uniq('ti'))}${select('set', 'All sets', sets, params.get('set') || '')}
+    ${classPick(cl)}${select('ty', 'All slots', uniq('ty'))}${select('ti', 'All rarities', uniq('ti'))}${select('set', 'All sets', sets, params.get('set') || '')}
     <label class="check"><input type="checkbox" id="cur" checked> Current armor only</label></div><p id="count" class="muted"></p><div id="list"></div>`;
   const f = id => $app.querySelector('#' + id);
   const pieceCard = ({ x, count }) => card(x, `<small>${esc(slotLabel(x))}${x.ex ? ` · ${esc(x.ex[0])}` : ''}</small>
@@ -486,25 +505,13 @@ async function armorList(params) {
     // older copies of a piece share its name; list each name once and link the rest from its page
     const byName = new Map();
     list.forEach(x => byName.has(x.n + x.cl) ? byName.get(x.n + x.cl).count++ : byName.set(x.n + x.cl, { x, count: 1 }));
-    const names = [...byName.values()], cap = cl ? 400 : 48;
+    const names = [...byName.values()];
     f('count').textContent = plural(names.length, 'piece');
-    f('list').innerHTML = Object.keys(CLASS_LOGOS).filter(c => !cl || c === cl).map(c => {
-      const mine = names.filter(n => n.x.cl === c); if (!mine.length) return '';
-      return `<section class="classgroup"><h2 class="classhead"><img src="${BNET}${CLASS_LOGOS[c]}" alt="">${c} <span class="count">${mine.length}</span></h2>
-        <div class="grid">${mine.slice(0, cap).map(pieceCard).join('')}</div>
-        ${mine.length > cap ? `<button type="button" class="showall" data-cl="${c}">Show all ${mine.length} ${c} pieces</button>` : ''}</section>`;
-    }).join('') || '<p class="empty">No armor matches. Try a shorter search, clear a filter, or untick "Current armor only".</p>';
+    f('list').innerHTML = classSections(cl, names, pieceCard)
+      || '<p class="empty">No armor matches. Try a shorter search, clear a filter, or untick "Current armor only".</p>';
   };
   $app.querySelectorAll('input,select').forEach(el => el.addEventListener('input', draw));
-  // a logo picks that class (again shows every class); "Show all" picks its class and goes back up to the filters
-  const pickClass = e => {
-    const b = e.target.closest('[data-cl]'); if (!b) return;
-    cl = b.classList.contains('showall') || cl !== b.dataset.cl ? b.dataset.cl : '';
-    $app.querySelectorAll('.classpick button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.cl === cl)));
-    draw();
-    if (b.classList.contains('showall')) $app.querySelector('.filters').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-  };
-  [$app.querySelector('.classpick'), f('list')].forEach(el => el.addEventListener('click', pickClass));
+  wireClassPick(() => cl, v => { cl = v; draw(); });
   draw();
 }
 
@@ -626,20 +633,22 @@ async function armorInventory() {
   const uniq = f => [...new Set(owned.map(f).filter(Boolean))].sort();
   $app.innerHTML = `<h1>My gear</h1>${gearTabs('Armor')}<p class="muted">${plural(owned.length, 'armor piece')}, ${owned.filter(o => o.i.tier === 5).length} at Tier 5.</p>
     <div class="filters"><input type="search" id="q" aria-label="Filter your armor" placeholder="Filter by name or set">
-    ${select('cl', 'All classes', ['Titan', 'Hunter', 'Warlock'])}${select('ty', 'All slots', uniq(o => o.x.ty))}${select('arch', 'All archetypes', uniq(o => o.arch))}
+    ${classPick('')}${select('ty', 'All slots', uniq(o => o.x.ty))}${select('arch', 'All archetypes', uniq(o => o.arch))}
     <select id="sort" aria-label="Sort"><option value="tier">Best tier first</option><option value="total">Highest stats first</option><option value="name">Name</option></select></div>
-    <div class="grid" id="list"></div>`;
+    <div id="list"></div>`;
   const f = id => $app.querySelector('#' + id);
+  let cl = '';
   const draw = () => {
     const q = f('q').value.toLowerCase(), by = f('sort').value;
     const list = owned.filter(o => (!q || o.x.n.toLowerCase().includes(q) || a.sets[o.x.set]?.n.toLowerCase().includes(q))
-        && (!f('cl').value || o.x.cl === f('cl').value) && (!f('ty').value || o.x.ty === f('ty').value) && (!f('arch').value || o.arch === f('arch').value))
+        && (!cl || o.x.cl === cl) && (!f('ty').value || o.x.ty === f('ty').value) && (!f('arch').value || o.arch === f('arch').value))
       .sort((m, n) => by === 'name' ? m.x.n.localeCompare(n.x.n) : by === 'total' ? n.total - m.total : n.i.tier - m.i.tier || n.total - m.total);
-    f('list').innerHTML = list.map(({ i, x, total, arch }) => card(x, `<small>${esc(slotLabel(x))}${a.sets[x.set] ? ` · ${esc(a.sets[x.set].n)}` : ''}</small>
-      <small>${i.tier ? `<span class="badge${i.tier === 5 ? ' good' : ''}">Tier ${i.tier}</span>` : ''}${arch ? `<span class="badge">${esc(arch)}</span>` : ''}${total} total</small>`, 'armor')).join('')
+    f('list').innerHTML = classSections(cl, list, ({ i, x, total, arch }) => card(x, `<small>${esc(slotLabel(x))}${a.sets[x.set] ? ` · ${esc(a.sets[x.set].n)}` : ''}</small>
+      <small>${i.tier ? `<span class="badge${i.tier === 5 ? ' good' : ''}">Tier ${i.tier}</span>` : ''}${arch ? `<span class="badge">${esc(arch)}</span>` : ''}${total} total</small>`, 'armor'), 48, Infinity)
       || '<p class="empty">Nothing matches this filter.</p>';
   };
   $app.querySelectorAll('input,select').forEach(el => el.addEventListener('input', draw));
+  wireClassPick(() => cl, v => { cl = v; draw(); });
   draw();
 }
 

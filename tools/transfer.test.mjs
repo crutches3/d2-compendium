@@ -46,6 +46,18 @@ assert.deepEqual(await p.$$eval('.tabs.gear a', as => as.map(a => [a.textContent
 await p.goto('http://localhost:8765/#/inventory'); await p.waitForSelector('.tile[data-id="1"]');
 assert.equal(await p.textContent('.tabs.gear a.on'), 'Transfer');
 await p.click('.tabs.gear a:text-is("Weapons")'); await p.waitForSelector('.tabs.gear a.on:text-is("Weapons")');
+// My gear's Armor tab: your armor in a section per class, with the class logos as the filter (a Hunter helmet in the vault, a Titan one equipped)
+await p.click('.tabs.gear a:text-is("Armor")'); await p.waitForSelector('.classhead');
+const heads = () => p.$$eval('.classhead', hs => hs.map(h => h.textContent.replace(/\s+/g, ' ').trim()));
+assert.deepEqual(await heads(), ['Hunter 1', 'Titan 1']);
+assert.deepEqual(await p.$$eval('.classpick button', bs => bs.map(x => x.getAttribute('aria-label'))), ['Hunter', 'Titan', 'Warlock']);
+await p.click('.classpick [data-cl="Titan"]');
+assert.deepEqual(await heads(), ['Titan 1']);
+assert.equal(await p.getAttribute('#list .card', 'href'), `#/armor/${helm.h}`);
+await p.click('.classpick [data-cl="Warlock"]');
+assert.match(await p.textContent('#list'), /Nothing matches/);
+await p.click('.classpick [data-cl="Warlock"]');
+assert.deepEqual(await heads(), ['Hunter 1', 'Titan 1']);
 await p.goto('http://localhost:8765/#/inventory/move'); await p.waitForSelector('.tile[data-id="1"]');
 assert.equal(await placeOf('1'), 'vault');
 // each item sits in its own slot row
