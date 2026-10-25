@@ -40,6 +40,13 @@ const errs = []; p.on('pageerror', e => errs.push(e.message));
 await p.goto('http://localhost:8765/'); await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', expires_at: Date.now() + 3e6 })));
 await p.goto('http://localhost:8765/#/inventory/move'); await p.waitForTimeout(3000);
 const placeOf = async id => p.$eval(`.tile[data-id="${id}"]`, t => t.closest('.cell').dataset.owner);
+// Transfer is My gear's first tab, and My gear opens on it
+assert.deepEqual(await p.$$eval('.tabs.gear a', as => as.map(a => [a.textContent, a.getAttribute('href'), a.classList.contains('on')])),
+  [['Transfer', '#/inventory', true], ['Weapons', '#/inventory/weapons', false], ['Armor', '#/inventory/armor', false]]);
+await p.goto('http://localhost:8765/#/inventory'); await p.waitForSelector('.tile[data-id="1"]');
+assert.equal(await p.textContent('.tabs.gear a.on'), 'Transfer');
+await p.click('.tabs.gear a:text-is("Weapons")'); await p.waitForSelector('.tabs.gear a.on:text-is("Weapons")');
+await p.goto('http://localhost:8765/#/inventory/move'); await p.waitForSelector('.tile[data-id="1"]');
 assert.equal(await placeOf('1'), 'vault');
 // each item sits in its own slot row
 assert.equal(await p.$eval('.tile[data-id="4"]', t => t.closest('.cell').dataset.slot), 'Helmet');

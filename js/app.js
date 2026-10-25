@@ -568,11 +568,12 @@ async function needProfile() {
   return p;
 }
 
-const gearTabs = on => `<div class="tabs gear">${[['', 'Weapons'], ['/armor', 'Armor'], ['/move', 'Transfer']].map(([path, label]) => `<a href="#/inventory${path}"${label === on ? ' class="on" aria-current="page"' : ''}>${label}</a>`).join('')}</div>`;
+// Transfer is My gear's first tab and what it opens to; #/inventory/move still works for older links
+const gearTabs = on => `<div class="tabs gear">${[['', 'Transfer'], ['/weapons', 'Weapons'], ['/armor', 'Armor']].map(([path, label]) => `<a href="#/inventory${path}"${label === on ? ' class="on" aria-current="page"' : ''}>${label}</a>`).join('')}</div>`;
 
 async function inventory(tab) {
+  if (!tab || tab === 'move') return transferPage();
   if (tab === 'armor') return armorInventory();
-  if (tab === 'move') return transferPage();
   const d = await data();
   const p = await needProfile(); if (!p) return;
   const owned = p.items.filter(i => d.byHash[i.itemHash]);
