@@ -610,7 +610,8 @@ async function armorInventory() {
   draw();
 }
 
-// DIM-style mover: one row per gear slot, a column per character (equipped item first) and the vault; pick an item, then send it somewhere or equip it.
+// DIM-style mover: one row per gear slot, a column per character (equipped item first) and the vault; pick an item, then send it somewhere
+// or equip it, or drag it there.
 async function transferPage() {
   const [d, a] = await Promise.all([data(), armorData()]);
   const p = await needProfile(); if (!p) return;
@@ -621,7 +622,7 @@ async function transferPage() {
   const order = (m, n) => n.equipped - m.equipped || def(m).n.localeCompare(def(n).n);
   const narrow = matchMedia('(max-width: 720px)');
   let sel = null, busy = false, msg = '', view = p.chars[0]?.id;  // view: the one character shown on phones
-  $app.innerHTML = `<h1>My gear</h1>${gearTabs('Transfer')}<p class="muted">Pick an item, then choose where it goes. Moves happen in the game straight away.</p>
+  $app.innerHTML = `<h1>My gear</h1>${gearTabs('Transfer')}<p class="muted">Drag an item to another character or the vault, or onto an equipped item to equip it. You can also pick an item, then choose where it goes. Moves happen in the game straight away.</p>
     <div class="filters"><input type="search" id="q" aria-label="Find an item" placeholder="Find an item">${select('kind', 'Weapons and armor', [['w', 'Weapons'], ['a', 'Armor']])}
     <button type="button" id="reload">Reload from Bungie</button></div><div id="places"></div><div id="actions" class="actionbar" aria-live="polite" hidden></div>`;
   const f = id => $app.querySelector('#' + id);
@@ -665,22 +666,66 @@ async function transferPage() {
   f('places').addEventListener('click', e => {
     const v = e.target.closest('[data-view]');
     if (v) { view = v.dataset.view; draw(); return; }
-    const t = e.target.closest('.tile'); if (!t) return;
+    const t = e.target.closest('.tile'); if (!t || dragged) return;  // the click that ends a drag isn't a pick
     sel = p.items.find(i => i.instanceId === t.dataset.id); msg = '';
     f('places').querySelectorAll('.tile.sel').forEach(x => x.classList.remove('sel')); t.classList.add('sel'); drawBar();
   });
-  f('actions').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b || b.disabled) return;
-    if (b.hasAttribute('data-close')) { sel = null; f('places').querySelector('.tile.sel')?.classList.remove('sel'); drawBar(); return; }
-    const it = sel, to = b.dataset.move || b.dataset.equip, cls = p.chars.find(c => c.id === to)?.cls || 'Vault';
-    if (b.dataset.move) run(`Moving to ${cls}…`, () => Bungie.move(p, it, to));
+  const act = (it, to, equip) => { const cls = p.chars.find(c => c.id === to)?.cls || 'Vault';
+    if (!equip) run(`Moving to ${cls}…`, () => Bungie.move(p, it, to));
     else run(`Equipping on ${cls}…`, async () => {
       await Bungie.move(p, it, to);
       const old = p.items.filter(i => i !== it && i.owner === to && i.equipped && slotOf(i) === slotOf(it));
       await Bungie.equip(p, it);
       old.forEach(i => { i.equipped = false; Bungie.locate(p, i); });
     });
+  };
+  f('actions').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || b.disabled) return;
+    if (b.hasAttribute('data-close')) { sel = null; f('places').querySelector('.tile.sel')?.classList.remove('sel'); drawBar(); return; }
+    act(sel, b.dataset.move || b.dataset.equip, !!b.dataset.equip);
   });
+  // Drag and drop: onto another cell in the item's row to move it there, or onto that cell's equipped item to equip it. Touch needs a
+  // long press first, so a swipe still scrolls the page. Dropping shows the move in the action bar like the buttons do.
+  let drag = null, dragged = false;
+  const blocked = (it, to) => { const cls = a.byHash[it.itemHash]?.cl, c = p.chars.find(x => x.id === to);
+    return it.postmaster ? 'Pull this from the Postmaster in game first.' : it.equipped && to !== it.owner ? 'Equipped items can\'t be moved. Equip something else in that slot first.'
+      : c && cls && c.cls !== cls ? `Only a ${cls} can hold this.` : ''; };
+  const targetAt = (x, y) => { const el = document.elementFromPoint(x, y), cell = el?.closest('#places .cell[data-slot]');
+    if (!cell || cell.dataset.slot !== slotOf(drag.it)) return null;
+    const to = cell.dataset.owner, equip = to !== 'vault' && !!el.closest('.tile.equipped');
+    return to === drag.it.owner && (!equip || drag.it.equipped) ? null : { cell, to, equip };  // dropping where it already is does nothing
+  };
+  const mark = t => { f('places').querySelectorAll('.drop-ok,.drop-no,.drop-equip').forEach(x => x.classList.remove('drop-ok', 'drop-no', 'drop-equip'));
+    if (t) { t.cell.classList.add(blocked(drag.it, t.to) ? 'drop-no' : 'drop-ok'); if (t.equip) t.cell.querySelector('.tile.equipped').classList.add('drop-equip'); } };
+  const lift = () => { drag.ghost = Object.assign(document.createElement('div'), { className: 'dragghost', innerHTML: icon(def(drag.it)) });
+    document.body.append(drag.ghost); drag.tile.classList.add('dragging'); dragged = true; follow(drag); };
+  const follow = e => { Object.assign(drag.ghost.style, { left: e.x + 'px', top: e.y + 'px' }); drag.target = targetAt(e.x, e.y); mark(drag.target);
+    if (e.y < 90) scrollBy(0, -14); else if (e.y > innerHeight - 90) scrollBy(0, 14); };
+  const onMove = e => {
+    if (drag.ghost) return follow({ x: e.clientX, y: e.clientY });
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 6) return;
+    if (drag.touch) return end();  // moved before the long press: a scroll
+    lift();
+  };
+  const onUp = () => {
+    const { it, target: t, ghost } = drag; end();
+    if (!ghost || !t) return;
+    sel = it; msg = blocked(it, t.to);
+    if (msg) drawBar(); else act(it, t.to, t.equip);
+  };
+  const end = () => { clearTimeout(drag.timer); drag.ghost?.remove(); drag.tile.classList.remove('dragging'); mark(null); drag = null;
+    removeEventListener('pointermove', onMove); removeEventListener('pointerup', onUp); removeEventListener('pointercancel', end);
+    setTimeout(() => dragged = false); };
+  f('places').addEventListener('pointerdown', e => {
+    const t = e.target.closest('.tile'); if (!t || e.button || busy || drag) return;
+    drag = { it: p.items.find(i => i.instanceId === t.dataset.id), tile: t, x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' };
+    if (drag.touch) drag.timer = setTimeout(lift, 350);
+    addEventListener('pointermove', onMove); addEventListener('pointerup', onUp); addEventListener('pointercancel', end);
+  });
+  // while dragging on a phone, the finger moves the item, not the page; and a long press shouldn't open the image menu
+  f('places').addEventListener('touchmove', e => drag?.ghost && e.preventDefault(), { passive: false });
+  f('places').addEventListener('contextmenu', e => e.target.closest('.tile') && e.preventDefault());
+  f('places').addEventListener('dragstart', e => e.preventDefault());
   $app.querySelectorAll('.filters input,.filters select').forEach(el => el.addEventListener('input', draw));
   f('reload').addEventListener('click', () => { S.profile = null; transferPage(); });
   narrow.onchange = draw;

@@ -190,6 +190,14 @@ section.panel h2 a { color: var(--text); }
 .tile:hover { border-color: var(--line-strong); }
 .tile.equipped { border-color: var(--gold); }
 .tile.sel { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(108, 184, 255, .35); }
+/* drag and drop: the lifted item follows the pointer; the cell under it shows whether it can go there */
+.tile { cursor: grab; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
+.tile img { -webkit-user-drag: none; }
+.tile.dragging { opacity: .35; }
+.dragghost { position: fixed; z-index: 20; pointer-events: none; transform: translate(-50%, -50%) scale(1.08); border-radius: 6px; box-shadow: 0 10px 24px rgba(0, 0, 0, .55); line-height: 0; }
+.cell.drop-ok { background: rgba(108, 184, 255, .1); box-shadow: inset 0 0 0 2px var(--accent); border-radius: 6px; }
+.cell.drop-no { background: rgba(240, 113, 107, .1); box-shadow: inset 0 0 0 2px var(--worse); border-radius: 6px; }
+.tile.drop-equip { box-shadow: 0 0 0 3px var(--accent); }
 #places { padding-bottom: 160px; }
 .actionbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 16px;
   background: var(--shell); border-top: 1px solid var(--line); box-shadow: 0 -6px 18px rgba(0, 0, 0, .35); }

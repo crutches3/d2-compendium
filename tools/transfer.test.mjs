@@ -20,7 +20,7 @@ const posts = [];
 let failNext = false;
 const b = await chromium.launch();
 const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
-await ctx.route('https://www.bungie.net/Platform/**', route => {
+const api = route => {
   const r = route.request(), u = r.url();
   if (r.method() === 'POST') {
     posts.push([u.split('/Items/')[1], JSON.parse(r.postData())]);
@@ -29,7 +29,8 @@ await ctx.route('https://www.bungie.net/Platform/**', route => {
   }
   const body = u.includes('GetMemberships') ? { primaryMembershipId: '1', destinyMemberships: [{ membershipId: '1', membershipType: 3 }], bungieNetUser: { uniqueName: 'Randy#1234' } } : profile;
   route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ErrorCode: 1, Response: body }) });
-});
+};
+await ctx.route('https://www.bungie.net/Platform/**', api);
 const p = await ctx.newPage();
 const errs = []; p.on('pageerror', e => errs.push(e.message));
 await p.goto('http://localhost:8765/'); await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', expires_at: Date.now() + 3e6 })));
@@ -60,9 +61,53 @@ failNext = true;
 await p.click('.tile[data-id="2"]'); await p.click('button[data-move="W1"]'); await p.waitForTimeout(300);
 assert.match(await p.textContent('#actions .err'), /no item slots/);
 assert.equal(await placeOf('2'), 'T1');
+// drag and drop with the mouse: onto the vault's cell in the item's row moves it there
+const dragTo = async (id, sel) => {
+  const from = await p.$eval(`.tile[data-id="${id}"]`, t => { const r = t.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; });
+  const to = await p.$eval(sel, t => { const r = t.getBoundingClientRect(); return [r.x + Math.min(r.width / 2, 40), r.y + Math.min(r.height / 2, 30)]; });
+  await p.mouse.move(...from); await p.mouse.down(); await p.mouse.move(from[0] + 10, from[1] + 10, { steps: 3 }); await p.mouse.move(...to, { steps: 8 });
+  const hint = await p.$eval(sel, t => (t.closest('.cell') || t).className); await p.mouse.up(); await p.waitForTimeout(300); return hint;
+};
+posts.length = 0;
+assert.match(await dragTo('2', '.cell[data-owner="vault"][data-slot="Power"]'), /drop-ok/);
+assert.equal(await placeOf('2'), 'vault');
+assert.deepEqual(posts.map(x => [x[0], x[1].transferToVault, x[1].itemId]), [['TransferItem/', true, '2']]);
+// onto an equipped item: equips there (Ace of Spades back over Fatebringer on the Titan)
+posts.length = 0;
+await dragTo('3', '.tile[data-id="1"]');
+assert.deepEqual(posts.map(x => x[0]), ['EquipItem/']);
+assert.equal(await p.$eval('.tile[data-id="3"]', t => t.classList.contains('equipped')), true);
+// a drop that can't happen says why and sends nothing; another row isn't a target at all
+posts.length = 0;
+assert.match(await dragTo('4', '.cell[data-owner="vault"][data-slot="Helmet"]'), /drop-no/);
+assert.match(await p.textContent('#actions .err'), /Equipped items can't be moved/);
+await dragTo('2', '.cell[data-owner="W1"][data-slot="Kinetic"]');
+assert.equal(await placeOf('2'), 'vault');
+assert.deepEqual(posts, []);
+assert.equal(await p.$$eval('.dragghost', g => g.length), 0);
 await p.screenshot({ path: OUT + 'transfer-d.png' });
 await p.setViewportSize({ width: 390, height: 844 }); await p.waitForTimeout(300);
 await p.screenshot({ path: OUT + 'transfer-m.png' });
+
+// on a phone: a quick swipe over an item scrolls the page; a long press lifts it, and dropping it on the vault moves it
+const phone = await b.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+await phone.route('https://www.bungie.net/Platform/**', api);
+const m = await phone.newPage(); m.on('pageerror', e => errs.push(e.message));
+await m.goto('http://localhost:8765/'); await m.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', expires_at: Date.now() + 3e6 })));
+await m.goto('http://localhost:8765/#/inventory/move'); await m.waitForSelector('.tile[data-id="2"]');
+const cdp = await phone.newCDPSession(m), touch = (type, x, y) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
+const mid = sel => m.$eval(sel, t => { t.scrollIntoView({ block: 'center' }); const r = t.getBoundingClientRect(); return [r.x + Math.min(r.width / 2, 30), r.y + Math.min(r.height / 2, 30)]; });
+let [x, y] = await mid('.tile[data-id="2"]'), top = await m.evaluate(() => scrollY);
+await touch('touchStart', x, y); for (let i = 1; i <= 8; i++) await touch('touchMove', x, y - i * 20); await touch('touchEnd'); await m.waitForTimeout(400);
+assert.ok(await m.evaluate(() => scrollY) > top && !(await m.$('.dragghost')));
+[x, y] = await mid('.tile[data-id="2"]'); posts.length = 0;
+const [tx, ty] = await m.$eval('.cell[data-owner="vault"][data-slot="Power"]', t => { const r = t.getBoundingClientRect(); return [r.x + 30, r.y + 30]; });
+await touch('touchStart', x, y); await m.waitForTimeout(450); assert.ok(await m.$('.dragghost'));
+for (let i = 1; i <= 10; i++) await touch('touchMove', x + (tx - x) * i / 10, y + (ty - y) * i / 10);
+await touch('touchEnd'); await m.waitForTimeout(400);
+assert.equal(await m.$eval('.tile[data-id="2"]', t => t.closest('.cell').dataset.owner), 'vault');
+assert.deepEqual(posts.map(x => x[0]), ['TransferItem/']);
+
 assert.deepEqual(errs, []);
 console.log('transfer tests passed');
 await b.close();
