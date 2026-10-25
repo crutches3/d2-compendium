@@ -17,7 +17,8 @@ const profile = {
     // the Titan's Postmaster: two weapons and a stack of materials (no instance, so it only counts toward the 21)
     { itemHash: energy.h, itemInstanceId: '6', bucketHash: 215593132 }, { itemHash: kinetic.h, itemInstanceId: '7', bucketHash: 215593132 }, { itemHash: 1, quantity: 5, bucketHash: 215593132 }] }, W1: { items: [] } } },
   characterEquipment: { data: { T1: { items: [{ itemHash: ace.h, itemInstanceId: '3', bucketHash: 1498876634 }, { itemHash: helm.h, itemInstanceId: '4', bucketHash: 3448274439 }] }, W1: { items: [] } } },
-  itemComponents: { sockets: { data: {} }, reusablePlugs: { data: {} }, instances: { data: {} }, stats: { data: {} } },
+  itemComponents: { sockets: { data: { 1: { sockets: fate.cols.map(c => ({ plugHash: c.p[0] })) } } },  // Fatebringer has the first perk of each column
+    reusablePlugs: { data: {} }, instances: { data: {} }, stats: { data: {} } },
 };
 const posts = [];
 let failNext = false;
@@ -48,7 +49,7 @@ await p.click('.tile[data-id="1"]'); await p.click('button[data-move="W1"]'); aw
 assert.equal(await placeOf('1'), 'W1');
 assert.deepEqual(posts.at(-1), ['TransferItem/', { itemReferenceHash: fate.h, stackSize: 1, transferToVault: false, itemId: '1', characterId: 'W1', membershipType: 3 }]);
 // the page only moves: no equip buttons
-assert.equal(await p.$$eval('#actions button', bs => bs.map(x => x.textContent).join('|')), 'To Vault|To Titan|Close');
+assert.equal(await p.$$eval('#actions button', bs => bs.map(x => x.textContent).join('|')), 'To Vault|To Titan|Mark to dismantle|Full details|Close');
 // Warlock -> Titan goes through the vault (two transfers) and equips nothing
 posts.length = 0;
 await p.click('button[data-move="T1"]'); await p.waitForTimeout(300);
@@ -99,7 +100,7 @@ assert.equal(await p.textContent('.cell.pm[data-owner="T1"] .pmcount'), '3 of 21
 assert.equal(await p.textContent('.cell.pm[data-owner="W1"] .pmcount'), '0 of 21');
 // picked, its only way out is a pull to its own character
 await p.click('.tile[data-id="6"]');
-assert.equal(await p.$$eval('#actions button', bs => bs.map(x => x.textContent).join('|')), 'Pull to Titan|Close');
+assert.equal(await p.$$eval('#actions button', bs => bs.map(x => x.textContent).join('|')), 'Pull to Titan|Mark to dismantle|Full details|Close');
 posts.length = 0;
 await p.click('#actions button[data-pull]'); await p.waitForTimeout(300);
 assert.deepEqual(posts, [['PullFromPostmaster/', { itemReferenceHash: energy.h, stackSize: 1, itemId: '6', characterId: 'T1', membershipType: 3 }]]);
@@ -113,6 +114,39 @@ assert.deepEqual(posts, []);
 assert.match(await dragTo('7', '.cell[data-owner="T1"][data-slot="Kinetic"]'), /drop-ok/);
 assert.deepEqual(posts.map(x => x[0]), ['PullFromPostmaster/']);
 assert.equal(await rowOf('7'), 'Kinetic');
+// Full details: a weapon's perks, one per column, and a link to its page; armor's stats; it stays open while picking other items
+const P = JSON.parse(fs.readFileSync('data/plugs.json'));
+const plugs = P.plugs || P, fatePerks = fate.cols.map(c => [c.c, plugs[c.p[0]]?.n]).filter(([c, n]) => n && !/^Empty /.test(n) && (c !== 'Weapon Mods' || /^Masterworked: /.test(n))).map(x => x[1]);
+assert.ok(fatePerks.length >= 5 && fatePerks.some(n => n.startsWith('Masterworked: ')) && !fatePerks.includes('Deepsight Resonance'), fatePerks.join());
+await p.click('.tile[data-id="1"]'); assert.equal(await p.$('#actions .details'), null);
+await p.click('#actions button[data-details]');
+assert.deepEqual(await p.$$eval('#actions .dperks li', ls => ls.map(l => l.textContent)), fatePerks);
+assert.equal(await p.getAttribute('#actions .details a', 'href'), `#/weapon/${fate.h}`);
+assert.equal(await p.textContent('#actions button[data-details]'), 'Hide details');
+await p.click('.tile[data-id="4"]');
+assert.ok((await p.$$('#actions .details .stat')).length >= 6);
+assert.equal(await p.getAttribute('#actions .details a', 'href'), `#/armor/${helm.h}`);
+await p.click('#actions button[data-details]'); assert.equal(await p.$('#actions .details'), null);
+// mark to dismantle: a badge on the tile, saved in the browser, and a filter that lists only marked items
+const isJunk = id => p.$eval(`.tile[data-id="${id}"]`, t => t.classList.contains('junk'));
+await p.click('.tile[data-id="2"]'); await p.click('#actions button[data-junk]');
+assert.ok(await isJunk('2')); assert.ok(!(await isJunk('1')));
+assert.equal(await p.textContent('#actions button[data-junk]'), 'Unmark dismantle');
+assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('d2c_junk'))), ['2']);
+assert.equal(await p.textContent('#junkonly'), 'Marked to dismantle (1)');
+await p.click('#junkonly');
+assert.deepEqual(await p.$$eval('#places .tile', ts => ts.map(t => t.dataset.id)), ['2']);
+await p.click('#junkonly'); assert.ok((await p.$$('#places .tile')).length > 1);
+// it survives a reload; a marked item that's gone from the account (dismantled in game) drops off the list
+await p.evaluate(() => localStorage.setItem('d2c_junk', JSON.stringify(['2', '999'])));
+await p.reload(); await p.waitForSelector('.tile[data-id="2"]');
+assert.ok(await isJunk('2'));
+assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('d2c_junk'))), ['2']);
+assert.equal(await p.textContent('#junkonly'), 'Marked to dismantle (1)');
+// unmarking clears it
+await p.click('.tile[data-id="2"]'); await p.click('#actions button[data-junk]');
+assert.ok(!(await isJunk('2'))); assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('d2c_junk'))), []);
+await p.click('.tile[data-id="2"]'); await p.click('#actions button[data-junk]');  // leave it marked for the screenshot
 await p.screenshot({ path: OUT + 'transfer-d.png' });
 await p.setViewportSize({ width: 390, height: 844 }); await p.waitForTimeout(300);
 await p.screenshot({ path: OUT + 'transfer-m.png' });

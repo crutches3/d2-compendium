@@ -621,16 +621,30 @@ async function transferPage() {
   const weaponSlots = ['Kinetic', 'Energy', 'Power'], armorSlots = ['Helmet', 'Gauntlets', 'Chest Armor', 'Leg Armor', 'Class item'];
   const order = (m, n) => n.equipped - m.equipped || def(m).n.localeCompare(def(n).n);
   const narrow = matchMedia('(max-width: 720px)');
-  let sel = null, busy = false, msg = '', view = p.chars[0]?.id;  // view: the one character shown on phones
+  let sel = null, busy = false, msg = '', open = false, view = p.chars[0]?.id;  // view: the one character shown on phones; open: details shown
+  // items marked to dismantle (Bungie's API can't dismantle, so it's a reminder for in game); kept in this browser by instance id, and
+  // anything no longer on the account (dismantled already) drops off
+  let junk = new Set((Bungie.store.get('d2c_junk') || []).filter(id => p.items.some(i => i.instanceId === id))), junkOnly = false;
+  const saveJunk = () => Bungie.store.set('d2c_junk', [...junk]);
+  saveJunk();
+  // this copy's details: a weapon's grade against the tier list, power and the perk in each column; armor's tier, archetype and stats
+  const details = i => { const w = d.byHash[i.itemHash];
+    if (!w) return `${armorCopy(a, i)}<a href="#/armor/${i.itemHash}">Armor page</a>`;
+    // frame and perk columns, plus the masterwork from the mod sockets (the rest there is mementos, deepsight and level-ups)
+    const perks = w.cols.flatMap(c => c.p.filter(h => i.socketed.has(h) && d.plugs[h]).slice(0, 1).map(h => ({ pl: d.plugs[h], mod: c.c === 'Weapon Mods' })))
+      .filter(x => !/^Empty /.test(x.pl.n) && (!x.mod || /^Masterworked: /.test(x.pl.n))).map(x => x.pl);
+    return `<div class="roll">${tierBadge(d.rolls[w.h])}${rollPips(rollFit(d, d.rolls[w.h], i.plugs))}${esc(w.ty)}${i.power ? ` · Power ${i.power}` : ''}
+      <ul class="dperks">${perks.map(pl => `<li>${pl.i ? `<img src="${BNET}${pl.i}" alt="">` : ''}${esc(pl.n)}</li>`).join('')}</ul></div><a href="#/weapon/${w.h}">Weapon page</a>`; };
   $app.innerHTML = `<h1>My gear</h1>${gearTabs('Transfer')}<p class="muted">Drag an item to another character or the vault, or pick an item, then choose where it goes. Pull gear out of the Postmaster the same way. Moves happen in the game straight away.</p>
     <div class="filters"><input type="search" id="q" aria-label="Find an item" placeholder="Find an item">${select('kind', 'Weapons and armor', [['w', 'Weapons'], ['a', 'Armor']])}
-    <button type="button" id="reload">Reload from Bungie</button></div><div id="places"></div><div id="actions" class="actionbar" aria-live="polite" hidden></div>`;
+    <button type="button" id="junkonly" aria-pressed="false"></button><button type="button" id="reload">Reload from Bungie</button></div><div id="places"></div><div id="actions" class="actionbar" aria-live="polite" hidden></div>`;
   const f = id => $app.querySelector('#' + id);
-  const tile = i => `<button type="button" class="tile${i.equipped ? ' equipped' : ''}${sel === i ? ' sel' : ''}" data-id="${i.instanceId}" title="${esc(def(i).n)}" aria-label="${esc(def(i).n)}${i.equipped ? ', equipped' : ''}">${icon(def(i))}</button>`;
+  const tile = i => `<button type="button" class="tile${i.equipped ? ' equipped' : ''}${junk.has(i.instanceId) ? ' junk' : ''}${sel === i ? ' sel' : ''}" data-id="${i.instanceId}" title="${esc(def(i).n)}${junk.has(i.instanceId) ? ' (marked to dismantle)' : ''}" aria-label="${esc(def(i).n)}${i.equipped ? ', equipped' : ''}${junk.has(i.instanceId) ? ', marked to dismantle' : ''}">${icon(def(i))}</button>`;
   const cell = (list, owner, slot) => `<div class="cell" data-owner="${owner}" data-slot="${esc(slot)}">${list.sort(order).map(tile).join('')}</div>`;
   const draw = () => {
     const q = f('q').value.trim().toLowerCase(), kind = f('kind').value;
-    const items = p.items.filter(i => def(i) && (!kind || (kind === 'w') === !!d.byHash[i.itemHash]) && (!q || def(i).n.toLowerCase().includes(q)));
+    const items = p.items.filter(i => def(i) && (!kind || (kind === 'w') === !!d.byHash[i.itemHash]) && (!q || def(i).n.toLowerCase().includes(q)) && (!junkOnly || junk.has(i.instanceId)));
+    f('junkonly').textContent = `Marked to dismantle (${junk.size})`; f('junkonly').setAttribute('aria-pressed', junkOnly);
     const chars = narrow.matches ? p.chars.filter(c => c.id === view) : p.chars;
     const slots = [...(kind !== 'a' ? weaponSlots : []), ...(kind !== 'w' ? armorSlots : [])];
     const vault = items.filter(i => !i.owner);
@@ -660,8 +674,8 @@ async function transferPage() {
     // a Postmaster item can only be pulled to the character whose Postmaster it's in; after that it moves like anything else
     const acts = sel.postmaster ? btn('data-pull class="primary"', `Pull to ${p.chars.find(c => c.id === sel.owner)?.cls}`)
       : `${sel.owner ? btn('data-move="vault"', 'To Vault') : ''}${targets.filter(c => c.id !== sel.owner).map(c => btn(`data-move="${c.id}"`, `To ${c.cls}`)).join('')}`;
-    bar.innerHTML = `${icon(def(sel))}<div class="what"><b>${esc(def(sel).n)}</b><small>${esc(sel.location)}</small><small class="${/^(Done|Moving|Pulling)/.test(msg) ? '' : 'err'}">${esc(stuck || msg)}</small></div>
-      <div class="acts">${acts}<button type="button" data-close>Close</button></div>`;
+    bar.innerHTML = `${open ? `<div class="details">${details(sel)}</div>` : ''}${icon(def(sel))}<div class="what"><b>${esc(def(sel).n)}</b><small>${esc(sel.location)}</small><small class="${/^(Done|Moving|Pulling)/.test(msg) ? '' : 'err'}">${esc(stuck || msg)}</small></div>
+      <div class="acts">${acts}<button type="button" data-junk>${junk.has(sel.instanceId) ? 'Unmark dismantle' : 'Mark to dismantle'}</button><button type="button" data-details aria-expanded="${open}">${open ? 'Hide details' : 'Full details'}</button><button type="button" data-close>Close</button></div>`;
   };
   const run = async (label, fn) => {
     busy = true; msg = label; drawBar();
@@ -680,6 +694,8 @@ async function transferPage() {
   f('actions').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b || b.disabled) return;
     if (b.hasAttribute('data-close')) { sel = null; f('places').querySelector('.tile.sel')?.classList.remove('sel'); drawBar(); return; }
+    if (b.hasAttribute('data-details')) { open = !open; drawBar(); return; }
+    if (b.hasAttribute('data-junk')) { junk.has(sel.instanceId) ? junk.delete(sel.instanceId) : junk.add(sel.instanceId); saveJunk(); msg = ''; draw(); return; }
     if (b.dataset.move) act(sel, b.dataset.move);
     else if (b.hasAttribute('data-pull')) pull(sel);
   });
@@ -727,6 +743,7 @@ async function transferPage() {
   f('places').addEventListener('contextmenu', e => e.target.closest('.tile') && e.preventDefault());
   f('places').addEventListener('dragstart', e => e.preventDefault());
   $app.querySelectorAll('.filters input,.filters select').forEach(el => el.addEventListener('input', draw));
+  f('junkonly').addEventListener('click', () => { junkOnly = !junkOnly; draw(); });
   f('reload').addEventListener('click', () => { S.profile = null; transferPage(); });
   narrow.onchange = draw;
   draw();

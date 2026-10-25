@@ -194,6 +194,12 @@ section.panel h2 a { color: var(--text); }
 .tile:hover { border-color: var(--line-strong); }
 .tile.equipped { border-color: var(--gold); }
 .tile.sel { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(108, 184, 255, .35); }
+/* marked to dismantle: a red corner badge, the icon dimmed */
+.tile { position: relative; }
+.tile.junk .icon { opacity: .55; }
+.tile.junk::after { content: '✕'; position: absolute; top: 2px; right: 2px; width: 15px; height: 15px; border-radius: 50%; background: #e5534b; color: #fff;
+  font-size: 10px; font-weight: 700; line-height: 15px; text-align: center; box-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+#junkonly[aria-pressed="true"] { border-color: #e5534b; color: #ff8a80; }
 /* drag and drop: the lifted item follows the pointer; the cell under it shows whether it can go there */
 .tile { cursor: grab; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
 .tile img { -webkit-user-drag: none; }
@@ -209,6 +215,11 @@ section.panel h2 a { color: var(--text); }
 .actionbar small { display: block; color: var(--muted); font-size: 12px; }
 .actionbar small.err { color: #ff8a80; }
 .actionbar .acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.actionbar .details { flex: 1 1 100%; max-height: 45vh; overflow-y: auto; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.actionbar .details .roll { padding-top: 0; max-width: 560px; }
+.dperks { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 0; margin: 8px 0 0; }
+.dperks li { display: flex; align-items: center; gap: 6px; }
+.dperks img { width: 28px; height: 28px; border-radius: 50%; background: var(--panel2); }
 button:disabled { opacity: .45; cursor: not-allowed; }
 @media (max-width: 720px) { #places { padding-bottom: 240px; } }
 /* builds */
