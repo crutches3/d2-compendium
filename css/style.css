@@ -171,6 +171,27 @@ table.sheet td.muted { width: 30%; }
 
 
 /* armor */
+/* class picker: Bungie's class logos as toggle buttons, each naming its class on hover or keyboard focus */
+.classpick { display: inline-flex; gap: 2px; padding: 2px; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; }
+.classpick button { position: relative; display: grid; place-items: center; width: 46px; height: 36px; padding: 0; background: none; border: 1px solid transparent; border-radius: 6px; }
+.classpick img { width: 34px; height: 34px; margin: -4px; opacity: .5;  /* the glyph fills only the middle of Bungie's image */
+  transition: opacity .15s var(--ease), scale .15s var(--ease-out); }
+.classpick button:hover { background: var(--panel); }
+.classpick button:hover img { opacity: .9; }
+.classpick button[aria-pressed="true"] { background: rgba(108, 184, 255, .14); border-color: var(--accent); }
+.classpick button[aria-pressed="true"] img { opacity: 1; }
+.classpick button:active img { scale: .9; }
+[data-tip]::after { content: attr(data-tip); position: absolute; left: 50%; top: calc(100% + 8px); translate: -50% -4px; z-index: 6; padding: 4px 9px; border-radius: 6px;
+  background: var(--shell); border: 1px solid var(--line-strong); box-shadow: 0 6px 16px rgba(0, 0, 0, .45); color: var(--text); font-size: 12px; font-weight: 600; line-height: 1.3;
+  white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .12s var(--ease), translate .16s var(--ease-out); }
+[data-tip]:focus-visible::after { opacity: 1; translate: -50% 0; }
+@media (hover: hover) { [data-tip]:hover::after { opacity: 1; translate: -50% 0; transition-delay: .06s; } }  /* a tap shouldn't leave it stuck on a phone */
+.filters { scroll-margin-top: 64px; }
+.classgroup + .classgroup { margin-top: 28px; }
+.classhead { display: flex; align-items: center; gap: 10px; font-size: 18px; margin: 8px 0 12px; }
+.classhead img { width: 40px; height: 40px; margin: -8px -4px -8px -8px; }
+.classhead .count { font-size: 14px; }
+.showall { margin-top: 10px; }
 .bonus { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; margin-bottom: 10px; }
 .bonus img { width: 32px; height: 32px; border-radius: 4px; flex: none; background: var(--panel2); }
 .owned { margin: 8px 0 0; }
@@ -434,4 +455,6 @@ dl.armordrops dd { margin: 0; display: flex; flex-wrap: wrap; gap: 6px; align-it
   .bar span, .perktip.glide { transition: none; }
   button:active:not(:disabled), .tile:active, .perk:active img, .tile.drop-equip { scale: none; }
   .actionbar.busy::before { animation: none !important; background: var(--accent); opacity: .6; }
+  [data-tip]::after { translate: -50% 0; }
+  .classpick button:active img { scale: none; }
 }
