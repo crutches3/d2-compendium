@@ -610,8 +610,8 @@ async function armorInventory() {
   draw();
 }
 
-// DIM-style mover: one row per gear slot, a column per character (equipped item first) and the vault; pick an item, then send it somewhere
-// or equip it, or drag it there.
+// DIM-style mover: one row per gear slot, a column per character (equipped item first) and the vault; pick an item, then send it somewhere,
+// or drag it there. Equipping happens in game.
 async function transferPage() {
   const [d, a] = await Promise.all([data(), armorData()]);
   const p = await needProfile(); if (!p) return;
@@ -622,7 +622,7 @@ async function transferPage() {
   const order = (m, n) => n.equipped - m.equipped || def(m).n.localeCompare(def(n).n);
   const narrow = matchMedia('(max-width: 720px)');
   let sel = null, busy = false, msg = '', view = p.chars[0]?.id;  // view: the one character shown on phones
-  $app.innerHTML = `<h1>My gear</h1>${gearTabs('Transfer')}<p class="muted">Drag an item to another character or the vault, or onto an equipped item to equip it. You can also pick an item, then choose where it goes. Moves happen in the game straight away.</p>
+  $app.innerHTML = `<h1>My gear</h1>${gearTabs('Transfer')}<p class="muted">Drag an item to another character or the vault, or pick an item, then choose where it goes. Moves happen in the game straight away.</p>
     <div class="filters"><input type="search" id="q" aria-label="Find an item" placeholder="Find an item">${select('kind', 'Weapons and armor', [['w', 'Weapons'], ['a', 'Armor']])}
     <button type="button" id="reload">Reload from Bungie</button></div><div id="places"></div><div id="actions" class="actionbar" aria-live="polite" hidden></div>`;
   const f = id => $app.querySelector('#' + id);
@@ -651,12 +651,12 @@ async function transferPage() {
     if (!sel) return;
     const cls = a.byHash[sel.itemHash]?.cl;  // class armor can only go to that class
     const targets = p.chars.filter(c => !cls || c.cls === cls);
-    const stuck = sel.equipped ? 'Equipped items can\'t be moved. Equip something else in that slot first.' : sel.postmaster ? 'Pull this from the Postmaster in game first.'
+    const stuck = sel.equipped ? 'Equipped items can\'t be moved. Equip something else in that slot in game first.' : sel.postmaster ? 'Pull this from the Postmaster in game first.'
       : !targets.length ? `Only a ${cls} can hold this, and there's no ${cls} on this account.` : '';
     const btn = (attr, label) => `<button type="button" ${attr}${busy || stuck ? ' disabled' : ''}>${esc(label)}</button>`;
-    bar.innerHTML = `${icon(def(sel))}<div class="what"><b>${esc(def(sel).n)}</b><small>${esc(sel.location)}</small><small class="${/^(Done|Moving|Equipping)/.test(msg) ? '' : 'err'}">${esc(stuck || msg)}</small></div>
+    bar.innerHTML = `${icon(def(sel))}<div class="what"><b>${esc(def(sel).n)}</b><small>${esc(sel.location)}</small><small class="${/^(Done|Moving)/.test(msg) ? '' : 'err'}">${esc(stuck || msg)}</small></div>
       <div class="acts">${sel.owner ? btn('data-move="vault"', 'To Vault') : ''}${targets.filter(c => c.id !== sel.owner).map(c => btn(`data-move="${c.id}"`, `To ${c.cls}`)).join('')}
-      ${targets.map(c => btn(`data-equip="${c.id}" class="primary"`, `Equip on ${c.cls}`)).join('')}<button type="button" data-close>Close</button></div>`;
+      <button type="button" data-close>Close</button></div>`;
   };
   const run = async (label, fn) => {
     busy = true; msg = label; drawBar();
@@ -670,33 +670,25 @@ async function transferPage() {
     sel = p.items.find(i => i.instanceId === t.dataset.id); msg = '';
     f('places').querySelectorAll('.tile.sel').forEach(x => x.classList.remove('sel')); t.classList.add('sel'); drawBar();
   });
-  const act = (it, to, equip) => { const cls = p.chars.find(c => c.id === to)?.cls || 'Vault';
-    if (!equip) run(`Moving to ${cls}…`, () => Bungie.move(p, it, to));
-    else run(`Equipping on ${cls}…`, async () => {
-      await Bungie.move(p, it, to);
-      const old = p.items.filter(i => i !== it && i.owner === to && i.equipped && slotOf(i) === slotOf(it));
-      await Bungie.equip(p, it);
-      old.forEach(i => { i.equipped = false; Bungie.locate(p, i); });
-    });
-  };
+  const act = (it, to) => run(`Moving to ${p.chars.find(c => c.id === to)?.cls || 'Vault'}…`, () => Bungie.move(p, it, to));
   f('actions').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b || b.disabled) return;
     if (b.hasAttribute('data-close')) { sel = null; f('places').querySelector('.tile.sel')?.classList.remove('sel'); drawBar(); return; }
-    act(sel, b.dataset.move || b.dataset.equip, !!b.dataset.equip);
+    if (b.dataset.move) act(sel, b.dataset.move);
   });
-  // Drag and drop: onto another cell in the item's row to move it there, or onto that cell's equipped item to equip it. Touch needs a
+  // Drag and drop: onto another cell in the item's row to move it there. Touch needs a
   // long press first, so a swipe still scrolls the page. Dropping shows the move in the action bar like the buttons do.
   let drag = null, dragged = false;
   const blocked = (it, to) => { const cls = a.byHash[it.itemHash]?.cl, c = p.chars.find(x => x.id === to);
-    return it.postmaster ? 'Pull this from the Postmaster in game first.' : it.equipped && to !== it.owner ? 'Equipped items can\'t be moved. Equip something else in that slot first.'
+    return it.postmaster ? 'Pull this from the Postmaster in game first.' : it.equipped ? 'Equipped items can\'t be moved. Equip something else in that slot in game first.'
       : c && cls && c.cls !== cls ? `Only a ${cls} can hold this.` : ''; };
   const targetAt = (x, y) => { const el = document.elementFromPoint(x, y), cell = el?.closest('#places .cell[data-slot]');
     if (!cell || cell.dataset.slot !== slotOf(drag.it)) return null;
-    const to = cell.dataset.owner, equip = to !== 'vault' && !!el.closest('.tile.equipped');
-    return to === drag.it.owner && (!equip || drag.it.equipped) ? null : { cell, to, equip };  // dropping where it already is does nothing
+    const to = cell.dataset.owner;
+    return to === drag.it.owner ? null : { cell, to };  // dropping where it already is does nothing
   };
-  const mark = t => { f('places').querySelectorAll('.drop-ok,.drop-no,.drop-equip').forEach(x => x.classList.remove('drop-ok', 'drop-no', 'drop-equip'));
-    if (t) { t.cell.classList.add(blocked(drag.it, t.to) ? 'drop-no' : 'drop-ok'); if (t.equip) t.cell.querySelector('.tile.equipped').classList.add('drop-equip'); } };
+  const mark = t => { f('places').querySelectorAll('.drop-ok,.drop-no').forEach(x => x.classList.remove('drop-ok', 'drop-no'));
+    if (t) t.cell.classList.add(blocked(drag.it, t.to) ? 'drop-no' : 'drop-ok'); };
   const lift = () => { drag.ghost = Object.assign(document.createElement('div'), { className: 'dragghost', innerHTML: icon(def(drag.it)) });
     document.body.append(drag.ghost); drag.tile.classList.add('dragging'); dragged = true; follow(drag); };
   const follow = e => { Object.assign(drag.ghost.style, { left: e.x + 'px', top: e.y + 'px' }); drag.target = targetAt(e.x, e.y); mark(drag.target);
@@ -711,7 +703,7 @@ async function transferPage() {
     const { it, target: t, ghost } = drag; end();
     if (!ghost || !t) return;
     sel = it; msg = blocked(it, t.to);
-    if (msg) drawBar(); else act(it, t.to, t.equip);
+    if (msg) drawBar(); else act(it, t.to);
   };
   const end = () => { clearTimeout(drag.timer); drag.ghost?.remove(); drag.tile.classList.remove('dragging'); mark(null); drag = null;
     removeEventListener('pointermove', onMove); removeEventListener('pointerup', onUp); removeEventListener('pointercancel', end);

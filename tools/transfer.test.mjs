@@ -44,18 +44,21 @@ assert.equal(await p.$eval('.tile[data-id="2"]', t => t.closest('.cell').dataset
 await p.click('.tile[data-id="1"]'); await p.click('button[data-move="W1"]'); await p.waitForTimeout(300);
 assert.equal(await placeOf('1'), 'W1');
 assert.deepEqual(posts.at(-1), ['TransferItem/', { itemReferenceHash: fate.h, stackSize: 1, transferToVault: false, itemId: '1', characterId: 'W1', membershipType: 3 }]);
-// Warlock -> Titan goes through the vault (two transfers), then equip replaces Ace of Spades
+// the page only moves: no equip buttons
+assert.equal(await p.$$eval('#actions button', bs => bs.map(x => x.textContent).join('|')), 'To Vault|To Titan|Close');
+// Warlock -> Titan goes through the vault (two transfers) and equips nothing
 posts.length = 0;
-await p.click('button[data-equip="T1"]'); await p.waitForTimeout(300);
-assert.deepEqual(posts.map(x => [x[0], x[1].transferToVault, x[1].characterId]), [['TransferItem/', true, 'W1'], ['TransferItem/', false, 'T1'], ['EquipItem/', undefined, 'T1']]);
-assert.equal(await p.$eval('.tile[data-id="1"]', t => t.classList.contains('equipped')), true);
-assert.equal(await p.$eval('.tile[data-id="3"]', t => t.classList.contains('equipped')), false);
+await p.click('button[data-move="T1"]'); await p.waitForTimeout(300);
+assert.deepEqual(posts.map(x => [x[0], x[1].transferToVault, x[1].characterId]), [['TransferItem/', true, 'W1'], ['TransferItem/', false, 'T1']]);
+assert.equal(await placeOf('1'), 'T1');
+assert.equal(await p.$eval('.tile[data-id="1"]', t => t.classList.contains('equipped')), false);
+assert.equal(await p.$eval('.tile[data-id="3"]', t => t.classList.contains('equipped')), true);
 // equipped items can't move
 await p.click('.tile[data-id="4"]');
-assert.equal(await p.$eval('#actions', bar => [...bar.querySelectorAll('button[data-move],button[data-equip]')].every(x => x.disabled)), true);
+assert.equal(await p.$eval('#actions', bar => [...bar.querySelectorAll('button[data-move]')].every(x => x.disabled)), true);
 // hunter armor only offers the Hunter... and there is no hunter, so only Vault-less: no targets
 await p.click('.tile[data-id="5"]');
-assert.equal(await p.$$eval('#actions button[data-move],#actions button[data-equip]', bs => bs.length), 0);
+assert.equal(await p.$$eval('#actions button[data-move]', bs => bs.length), 0);
 // a Bungie error is shown and the item stays put
 failNext = true;
 await p.click('.tile[data-id="2"]'); await p.click('button[data-move="W1"]'); await p.waitForTimeout(300);
@@ -72,11 +75,12 @@ posts.length = 0;
 assert.match(await dragTo('2', '.cell[data-owner="vault"][data-slot="Power"]'), /drop-ok/);
 assert.equal(await placeOf('2'), 'vault');
 assert.deepEqual(posts.map(x => [x[0], x[1].transferToVault, x[1].itemId]), [['TransferItem/', true, '2']]);
-// onto an equipped item: equips there (Ace of Spades back over Fatebringer on the Titan)
+// onto an equipped item in the same cell: nothing happens, a drag never equips (Fatebringer onto Ace of Spades on the Titan)
 posts.length = 0;
-await dragTo('3', '.tile[data-id="1"]');
-assert.deepEqual(posts.map(x => x[0]), ['EquipItem/']);
+await dragTo('1', '.tile[data-id="3"]');
+assert.deepEqual(posts, []);
 assert.equal(await p.$eval('.tile[data-id="3"]', t => t.classList.contains('equipped')), true);
+assert.equal(await p.$eval('.tile[data-id="1"]', t => t.classList.contains('equipped')), false);
 // a drop that can't happen says why and sends nothing; another row isn't a target at all
 posts.length = 0;
 assert.match(await dragTo('4', '.cell[data-owner="vault"][data-slot="Helmet"]'), /drop-no/);

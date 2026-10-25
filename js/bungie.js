@@ -103,12 +103,6 @@ const Bungie = (() => {
     if (to !== 'vault' && it.owner !== to) { await transfer(to, false); it.owner = to; locate(p, it); }
   }
 
-  // Equips an item that is already on a character; the caller unmarks whatever it replaced.
-  async function equip(p, it) {
-    await call('/Destiny2/Actions/Items/EquipItem/', { itemId: it.instanceId, characterId: it.owner, membershipType: p.membershipType });
-    it.equipped = true; locate(p, it);
-  }
-
   // Equips several items on one character in one call, so exotic swaps resolve together. Returns the items that failed.
   async function equipAll(p, items, characterId) {
     if (!items.length) return [];
@@ -120,5 +114,5 @@ const Bungie = (() => {
   // One DestinyInventoryItemDefinition, for hashes the site's data files don't cover (subclasses, mods, artifact perks).
   const item = hash => call(`/Destiny2/Manifest/DestinyInventoryItemDefinition/${hash}/`);
 
-  return { token, signIn, signOut, handleRedirect, loadProfile, move, equip, equipAll, item, locate, store };
+  return { token, signIn, signOut, handleRedirect, loadProfile, move, equipAll, item, locate, store };
 })();
