@@ -208,7 +208,7 @@ async function weaponPage(hash) {
     const add = sum([...new Map([...picked, ...(hover ? [[hover.dataset.ci, +hover.dataset.h]] : [])]).values()]);
     return w.st.map(st => { const [n, , num] = st, base = statAt(st, always[n] || 0), now = statAt(st, (always[n] || 0) + (add[n] || 0)), diff = now - base;
       const tone = diff && (diff > 0) !== lowerBetter.test(n) ? 'up' : 'down';
-      return `<div class="stat${diff ? ' changed' : ''}" data-stat="${esc(n)}"><span class="muted">${esc(n)}</span>${num ? '<span></span>' : `<div class="bar"><span style="width:${pct(Math.min(base, now))}%"></span>${diff ? `<span class="${diff > 0 ? 'more' : 'less'} ${tone}" style="left:${pct(Math.min(base, now))}%;width:${Math.abs(pct(now) - pct(base))}%"></span>` : ''}</div>`}
+      return `<div class="stat${diff ? ' changed' : ''}" data-stat="${esc(n)}"><span class="muted">${esc(n)}</span>${num ? '<span></span>' : `<div class="bar"><span style="width:${pct(Math.min(base, now))}%"></span><span class="delta${diff ? ` ${diff > 0 ? 'more' : 'less'} ${tone}` : ''}" style="left:${pct(Math.min(base, now))}%;width:${diff ? Math.abs(pct(now) - pct(base)) : 0}%"></span></div>`}
         <b>${now}</b><small class="${tone}">${diff ? (diff > 0 ? '+' : '−') + Math.abs(diff) : ''}</small></div>`; }).join('');
   };
   // build roll: pick a saved build that uses this weapon and its perks become the goal; "Pick perks" sets them on the grid
@@ -284,8 +284,17 @@ async function weaponPage(hash) {
   }));
   // hovering (or tabbing to) a perk previews the stats with it in place of its column's pick, with a light.gg-style card beside it
   const statBox = $app.querySelector('#statrows'), tip = $app.querySelector('#perktip'), panel = $app.querySelector('.perkpanel');
+  // updates the rows in place rather than replacing them, so the bars slide to their new values instead of jumping
   const drawStats = hover => {
-    statBox.innerHTML = statRows(hover);
+    const next = document.createElement('div'); next.innerHTML = statRows(hover);
+    if (statBox.children.length !== next.children.length) statBox.replaceChildren(...next.children);
+    else [...next.children].forEach((n, k) => {
+      const o = statBox.children[k], ns = n.querySelectorAll('.bar span');
+      o.className = n.className;
+      o.querySelectorAll('.bar span').forEach((s, j) => { s.className = ns[j].className; s.style.cssText = ns[j].style.cssText; });
+      o.querySelector('b').textContent = n.querySelector('b').textContent;
+      const os = o.querySelector('small'), nsm = n.querySelector('small'); os.className = nsm.className; os.textContent = nsm.textContent;
+    });
     $app.querySelector('#clearroll').disabled = !picked.size;
   };
   let shown = null;
@@ -293,15 +302,17 @@ async function weaponPage(hash) {
     shown = el; drawStats(el);
     const p = d.plugs[el.dataset.h], r = el.getBoundingClientRect(), pr = panel.getBoundingClientRect();
     tip.innerHTML = `<b>${esc(p.n)}</b><small>${esc(p.t)}</small>${p.d ? `<p>${esc(p.d)}</p>` : ''}${deltaList(p.s)}`;
+    // already showing: the card glides to the next perk; just shown: it appears in place
+    tip.classList.toggle('glide', !tip.hidden);
     tip.hidden = false;
-    tip.style.top = `${r.bottom - pr.top + 6}px`;
-    tip.style.left = `${Math.max(8, Math.min(r.left - pr.left, pr.width - tip.offsetWidth - 8))}px`;
+    tip.style.translate = `${Math.max(8, Math.min(r.left - pr.left, pr.width - tip.offsetWidth - 8))}px ${r.bottom - pr.top + 6}px`;
   };
   const unpreview = () => { shown = null; tip.hidden = true; drawStats(); };
   grid.addEventListener('pointerover', e => { const el = e.target.closest('.perk');
     if (e.pointerType === 'mouse' && !editing && el !== shown) el ? preview(el) : unpreview(); });
   grid.addEventListener('pointerleave', unpreview);
-  grid.addEventListener('focusin', e => { const el = e.target.closest('.perk'); if (el && !editing) preview(el); });
+  // keyboard focus only: a tap focuses the perk too, and on a phone the card would cover the details box that already shows it
+  grid.addEventListener('focusin', e => { const el = e.target.closest('.perk'); if (el && !editing && el.matches(':focus-visible')) preview(el); });
   grid.addEventListener('focusout', unpreview);
   const pickAll = els => { picked.clear(); grid.querySelectorAll('.perk.sel').forEach(x => { x.classList.remove('sel'); x.removeAttribute('aria-pressed'); });
     els.forEach(x => { picked.set(x.dataset.ci, +x.dataset.h); x.classList.add('sel'); x.setAttribute('aria-pressed', 'true'); }); drawStats(); };
@@ -664,7 +675,7 @@ async function transferPage() {
   // the action bar redraws on its own so picking an item doesn't rebuild every icon in the grid
   const drawBar = () => {
     const bar = f('actions');
-    bar.hidden = !sel;
+    bar.hidden = !sel; bar.classList.toggle('busy', busy);
     if (!sel) return;
     const cls = a.byHash[sel.itemHash]?.cl;  // class armor can only go to that class
     const targets = p.chars.filter(c => !cls || c.cls === cls);
@@ -677,10 +688,27 @@ async function transferPage() {
     bar.innerHTML = `${open ? `<div class="details">${details(sel)}</div>` : ''}${icon(def(sel))}<div class="what"><b>${esc(def(sel).n)}</b><small>${esc(sel.location)}</small><small class="${/^(Done|Moving|Pulling|Equipping)/.test(msg) ? '' : 'err'}">${esc(stuck || msg)}</small></div>
       <div class="acts">${acts}<button type="button" data-junk>${junk.has(sel.instanceId) ? 'Unmark dismantle' : 'Mark to dismantle'}</button><button type="button" data-details aria-expanded="${open}">${open ? 'Hide details' : 'Full details'}</button><button type="button" data-close>Close</button></div>`;
   };
+  // After a move, pull or equip, every tile that changed place flies from where it was to where it landed (growing or shrinking as it
+  // takes or leaves an equipped slot), and the item you moved lands with a ring. Reduced motion skips both; the item stays selected where it landed.
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+  const places = () => new Map([...f('places').querySelectorAll('.tile[data-id]')].map(t => [t.dataset.id, t.getBoundingClientRect()]));
+  const fly = (from, id) => {
+    if (!still.matches) f('places').querySelectorAll('.tile[data-id]').forEach(t => {
+      const b = from.get(t.dataset.id), a = t.getBoundingClientRect(); if (!b) return;
+      const dx = b.left - a.left, dy = b.top - a.top, s = b.width / a.width;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(s - 1) < .01) return;
+      t.style.transformOrigin = '0 0'; t.classList.add('flying');
+      t.animate([{ translate: `${dx}px ${dy}px`, scale: `${s}` }, { translate: '0 0', scale: '1' }], { duration: 460, easing: 'cubic-bezier(.16, 1, .3, 1)' })
+        .finished.then(() => { t.style.transformOrigin = ''; t.classList.remove('flying'); }, () => {});
+    });
+    f('places').querySelector(`.tile[data-id="${id}"]`)?.classList.add('landed');
+  };
   const run = async (label, fn) => {
+    const it = sel, from = places(); let ok = false;
     busy = true; msg = label; drawBar();
-    try { await fn(); msg = 'Done.'; } catch (e) { msg = e.message; }
+    try { await fn(); msg = 'Done.'; ok = true; } catch (e) { msg = e.message; }
     busy = false; draw();
+    if (ok) fly(from, it.instanceId);
   };
   f('places').addEventListener('click', e => {
     const v = e.target.closest('[data-view]');
@@ -703,7 +731,12 @@ async function transferPage() {
     const b = e.target.closest('button'); if (!b || b.disabled) return;
     if (b.hasAttribute('data-close')) { sel = null; f('places').querySelector('.tile.sel')?.classList.remove('sel'); drawBar(); return; }
     if (b.hasAttribute('data-details')) { open = !open; drawBar(); return; }
-    if (b.hasAttribute('data-junk')) { junk.has(sel.instanceId) ? junk.delete(sel.instanceId) : junk.add(sel.instanceId); saveJunk(); msg = ''; draw(); return; }
+    if (b.hasAttribute('data-junk')) {
+      const id = sel.instanceId, marking = !junk.has(id);
+      marking ? junk.add(id) : junk.delete(id); saveJunk(); msg = ''; draw();
+      if (marking) f('places').querySelector(`.tile[data-id="${id}"]`)?.classList.add('justmarked');  // the badge pops in on this one only
+      return;
+    }
     if (b.dataset.move) act(sel, b.dataset.move);
     else if (b.hasAttribute('data-pull')) pull(sel);
   });
