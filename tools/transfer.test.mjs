@@ -71,20 +71,36 @@ assert.equal(await placeOf('2'), 'T1');
 // drag and drop with the mouse: onto the vault's cell in the item's row moves it there
 const dragTo = async (id, sel) => {
   const from = await p.$eval(`.tile[data-id="${id}"]`, t => { const r = t.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; });
-  const to = await p.$eval(sel, t => { const r = t.getBoundingClientRect(); return [r.x + Math.min(r.width / 2, 40), r.y + Math.min(r.height / 2, 30)]; });
+  // a cell is aimed at its empty right end, past the tiles, so a plain move never lands on an equipped item; a tile at its middle
+  const to = await p.$eval(sel, t => { const r = t.getBoundingClientRect(); return t.matches('.cell') ? [r.right - 16, r.y + Math.min(r.height / 2, 30)] : [r.x + r.width / 2, r.y + r.height / 2]; });
   await p.mouse.move(...from); await p.mouse.down(); await p.mouse.move(from[0] + 10, from[1] + 10, { steps: 3 }); await p.mouse.move(...to, { steps: 8 });
-  const hint = await p.$eval(sel, t => (t.closest('.cell') || t).className); await p.mouse.up(); await p.waitForTimeout(300); return hint;
+  const hint = await p.$eval(sel, t => `${t.className} ${t.closest('.cell')?.className || ''}`); await p.mouse.up(); await p.waitForTimeout(300); return hint;
 };
 posts.length = 0;
 assert.match(await dragTo('2', '.cell[data-owner="vault"][data-slot="Power"]'), /drop-ok/);
 assert.equal(await placeOf('2'), 'vault');
 assert.deepEqual(posts.map(x => [x[0], x[1].transferToVault, x[1].itemId]), [['TransferItem/', true, '2']]);
-// onto an equipped item in the same cell: nothing happens, a drag never equips (Fatebringer onto Ace of Spades on the Titan)
+// onto a character's equipped item: equips it there in place of what it had on (Fatebringer over Ace of Spades on the Titan)
 posts.length = 0;
-await dragTo('1', '.tile[data-id="3"]');
-assert.deepEqual(posts, []);
+assert.match(await dragTo('1', '.tile[data-id="3"]'), /drop-equip/);
+assert.deepEqual(posts.map(x => [x[0], x[1].itemId, x[1].characterId]), [['EquipItem/', '1', 'T1']]);
+assert.equal(await p.$eval('.tile[data-id="1"]', t => t.classList.contains('equipped')), true);
+assert.equal(await p.$eval('.tile[data-id="3"]', t => t.classList.contains('equipped')), false);
+// from the vault: moved over first, then equipped (Gjallarhorn isn't equippable here since the Titan has no Power weapon on, so it's a plain move)
+posts.length = 0;
+assert.doesNotMatch(await dragTo('2', '.cell[data-owner="T1"][data-slot="Power"]'), /drop-equip/);
+assert.deepEqual(posts.map(x => x[0]), ['TransferItem/']);
+posts.length = 0;
+await dragTo('3', '.cell[data-owner="vault"][data-slot="Kinetic"]');
+assert.match(await dragTo('3', '.tile[data-id="1"]'), /drop-equip/);
+assert.deepEqual(posts.map(x => [x[0], x[1].characterId]), [['TransferItem/', 'T1'], ['TransferItem/', 'T1'], ['EquipItem/', 'T1']]);
 assert.equal(await p.$eval('.tile[data-id="3"]', t => t.classList.contains('equipped')), true);
 assert.equal(await p.$eval('.tile[data-id="1"]', t => t.classList.contains('equipped')), false);
+// the equipped item itself can't be dropped onto anything
+posts.length = 0;
+await dragTo('3', '.cell[data-owner="W1"][data-slot="Kinetic"]');
+assert.deepEqual(posts, []);
+await dragTo('2', '.cell[data-owner="vault"][data-slot="Power"]');  // back where the next steps expect it
 // a drop that can't happen says why and sends nothing; another row isn't a target at all
 posts.length = 0;
 assert.match(await dragTo('4', '.cell[data-owner="vault"][data-slot="Helmet"]'), /drop-no/);
