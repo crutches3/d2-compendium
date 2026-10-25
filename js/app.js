@@ -193,8 +193,13 @@ async function weaponPage(hash) {
   // enhanced versions share a name with the base perk, so show one entry per name (the first, usually the base);
   // "Empty ... Socket" plugs are placeholders, not choices
   const dedupe = hs => hs.filter((h, i) => d.plugs[h] && !/^Empty .*Socket$/.test(d.plugs[h].n) && hs.findIndex(x => d.plugs[x]?.n === d.plugs[h].n) === i);
-  const perkCols = cols => cols.map((c, ci) => [c, dedupe(c.p), ci]).filter(([, hs]) => hs.length)
-    .map(([c, hs, ci]) => `<div class="perkcol"><h3>${esc(d.plugs[c.p[0]]?.t || c.c)}</h3>${hs.map(h => perk(h, c, ci)).join('')}</div>`).join('');
+  const perkCols = cols => {
+    const live = cols.map((c, ci) => ({ c, hs: dedupe(c.p), ci })).filter(x => x.hs.length);
+    const group = x => `<h3>${esc(d.plugs[x.c.p[0]]?.t || x.c.c)}</h3>${x.hs.map(h => perk(h, x.c, x.ci)).join('')}`;
+    // the frame is one or two choices, so the masterwork stacks under it instead of taking a column, leaving the perks more room
+    const first = live[0], stack = live.length > 2 && first.c.c === 'Intrinsic Traits' && first.hs.length <= 2 && live.at(-1).c === mw ? live.pop() : null;
+    return live.map(x => `<div class="perkcol">${group(x)}${x === first && stack ? `<div class="stacked">${group(stack)}</div>` : ''}</div>`).join('');
+  };
   const maxStat = Math.max(100, ...w.st.filter(s => !s[2]).map(s => s[1]));
   // Stats as light.gg shows them: the picked perks (and the hovered one, in place of its column's pick) against the bare weapon.
   // Perks add to a stat's investment value; most stats show it 1:1 (0-100), the rest (magazine, RPM, impact) follow the weapon's curve.

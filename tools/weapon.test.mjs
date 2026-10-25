@@ -12,6 +12,13 @@ const stat = async n => (await p.innerText(`#statrows .stat[data-stat="${n}"]`))
 
 await p.goto(`http://localhost:8765/#/weapon/${yasmin.h}`); await p.waitForSelector('#statrows .stat');
 assert.equal(await stat('Handling'), 'Handling 46');
+// the masterwork stacks under a one-choice frame instead of taking a column; its picks still count toward the stats
+const colHeads = () => p.$$eval('.perkcol', cs => cs.map(c => [...c.querySelectorAll('h3')].map(h => h.textContent).join(' + ')));
+assert.deepEqual(await colHeads(), ['Intrinsic + Masterwork', 'Barrel', 'Magazine', 'Trait', 'Trait']);
+await p.click('.perkcol .stacked .perk:has-text("Handling")'); await p.hover('.hero');
+assert.match(await stat('Handling'), /^Handling \d+ \+\d+$/);
+await p.click('.perkcol .stacked .perk:has-text("Handling")'); await p.hover('.hero');
+assert.equal(await stat('Handling'), 'Handling 46');
 // hover: Arrowhead Brake's +30 recoil and +10 handling show on the bars and in a card beside the perk
 await p.hover('.perk:has-text("Arrowhead Brake")');
 assert.equal(await stat('Handling'), 'Handling 56 +10');
@@ -34,6 +41,10 @@ assert.equal(await stat('Magazine'), 'Magazine 4'); assert.ok(await p.isDisabled
 await p.click('#curated');
 assert.equal(await p.$$eval('.perk.sel', s => s.length), await p.$$eval('.perk.cur', s => s.length));
 
+// a frame with many choices (Barrow-Dyad's five Panic Responses) keeps its column to itself
+await p.goto(`http://localhost:8765/#/weapon/${W.find(w => w.n === 'Barrow-Dyad').h}`); await p.waitForSelector('.perkcol');
+assert.equal(await p.$('.perkcol .stacked'), null);
+assert.equal((await colHeads())[0], 'Intrinsic');
 assert.deepEqual(errs, []);
 await b.close();
 console.log('weapon tests passed');

@@ -97,8 +97,9 @@ section.panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .
 .key { display: inline-block; width: 14px; height: 14px; border-radius: 4px; }
 .key.god { border: 1.5px solid var(--good); }
 .key.cur { border-radius: 50%; box-shadow: 0 0 0 2px var(--gold); margin-left: 10px; width: 10px; height: 10px; }
-.perkcols { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 16px 10px; }
+.perkcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px 10px; }
 .perkcol h3 { font-size: 12px; color: var(--muted); margin: 0 0 6px; font-weight: 600; }
+.perkcol .stacked { margin-top: 18px; }  /* the masterwork under a one- or two-choice frame */
 .perk { display: flex; width: 100%; gap: 8px; align-items: center; padding: 4px 6px; margin-bottom: 2px; border-radius: 6px; font-size: 13px; text-align: left;
   background: none; border: 1px solid transparent; }
 .perk img { width: 30px; height: 30px; border-radius: 50%; background: #2a3a55; flex: none; transition: scale .12s var(--ease-out); }
