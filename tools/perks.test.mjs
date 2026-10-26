@@ -50,7 +50,7 @@ await p.click('.perk:has-text("Lone Wolf")');
 await p.click('.perk:has-text("Demoralize")');
 await p.waitForSelector('#perkinfo button:has-text("All guns with Demoralize")');
 assert.deepEqual(await p.$$eval('#perkinfo a, #perkinfo button', els => els.map(e => `${e.tagName} ${e.textContent}`)),
-  ['A Everything about Demoralize in the wiki', 'BUTTON All guns with Demoralize']);
+  ['BUTTON All guns with Demoralize']);
 await p.click('#perkinfo button:has-text("All guns with Demoralize")'); await p.waitForSelector('#perkchips .chip');
 assert.deepEqual(await chips(), ['Demoralize']);
 assert.equal(await count(), expect(['Demoralize']));

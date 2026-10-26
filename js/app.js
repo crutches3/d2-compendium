@@ -311,7 +311,7 @@ async function weaponPage(hash) {
   drawGoal();
 
   // the perk finder from a pick: one button to every gun with this perk (more perks can be added there)
-  const finderLinks = n => /^Masterworked/.test(n) ? '' : `\n<button type="button" class="findguns" data-find="${esc(n)}">All guns with ${esc(n)}</button>`;
+  const finderLinks = n => /^Masterworked/.test(n) ? '' : `\n<button type="button" class="findguns primary" data-find="${esc(n)}">All guns with ${esc(n)}</button>`;
   $app.querySelector('#perkinfo').addEventListener('click', e => { const b = e.target.closest('[data-find]'); if (b) location.hash = perkFinderHref([b.dataset.find]); });
   $app.querySelectorAll('.perk').forEach(el => el.addEventListener('click', async () => {
     if (editing) { if (el.dataset.col) toggleGoalPerk(el); return; }
@@ -329,7 +329,7 @@ async function weaponPage(hash) {
     info.innerHTML = `<b>${esc(p.n)}</b> <span class="muted">${esc(p.t)}</span>\n${esc(p.d)}` +
       (p.s.length ? `\n${p.s.map(([n, v]) => `${v > 0 ? '+' : ''}${v} ${esc(n)}`).join(', ')}` : '') +
       (extra.length ? `\n\n<b>Destiny Data Compendium</b>\n${esc(extra[0].row.filter(c => c && c !== extra[0].row[0]).join('\n'))}` : '') +
-      `\n<a href="${wikiHref(p.n)}">Everything about ${esc(p.n)} in the wiki</a>` + finderLinks(p.n);
+      finderLinks(p.n);
     el.setAttribute('aria-pressed', 'true');
   }));
   // hovering (or tabbing to) a perk previews the stats with it in place of its column's pick, with a light.gg-style card beside it

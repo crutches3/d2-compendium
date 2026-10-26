@@ -68,9 +68,9 @@ assert.equal(await p.textContent('ul.mentions li:has(a:text-is("Ions")) mark'), 
 await p.goto("http://localhost:8765/#/wiki/King's%20Fall"); await p.waitForSelector('.drop');
 await p.click('.dropname:has(b:text-is("Defiance of Yasmin"))'); await p.waitForSelector('#farmsrc a');
 assert.equal(await p.getAttribute('#farmsrc a', 'href'), "#/wiki/King's%20Fall");
-// a perk on the weapon page links to its wiki page
-await p.click('.perk >> nth=0'); await p.waitForSelector('#perkinfo a');
-assert.match(await p.textContent('#perkinfo a'), /^Everything about .+ in the wiki$/);
+// a perk on the weapon page offers the perk finder, not a wiki link
+await p.click('.perk >> nth=0'); await p.waitForSelector('#perkinfo .findguns.primary');
+assert.equal(await p.$('#perkinfo a'), null);
 
 // pages look like gun pages: a banner with the raid's art, or the perk's icon and Bungie's description, and a perk's stat changes
 await p.goto("http://localhost:8765/#/wiki/King's%20Fall"); await p.waitForSelector('.hero h1');
