@@ -6,6 +6,7 @@ import assert from 'assert';
 const W = JSON.parse(fs.readFileSync('data/weapons.json')).weapons;
 const A = JSON.parse(fs.readFileSync('data/armor.json'));
 const ARTS = JSON.parse(fs.readFileSync('data/artifacts.json'));
+const SLOTS = JSON.parse(fs.readFileSync('data/loadouts.json')), slotName = n => SLOTS.names.find(x => x[1] === n)[0];
 const fate = W.find(w => w.n === 'Fatebringer'), gjally = W.find(w => w.n === 'Gjallarhorn'), ace = W.find(w => w.n === 'Ace of Spades'), threat = W.find(w => w.n === 'Threat Level');
 const helm = A.armor.find(x => x.a3 && x.cl === 'Hunter' && x.ty === 'Helmet');
 const defs = { 4282591831: ['Prismatic Hunter', 16, 'Hunter Subclass'], 2370269390: ['Golden Gun: Marksman', 19, 'Solar Super | Light Ability'],
@@ -25,6 +26,10 @@ const profile = {
   profileInventory: { data: { items: [{ itemHash: fate.h, itemInstanceId: '1', bucketHash: 138197802 }, { itemHash: helm.h, itemInstanceId: '3', bucketHash: 138197802 }] } },
   characterInventories: { data: { T1: { items: [{ itemHash: gjally.h, itemInstanceId: '2', bucketHash: 953998645 }] }, H1: { items: [] } } },
   characterEquipment: { data: { H1: { items: [{ itemHash: ace.h, itemInstanceId: '4', bucketHash: 1498876634 }] }, T1: { items: [] } } },
+  // the Hunter's in-game loadouts: slot 1 is used, slot 2 is free
+  characterLoadouts: { data: { H1: { loadouts: [
+    { nameHash: slotName('PvP'), iconHash: SLOTS.icons[3][0], colorHash: SLOTS.colors[2][0], items: [{ itemInstanceId: '4' }, { itemInstanceId: '0' }] },
+    { nameHash: slotName('Beta'), iconHash: SLOTS.icons[1][0], colorHash: SLOTS.colors[1][0], items: [{ itemInstanceId: '0' }] }] } } },
   itemComponents: { sockets: { data: {} }, reusablePlugs: { data: {} }, instances: { data: {} },
     stats: { data: { 3: { stats: { 2996146975: { value: 30 }, 1735777505: { value: 25 }, 392767087: { value: 20 }, 1943323491: { value: 5 }, 144602215: { value: 5 }, 4244567218: { value: 5 } } } } } },
 };
@@ -43,7 +48,7 @@ await ctx.route('https://www.bungie.net/Platform/**', route => {
   const ok = Response => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ErrorCode: 1, Response }) });
   if (r.method() === 'POST') {
     const body = JSON.parse(r.postData());
-    posts.push([u.split('/Items/')[1], body]);
+    posts.push([u.split(/\/(?:Items|Loadouts)\//)[1], body]);
     return ok(body.itemIds ? { equipResults: body.itemIds.map(itemInstanceId => ({ itemInstanceId, equipStatus: 1 })) } : 0);
   }
   const def = u.match(/DestinyInventoryItemDefinition\/(\d+)/);
@@ -88,6 +93,32 @@ assert.deepEqual(posts.map(([path, x]) => [path, x.itemId, x.transferToVault, x.
   ['TransferItem/', '1', false, 'H1'], ['TransferItem/', '2', true, 'T1'], ['TransferItem/', '2', false, 'H1'], ['TransferItem/', '3', false, 'H1'], ['EquipItems/', undefined, undefined, 'H1']]);
 assert.deepEqual(posts.at(-1)[1].itemIds, ['1', '2', '3']);
 assert.ok((await p.locator('#build').innerText()).includes('Done. Everything you have from this build is equipped on your Hunter.'));
+
+// send: the same pieces move to the Hunter, and nothing is equipped
+const moves = [['TransferItem/', '1', false, 'H1'], ['TransferItem/', '2', true, 'T1'], ['TransferItem/', '2', false, 'H1'], ['TransferItem/', '3', false, 'H1']];
+const sent = () => posts.splice(0).map(([path, x]) => [path, x.itemId ?? x.loadoutIndex, x.transferToVault, x.characterId]);
+posts.length = 0;
+await p.click('[data-send="H1"]'); await p.waitForTimeout(800);
+assert.deepEqual(sent(), moves);
+assert.ok((await p.locator('#build').innerText()).includes('Done. Everything you have from this build is on your Hunter.'));
+
+// save as loadout: equip, then snapshot into the first free slot, named for the subclass and keeping the slot's icon and color
+profile.characterLoadouts.data.H1.loadouts[1].items = [{ itemInstanceId: '1' }];  // the re-read after saving sees every slot used
+await p.click('[data-ingame="H1"]'); await p.waitForTimeout(800);
+const snap = posts.at(-1)[1];
+assert.deepEqual(sent(), [...moves, ['EquipItems/', undefined, undefined, 'H1'], ['SnapshotLoadout/', 1, undefined, 'H1']]);
+assert.deepEqual([snap.nameHash, snap.iconHash, snap.colorHash, snap.membershipType], [slotName('Prismatic'), SLOTS.icons[1][0], SLOTS.colors[1][0], 3]);
+assert.ok((await p.locator('#build').innerText()).includes('Saved as in-game loadout 2 (Prismatic) on your Hunter.'));
+// every slot used: it asks which to replace, and Cancel asks nothing
+await p.click('[data-ingame="H1"]');
+assert.deepEqual(await p.$$eval('.slotpick [data-slot]', bs => bs.map(x => x.innerText.replace(/\s+/g, ' ').trim())), ['1. PvP 1 item', '2. Beta 1 item']);
+assert.ok((await p.textContent('.slotpick')).includes('All 2 in-game loadout slots on your Hunter are full.'));
+assert.equal(posts.length, 0);
+await p.click('[data-slot-cancel]'); assert.equal(await p.locator('.slotpick').count(), 0);
+await p.click('[data-ingame="H1"]'); await p.click('.slotpick [data-slot="0"]'); await p.waitForTimeout(800);
+assert.deepEqual(sent().at(-1), ['SnapshotLoadout/', 0, undefined, 'H1']);
+assert.equal(await p.locator('.slotpick').count(), 0);
+assert.ok((await p.locator('#build').innerText()).includes('Saved as in-game loadout 1 (Prismatic) on your Hunter.'));
 
 // save it, find it in the saved list, and reopen it without asking DIM again
 await p.click('[data-save]');

@@ -288,6 +288,14 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 /* builds */
 p.err { color: #ff8a80; }
 .buildhead .acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+/* picking which full in-game loadout slot a build replaces: each slot's color and icon, as in game */
+.slotpick { margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel2); }
+.slotpick p { margin: 0 0 8px; }
+.slotpick .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-bottom: 10px; }
+.slotpick .slots button { display: flex; align-items: center; gap: 10px; text-align: left; padding: 6px 10px 6px 6px; }
+.slotpick .lico { flex: none; width: 40px; height: 40px; border-radius: 4px; background-size: cover; display: grid; place-items: center; }
+.slotpick .lico img { width: 32px; height: 32px; }
+.slotpick small { display: block; color: var(--muted); font-size: 12px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border: 1px solid var(--line); border-radius: 20px; background: var(--panel2); font-size: 13px; }
 .chip img { width: 28px; height: 28px; border-radius: 50%; background: #2a3a55; flex: none; }

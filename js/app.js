@@ -939,7 +939,7 @@ async function buildPage(id) {
   const key = isShare ? id : saved?.key || 'saved-' + String(loadout.id || Date.now().toString(36)).replace(/[^a-z0-9]/gi, '').slice(0, 16).toLowerCase();
   box.innerHTML = '<p class="muted">Looking up the build\'s items…</p>';
 
-  const [d, a, arts] = await Promise.all([data(), armorData(), load('artifacts')]);
+  const [d, a, arts, slots] = await Promise.all([data(), armorData(), load('artifacts'), load('loadouts')]);
   const P = loadout.parameters ||= {}, items = [...loadout.equipped, ...(loadout.unequipped || [])];
   // gear comes from the site's own data; subclass pieces, mods and artifact perks from Bungie's manifest
   const defs = {};
@@ -956,6 +956,7 @@ async function buildPage(id) {
   const cls = ['Titan', 'Hunter', 'Warlock'][loadout.classType];
   let editStats = false;  // picking stat priorities for a build whose link has none
   let editArt = false, artDraft = null;  // picking the build's artifact and its perks
+  let slotFor = null;  // the character whose in-game loadout slots are all full, while you pick one to overwrite
   // DIM keeps unlocked artifact perks in the build's parameters, or as socket overrides on an artifact in the loadout.
   // A perk can have another hash on another artifact or season, so names match too.
   const isArt = (x, h) => x.h === h || x.n === defs[h]?.n, isPerk = (k, h) => k.h === h || k.n === defs[h]?.n;
@@ -970,6 +971,14 @@ async function buildPage(id) {
     return artItem || best?.perks.length ? best : null;
   };
 
+  const lookup = (list, h) => list.find(([k]) => k === h)?.[1];
+  // subclass names don't say their element
+  const ELEMENT = { Arc: /Arcstrider|Stormcaller|Striker/, Solar: /Gunslinger|Dawnblade|Sunbreaker/, Void: /Nightstalker|Voidwalker|Sentinel/,
+    Stasis: /Revenant|Shadebinder|Behemoth/, Strand: /Threadrunner|Broodweaver|Berserker/, Prismatic: /Prismatic/ };
+  const slotPicker = c => c ? `<div class="slotpick"><p>All ${c.loadouts.length} in-game loadout slots on your ${esc(c.cls)} are full. Pick one to replace with this build:</p>
+      <div class="slots">${c.loadouts.map((l, k) => `<button type="button" data-slot="${k}"><span class="lico" style="background-image:url('${BNET}${lookup(slots.colors, l.colorHash) || ''}')">${img(lookup(slots.icons, l.iconHash))}</span>
+        <span><b>${k + 1}. ${esc(lookup(slots.names, l.nameHash) || 'Loadout')}</b><small>${plural(l.items, 'item')}</small></span></button>`).join('')}</div>
+      <button type="button" data-slot-cancel>Cancel</button></div>` : '';
   const draw = (p, status = '') => {
     const top = buildTop(a, loadout), custom = !!savedBuilds().find(b => b.key === key)?.customStats;
     const chars = p ? p.chars.filter(c => !cls || c.cls === cls) : [];
@@ -1015,8 +1024,11 @@ async function buildPage(id) {
         ${loadout.notes ? `<p class="lore">${esc(loadout.notes)}</p>` : ''}
         <p class="muted">${p ? `You have ${have} of ${gear.length} pieces of gear.` : 'Sign in with Bungie to see which pieces you have and equip them.'}
         <a href="${esc(shareUrl || 'https://app.destinyitemmanager.com/loadouts?' + new URLSearchParams({ loadout: JSON.stringify(loadout) }))}" target="_blank" rel="noopener">Open in DIM</a></p>
-        <div class="acts"><button type="button" data-save>${savedBuilds().some(b => b.key === key) ? 'Remove from saved' : 'Save build'}</button><button type="button" data-farmbuild>${inFarm('builds', key) && savedBuilds().some(b => b.key === key) ? 'Stop farming this build' : 'Farm this build'}</button>${chars.map(c => `<button type="button" class="primary" data-equip="${c.id}">Equip on ${esc(c.cls)}</button>`).join('')}</div>
-        ${chars.length ? '<p class="muted"><small>Equip moves and equips the weapons and armor you have. Set the subclass and mods in game.</small></p>' : ''}
+        <div class="acts"><button type="button" data-save>${savedBuilds().some(b => b.key === key) ? 'Remove from saved' : 'Save build'}</button><button type="button" data-farmbuild>${inFarm('builds', key) && savedBuilds().some(b => b.key === key) ? 'Stop farming this build' : 'Farm this build'}</button>${chars.map(c => `<button type="button" class="primary" data-equip="${c.id}">Equip on ${esc(c.cls)}</button>
+          <button type="button" data-send="${c.id}">Send to ${esc(c.cls)}</button><button type="button" data-ingame="${c.id}">Save as ${esc(c.cls)} loadout</button>`).join('')}</div>
+        ${chars.length ? `<p class="muted"><small>Equip moves the build's weapons and armor you own to that character and equips them. Send only moves them there.
+          Save as loadout equips them, then saves the character's whole setup as an in-game loadout, subclass and mods included, so set those in game first.</small></p>` : ''}
+        ${slotPicker(chars.find(c => c.id === slotFor))}
         ${status ? `<p class="${/^Done/.test(status) ? 'muted' : 'err'}" aria-live="polite">${esc(status)}</p>` : ''}</section>
       ${subclass ? `<section class="panel"><h2>Subclass</h2><p>${chip(subclass.hash)}</p>${subParts.map(([k, hs]) => `<div class="eg"><span class="muted">${k}</span><div class="chips">${hs.map(h => chip(h)).join('')}</div></div>`).join('')}</section>` : ''}
       ${stats.length || custom || gear.some(it => a.byHash[it.hash]) ? `<section class="panel"><h2>Stat priorities${custom ? ' <span class="count">set by you</span>' : ''}</h2>
@@ -1096,24 +1108,50 @@ async function buildPage(id) {
       if (inFarm('builds', key) !== want) toggleFarm('builds', key);
       draw(p, status);
     });
-    box.querySelectorAll('[data-equip]').forEach(b => b.addEventListener('click', async () => {
-      const c = chars.find(x => x.id === b.dataset.equip);
-      box.querySelectorAll('[data-equip]').forEach(x => { x.disabled = true; });
-      b.textContent = `Equipping on ${c.cls}…`;
-      const want = loadout.equipped.filter(it => nameOf(it.hash)).map(it => pick(it, c.id)).filter(Boolean);
-      // Bungie can't move an item that's equipped on another character
-      const stuck = want.filter(i => i.equipped && i.owner !== c.id);
+    // your best copy of each of the build's pieces for a character, once each; Bungie can't move one that's equipped on another character
+    const mine = (list, c) => { const want = [...new Set(list.filter(it => nameOf(it.hash)).map(it => pick(it, c.id)).filter(Boolean))];
+      return { want, stuck: want.filter(i => i.equipped && i.owner !== c.id) }; };
+    const except = (stuck, failed, why) => [...stuck, ...failed].length ? `Done, except: ${[...stuck, ...failed].map(i => nameOf(i.itemHash)).join(', ')}. ${stuck.length ? 'Unequip those on your other characters first. ' : ''}${failed.length ? why : ''}` : '';
+    const equipOn = async c => {
+      const { want, stuck } = mine(loadout.equipped, c);
+      for (const i of want.filter(i => !stuck.includes(i))) await Bungie.move(p, i, c.id);
+      const failed = await Bungie.equipAll(p, want.filter(i => !stuck.includes(i) && !i.equipped), c.id);
+      return except(stuck, failed, 'Bungie wouldn\'t equip some of them (often a second exotic).');
+    };
+    // a button runs one action on the account, then the page re-reads the profile so every location is current
+    const run = (b, label, fn) => b.addEventListener('click', async () => {
+      box.querySelectorAll('.buildhead button[data-equip],.buildhead button[data-send],.buildhead button[data-ingame],.slotpick button').forEach(x => { x.disabled = true; });
+      b.textContent = label;
       let msg;
-      try {
-        for (const i of want.filter(i => !stuck.includes(i))) await Bungie.move(p, i, c.id);
-        const failed = await Bungie.equipAll(p, want.filter(i => !stuck.includes(i) && !i.equipped), c.id);
-        const left = [...stuck, ...failed].map(i => nameOf(i.itemHash));
-        msg = left.length ? `Done, except: ${left.join(', ')}. ${stuck.length ? 'Unequip those on your other characters first. ' : ''}${failed.length ? 'Bungie wouldn\'t equip some of them (often a second exotic).' : ''}`
-          : `Done. Everything you have from this build is equipped on your ${c.cls}.`;
-      } catch (e) { msg = e.message; }
-      S.profile = null;  // re-read so every location is current
+      try { msg = await fn(); } catch (e) { msg = e.message; }
+      slotFor = null; S.profile = null;
       draw(await profile().catch(() => null), msg);
-    }));
+    });
+    const charOf = id => chars.find(x => x.id === id);
+    box.querySelectorAll('[data-equip]').forEach(b => { const c = charOf(b.dataset.equip);
+      run(b, `Equipping on ${c.cls}…`, async () => await equipOn(c) || `Done. Everything you have from this build is equipped on your ${c.cls}.`); });
+    box.querySelectorAll('[data-send]').forEach(b => { const c = charOf(b.dataset.send);
+      run(b, `Sending to ${c.cls}…`, async () => {
+        const { want, stuck } = mine(gear, c), failed = [];
+        let why = '';
+        for (const i of want.filter(i => !stuck.includes(i) && i.owner !== c.id)) await Bungie.move(p, i, c.id).catch(e => { failed.push(i); why ||= e.message; });
+        return except(stuck, failed, why) || `Done. Everything you have from this build is on your ${c.cls}.`;
+      }); });
+    // the slot's name: the build's subclass element ("Solar", "Prismatic"), else the slot's own name or the game's default for that slot
+    const saveIn = (c, k) => async () => {
+      const left = await equipOn(c), old = c.loadouts[k] || {}, sub = defs[subclass?.hash]?.n || '';
+      const name = slots.names.find(([, n]) => ELEMENT[n]?.test(sub))?.[0] || old.nameHash || slots.names[k % slots.names.length][0];
+      await Bungie.snapshot(p, c.id, k, { nameHash: name, iconHash: old.iconHash || slots.icons[k % slots.icons.length][0], colorHash: old.colorHash || slots.colors[k % slots.colors.length][0] });
+      return `${left || 'Done.'} Saved as in-game loadout ${k + 1} (${lookup(slots.names, name) || 'Loadout'}) on your ${c.cls}.`;
+    };
+    box.querySelectorAll('[data-ingame]').forEach(b => { const c = charOf(b.dataset.ingame), k = c.loadouts.findIndex(l => !l.items);
+      if (k >= 0) run(b, `Saving on ${c.cls}…`, saveIn(c, k));
+      else b.addEventListener('click', () => {
+        if (!c.loadouts.length) return draw(p, 'Bungie didn\'t send your in-game loadouts. Reload the page and try again.');
+        slotFor = c.id; draw(p);
+      }); });
+    box.querySelectorAll('.slotpick [data-slot]').forEach(b => run(b, 'Saving…', saveIn(charOf(slotFor), +b.dataset.slot)));
+    box.querySelector('.slotpick [data-slot-cancel]')?.addEventListener('click', () => { slotFor = null; draw(p); });
   };
   draw(Bungie.token() ? await profile().catch(() => null) : null);
   renderAccount();

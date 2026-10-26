@@ -1,4 +1,4 @@
-"""Builds data/weapons.json, data/plugs.json, data/armor.json, data/artifacts.json, data/wiki.json and data/godrolls.json from the Bungie manifest and
+"""Builds data/weapons.json, data/plugs.json, data/armor.json, data/artifacts.json, data/wiki.json, data/loadouts.json and data/godrolls.json from the Bungie manifest and
 Aegis's Destiny 2: Endgame Analysis sheet (tiers and recommended rolls).
 
 Usage: python3 tools/build_data.py [manifest_cache_dir]
@@ -12,7 +12,8 @@ ENDGAME = '1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY'  # Google Sheet id of D
 TABLES = ['DestinyInventoryItemDefinition', 'DestinyPlugSetDefinition', 'DestinyStatDefinition', 'DestinyCollectibleDefinition',
           'DestinyLoreDefinition', 'DestinySocketCategoryDefinition', 'DestinyDamageTypeDefinition', 'DestinyStatGroupDefinition',
           'DestinyEquipableItemSetDefinition', 'DestinySandboxPerkDefinition', 'DestinyActivityDefinition', 'DestinyVendorDefinition',
-          'DestinyDestinationDefinition', 'DestinyActivityTypeDefinition']
+          'DestinyDestinationDefinition', 'DestinyActivityTypeDefinition', 'DestinyLoadoutConstantsDefinition', 'DestinyLoadoutNameDefinition',
+          'DestinyLoadoutIconDefinition', 'DestinyLoadoutColorDefinition']
 LOST_SECTOR = 103143560  # DestinyActivityTypeDefinition "Lost Sector"
 PLACE_ALIAS = {'arcadian valley': 'nessus'}  # the manifest's name for Nessus's patrol zone
 SKIP_STATS = {1480404414, 1935470627}  # Attack, Power
@@ -177,6 +178,16 @@ def build_places(d):
     return places
 
 
+def build_loadouts(d):
+    """In-game loadout slots per character and the names, icons and colors a loadout can have, in the game's order."""
+    c = next(iter(d['DestinyLoadoutConstantsDefinition'].values()))
+    N, I, C = d['DestinyLoadoutNameDefinition'], d['DestinyLoadoutIconDefinition'], d['DestinyLoadoutColorDefinition']
+    return {'count': c['loadoutCountPerCharacter'],
+            'names': [[h, N[str(h)]['name']] for h in c['loadoutNameHashes'] if str(h) in N],
+            'icons': [[h, I[str(h)]['iconImagePath']] for h in c['loadoutIconHashes'] if str(h) in I],
+            'colors': [[h, C[str(h)]['colorImagePath']] for h in c['loadoutColorHashes'] if str(h) in C]}
+
+
 def build_armor(d):
     """Every legendary/exotic armor piece, the armor sets with their 2/4-piece bonuses, the archetypes and the six armor stats."""
     I, PS, ST, COL = d['DestinyInventoryItemDefinition'], d['DestinyPlugSetDefinition'], d['DestinyStatDefinition'], d['DestinyCollectibleDefinition']
@@ -289,6 +300,7 @@ def main():
     wiki = build_wiki(d, json.load(open(os.path.join(ROOT, 'data', 'tabs.json'), encoding='utf-8')))
     armor = build_armor(d)
     artifacts = build_artifacts(d)
+    loadouts = build_loadouts(d)
     rolls, missing = parse_endgame(list(endgame_tabs()), weapons, plugs)
     if missing: print('Endgame Analysis names not in the manifest:', missing)
     os.makedirs(os.path.join(ROOT, 'data'), exist_ok=True)
@@ -299,12 +311,14 @@ def main():
     dump('godrolls.json', {'source': f'https://docs.google.com/spreadsheets/d/{ENDGAME}', 'rolls': rolls})
     dump('armor.json', armor)
     dump('artifacts.json', artifacts)
+    dump('loadouts.json', loadouts)
     print(version, len(weapons), 'weapons', len(plugs), 'plugs', len(rolls), 'weapons with an Endgame Analysis tier',
           len(armor['armor']), 'armor', len(armor['sets']), 'sets', len(armor['archetypes']), 'archetypes')
     assert len(weapons) > 1000 and len(rolls) > 500 and sum(bool(r.get('c')) for r in rolls.values()) > 300, 'manifest or Endgame Analysis parse looks broken'
     assert len(armor['armor']) > 1000 and len(armor['sets']) > 20 and len(armor['archetypes']) >= 6, 'armor parse looks broken'
     assert len(scales) > 10 and "king's fall" in wiki['img'] and 'arc' in wiki['icon'], 'stat curve or wiki art parse looks broken'
     assert len(wiki['places']['moon']['lost']) >= 4 and wiki['places']['nessus']['img'], 'destination or lost sector parse looks broken'
+    assert loadouts['count'] >= 10 and len(loadouts['names']) > 10 and loadouts['icons'] and loadouts['colors'], 'loadout constants parse looks broken'
     assert artifacts and all(len(a['tiers']) == 3 and all(t['perks'] for t in a['tiers']) for a in artifacts), 'artifact parse looks broken'
 
 

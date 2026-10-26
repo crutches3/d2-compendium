@@ -62,7 +62,8 @@ const Bungie = (() => {
     it.location = it.postmaster ? `Postmaster (${cls})` : !it.owner ? 'Vault' : it.equipped ? `${cls} (equipped)` : cls;
   }
 
-  // Returns { name, membershipType, chars: [{ id, cls, emblem, light }], items: [{ itemHash, instanceId, owner (character id, null = vault), equipped,
+  // Returns { name, membershipType, chars: [{ id, cls, emblem, light, loadouts: [{ nameHash, iconHash, colorHash, items (count; 0 = empty slot) }] }],
+  // items: [{ itemHash, instanceId, owner (character id, null = vault), equipped,
   // postmaster, location, plugs: Set<plugHash> (socketed plus selectable), socketed: Set<plugHash>, power, tier, stats: {statHash: value} }] }
   // for every instanced item.
   async function loadProfile() {
@@ -70,7 +71,7 @@ const Bungie = (() => {
     const primary = m.primaryMembershipId;
     const dm = m.destinyMemberships.find(x => x.membershipId === primary) || m.destinyMemberships[0];
     if (!dm) throw new Error('No Destiny account found on this Bungie profile.');
-    const p = await call(`/Destiny2/${dm.membershipType}/Profile/${dm.membershipId}/?components=102,200,201,205,300,304,305,310`);
+    const p = await call(`/Destiny2/${dm.membershipType}/Profile/${dm.membershipId}/?components=102,200,201,205,206,300,304,305,310`);
     const items = [];
     const push = (list, owner, equipped) => list.forEach(i => i.itemInstanceId && items.push({ itemHash: i.itemHash, instanceId: i.itemInstanceId, owner, equipped,
       postmaster: i.bucketHash === POSTMASTER }));
@@ -78,7 +79,9 @@ const Bungie = (() => {
     for (const [cid, inv] of Object.entries(p.characterInventories.data || {})) push(inv.items, cid, false);
     for (const [cid, eq] of Object.entries(p.characterEquipment.data || {})) push(eq.items, cid, true);
     const chars = Object.entries(p.characters?.data || {}).map(([id, c]) => ({ id, cls: ['Titan', 'Hunter', 'Warlock'][c.classType] || 'Character ' + id.slice(-4),
-      emblem: c.emblemBackgroundPath || '', light: c.light || 0 }));
+      emblem: c.emblemBackgroundPath || '', light: c.light || 0,
+      loadouts: (p.characterLoadouts?.data?.[id]?.loadouts || []).map(l => ({ nameHash: l.nameHash, iconHash: l.iconHash, colorHash: l.colorHash,
+        items: l.items.filter(i => +i.itemInstanceId).length })) }));
     // Postmaster slots used per character (it holds 21), counting engrams and materials the site doesn't list
     const postmasterUsed = Object.fromEntries(Object.entries(p.characterInventories.data || {}).map(([cid, inv]) => [cid, inv.items.filter(i => i.bucketHash === POSTMASTER).length]));
     const profile = { name: m.bungieNetUser.uniqueName || m.bungieNetUser.displayName, membershipType: dm.membershipType, chars, items, postmasterUsed };
@@ -125,8 +128,13 @@ const Bungie = (() => {
     return items.filter(i => failed.has(i.instanceId));
   }
 
+  // Saves what a character has equipped right now (gear, subclass, mods) into one of its in-game loadout slots.
+  async function snapshot(p, characterId, loadoutIndex, ids) {
+    await call('/Destiny2/Actions/Loadouts/SnapshotLoadout/', { loadoutIndex, characterId, membershipType: p.membershipType, ...ids });
+  }
+
   // One DestinyInventoryItemDefinition, for hashes the site's data files don't cover (subclasses, mods, artifact perks).
   const item = hash => call(`/Destiny2/Manifest/DestinyInventoryItemDefinition/${hash}/`);
 
-  return { token, signIn, signOut, handleRedirect, loadProfile, move, pull, equip, equipAll, item, locate, store };
+  return { token, signIn, signOut, handleRedirect, loadProfile, move, pull, equip, equipAll, snapshot, item, locate, store };
 })();
