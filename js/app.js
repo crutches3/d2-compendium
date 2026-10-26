@@ -150,29 +150,71 @@ function rowTable(hits) {
 }
 
 // ---------- pages ----------
+// Perk finder: a gun "can roll" a set of perks when each sits in a different perk column of it, since a column holds one perk at a time.
+// Matched by name, so enhanced versions count. Returns the column each perk lands in, or null.
+const rollColumns = (d, w) => w._rc ||= w.cols.filter(c => c.c !== 'Weapon Mods').map(c => ({ t: d.plugs[c.p[0]]?.t || c.c, n: new Set(c.p.map(h => d.plugs[h]?.n).filter(Boolean)) }));
+const rollFor = (d, w, names) => {
+  const cols = rollColumns(d, w), at = [];
+  const fit = k => k === names.length || cols.some((c, i) => !at.includes(i) && c.n.has(names[k]) && (at[k] = i, fit(k + 1) || (at.length = k, false)));
+  return fit(0) ? at.map(i => cols[i].t) : null;
+};
+// every perk a gun can roll (frames, barrels, magazines, traits, origins), by name with its icon; masterworks and empty sockets left out
+const perkIcons = d => d._perks ||= new Map(d.weapons.flatMap(w => w.cols.filter(c => c.c !== 'Weapon Mods').flatMap(c => c.p.map(h => d.plugs[h])))
+  .filter(p => p && !/^Empty |^Masterworked/.test(p.n)).map(p => [p.n, p.i]).sort((a, b) => a[0].localeCompare(b[0])));
+const perkFinderHref = names => '#/weapons?' + names.map(n => 'perk=' + encodeURIComponent(n)).join('&');
+
 async function weaponList(params) {
   const d = await data();
   const uniq = (k) => [...new Set(d.weapons.map(w => w[k]).filter(Boolean))].sort();
+  const icons = perkIcons(d), byLower = new Map([...icons.keys()].map(n => [n.toLowerCase(), n]));
+  const perks = [...new Set(params.getAll('perk').map(n => byLower.get(n.toLowerCase())).filter(Boolean))].slice(0, 4);
   $app.innerHTML = `<h1>Weapons</h1><p class="muted">Every weapon in the game, with perks, stats, Endgame Analysis tiers and rolls, and what your sheets say about it.</p><div class="filters">
     <input type="search" id="q" aria-label="Search weapons" placeholder="Search weapons, perks or sources" value="${esc(params.get('q') || '')}">
     ${select('ty', 'All types', uniq('ty'))}${select('dm', 'All elements', uniq('dm'))}${select('am', 'All ammo', uniq('am'))}${select('ti', 'All rarities', uniq('ti'))}
-    ${select('tier', 'All tiers', TIERS.map(t => [t, 'Tier ' + t]))}</div><p id="count" class="muted"></p><div class="grid" id="list"></div>`;
+    ${select('tier', 'All tiers', TIERS.map(t => [t, 'Tier ' + t]))}</div>
+    <div class="perkfind"><span id="perkchips" class="chips"></span><input type="search" id="perkin" list="perknames" aria-label="Add a perk" placeholder="Add a perk…" autocomplete="off">
+      <datalist id="perknames">${[...icons.keys()].map(n => `<option value="${esc(n)}">`).join('')}</datalist><small id="perkhint" class="muted"></small></div>
+    <p id="count" class="muted"></p><div class="grid" id="list"></div>`;
   const f = id => $app.querySelector('#' + id);
+  const x = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 5l6 6m0-6l-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  const drawPerks = () => {
+    f('perkchips').innerHTML = perks.map(n => `<button type="button" class="chip" data-unperk="${esc(n)}" aria-label="Remove ${esc(n)}">${img(icons.get(n))}${esc(n)}${x}</button>`).join('');
+    f('perkin').hidden = perks.length >= 4;
+    f('perkhint').textContent = !perks.length ? 'Pick perks to find every gun that can roll them.' : perks.length === 1 ? 'Add another perk to see guns that roll both.'
+      : 'Guns that can roll all of these at once, each in its own column.';
+    // keep the picks in the address so a combination can be shared or bookmarked (no reload: replaceState skips the router)
+    history.replaceState(null, '', perks.length ? perkFinderHref(perks) : '#/');
+  };
   const draw = () => {
     const q = f('q').value.trim().toLowerCase();
     const list = d.weapons.filter(w => (!q || w.n.toLowerCase().includes(q) || w.src.toLowerCase().includes(q) ||
         w.cols.some(c => c.p.some(p => d.plugs[p]?.n.toLowerCase() === q)))
-      && ['ty', 'dm', 'am', 'ti'].every(k => !f(k).value || w[k] === f(k).value) && (!f('tier').value || d.rolls[w.h]?.t === f('tier').value));
+      && ['ty', 'dm', 'am', 'ti'].every(k => !f(k).value || w[k] === f(k).value) && (!f('tier').value || d.rolls[w.h]?.t === f('tier').value)
+      && (!perks.length || rollFor(d, w, perks)));
     // reissues share a name; list each name once (newest version first, by the build's sort) and link the rest from its page
     const byName = new Map();
     list.forEach(w => byName.has(w.n) ? byName.get(w.n).count++ : byName.set(w.n, { w, count: 1 }));
     const names = [...byName.values()];
     f('count').textContent = plural(names.length, 'weapon') + (names.length > 300 ? ', showing the first 300' : '');
+    // with perks picked, each card says which column each one comes from (Trait + Trait, Barrel + Trait…)
+    const where = w => { const at = perks.length && rollFor(d, w, perks); return at ? `<small class="perkat">${perks.map((n, k) => `${esc(n)} <span>${esc(at[k])}</span>`).join(' · ')}</small>` : ''; };
     f('list').innerHTML = names.slice(0, 300).map(({ w, count }) => card(w, `<small>${tierBadge(d.rolls[w.h])}<span class="dmg-${esc(w.dm)}">${esc(w.dm)}</span> ${esc(w.ty)} · ${esc(w.am)}</small>
-      <small>${esc(bungieSource(w))}${count > 1 ? `${bungieSource(w) ? ' · ' : ''}${count} versions` : ''}</small>`)).join('')
-      || '<p class="empty">No weapons match. Try a shorter search or clear a filter.</p>';
+      <small>${esc(bungieSource(w))}${count > 1 ? `${bungieSource(w) ? ' · ' : ''}${count} versions` : ''}</small>${where(w)}`)).join('')
+      || (perks.length > 1 ? `<p class="empty">No gun can roll ${esc(perks.join(' and '))} together. Perks in the same column can't be on one gun at once.</p>`
+        : '<p class="empty">No weapons match. Try a shorter search or clear a filter.</p>');
   };
-  $app.querySelectorAll('input,select').forEach(el => el.addEventListener('input', draw));
+  $app.querySelectorAll('.filters input,.filters select').forEach(el => el.addEventListener('input', draw));
+  // a perk is added when its name is picked from the suggestions or typed in full and Enter pressed
+  const addPerk = () => {
+    const n = byLower.get(f('perkin').value.trim().toLowerCase());
+    if (!n) { if (f('perkin').value.trim()) f('perkhint').textContent = `No perk called "${f('perkin').value.trim()}". Pick one from the suggestions.`; return; }
+    if (!perks.includes(n)) perks.push(n);
+    f('perkin').value = ''; drawPerks(); draw(); f('perkin').focus();
+  };
+  f('perkin').addEventListener('change', addPerk);
+  f('perkin').addEventListener('keydown', e => { if (e.key === 'Enter') addPerk(); });
+  f('perkchips').addEventListener('click', e => { const b = e.target.closest('[data-unperk]'); if (!b) return; perks.splice(perks.indexOf(b.dataset.unperk), 1); drawPerks(); draw(); });
+  if (perks.length) drawPerks(); else { f('perkin').hidden = false; f('perkhint').textContent = 'Pick perks to find every gun that can roll them.'; }
   draw();
 }
 
@@ -268,6 +310,13 @@ async function weaponPage(hash) {
   };
   drawGoal();
 
+  // the perk finder from a pick: every gun with this perk, and once two or more perks are picked, the guns that roll all of them
+  const finderLinks = n => {
+    if (/^Masterworked/.test(n)) return '';
+    const names = [...new Set([...picked.values()].map(h => d.plugs[h].n).filter(x => !/^Masterworked/.test(x)))];
+    return `\n<a href="${perkFinderHref([n])}">Every gun with ${esc(n)}</a>` + (names.length > 1 && names.includes(n)
+      ? ` · <a href="${perkFinderHref(names.slice(0, 4))}">Guns that roll ${names.length === 2 ? names.map(esc).join(' + ') : `all ${Math.min(names.length, 4)} of your picks`}</a>` : '');
+  };
   $app.querySelectorAll('.perk').forEach(el => el.addEventListener('click', async () => {
     if (editing) { if (el.dataset.col) toggleGoalPerk(el); return; }
     const info = document.getElementById('perkinfo');
@@ -284,7 +333,7 @@ async function weaponPage(hash) {
     info.innerHTML = `<b>${esc(p.n)}</b> <span class="muted">${esc(p.t)}</span>\n${esc(p.d)}` +
       (p.s.length ? `\n${p.s.map(([n, v]) => `${v > 0 ? '+' : ''}${v} ${esc(n)}`).join(', ')}` : '') +
       (extra.length ? `\n\n<b>Destiny Data Compendium</b>\n${esc(extra[0].row.filter(c => c && c !== extra[0].row[0]).join('\n'))}` : '') +
-      `\n<a href="${wikiHref(p.n)}">Everything about ${esc(p.n)} in the wiki</a>`;
+      `\n<a href="${wikiHref(p.n)}">Everything about ${esc(p.n)} in the wiki</a>` + finderLinks(p.n);
     el.setAttribute('aria-pressed', 'true');
   }));
   // hovering (or tabbing to) a perk previews the stats with it in place of its column's pick, with a light.gg-style card beside it
@@ -1514,7 +1563,8 @@ async function wikiPage(raw) {
   const main = `${raid?.main || loot || ''}
     ${defs.length ? `<section class="panel"><h2>What it does</h2><dl class="entries">${defs.map(x => entryHtml(x.e, { W, self: name,
       where: x.i != null ? `<a href="#/ref/${x.i}">${esc(x.where)}</a>${x.section ? ' · ' + esc(x.section) : ''}` : `${esc(x.where)} · ${esc(x.section)}` })).join('')}</dl></section>` : ''}
-    ${rollers.length ? `<section class="panel"><h2>Weapons that can roll it <span class="count">${rollers.length}</span></h2><div class="grid" id="rollers"></div>
+    ${rollers.length ? `<section class="panel"><h2>Weapons that can roll it <span class="count">${rollers.length}</span></h2>
+      ${perkIcons(d).has(plug?.n) ? `<p><a href="${perkFinderHref([plug.n])}">Pair ${esc(plug.n)} with another perk</a> to see which guns roll both.</p>` : ''}<div class="grid" id="rollers"></div>
       ${rollers.length > 24 ? `<p><button type="button" id="morerollers">Show all ${rollers.length}</button></p>` : ''}</section>` : ''}
     ${mentions.length ? `<section class="panel"><h2>Mentioned in <span class="count">${mentions.length}</span></h2>${byWhere.map(([where, l]) => `<h3 class="mentionhead">${esc(where)}</h3><ul class="mentions">${l.map(x => {
       const line = x.e.desc.split('\n').find(t => re.test(t)) || '';

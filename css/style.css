@@ -68,6 +68,20 @@ button.primary:hover { background: #8cc8ff; }
 .dmg-Arc { color: var(--arc); } .dmg-Solar { color: var(--solar); } .dmg-Void { color: var(--void); }
 .dmg-Stasis { color: var(--stasis); } .dmg-Strand { color: var(--strand); } .dmg-Kinetic { color: var(--kinetic); }
 
+/* perk finder on the weapon list: picked perks as removable chips, then a box to add more */
+.perkfind { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: -4px 0 12px; }
+.perkfind .chips { display: contents; }
+.perkfind .chip { cursor: pointer; padding-right: 6px; color: var(--text); border-color: var(--accent); background: rgba(108, 184, 255, .1);
+  transition: background-color .15s var(--ease), border-color .15s var(--ease); }
+.perkfind .chip:hover { background: rgba(240, 113, 107, .12); border-color: var(--worse); }
+.perkfind .chip svg { width: 14px; height: 14px; color: var(--muted); }
+.perkfind .chip:hover svg { color: var(--worse); }
+.perkfind .chip img { width: 26px; height: 26px; }
+.perkfind input { flex: 0 1 240px; }
+.perkfind small { flex-basis: 100%; }
+.card small.perkat { color: var(--accent); }
+.card small.perkat span { color: var(--muted); }
+
 /* weapon page */
 .hero { position: relative; border-radius: 10px; overflow: hidden; background: var(--panel) center/cover no-repeat; min-height: 220px; display: flex; align-items: flex-end; }
 .hero .shade { width: 100%; padding: 64px 20px 18px; background: linear-gradient(rgba(14,17,25,0), rgba(14,17,25,.92) 55%); display: flex; gap: 16px; align-items: flex-end; }
