@@ -43,16 +43,17 @@ assert.equal(await count(), expect(['Adaptive Frame', 'Kill Clip']));
 await p.fill('#perkin', 'Not A Perk'); await p.press('#perkin', 'Enter');
 assert.match(await p.textContent('#perkhint'), /No perk called "Not A Perk"/);
 
-// from a weapon page: picking a perk links to every gun with it; picking a second links to the guns that roll both
+// from a weapon page: picking a perk shows one button, to every gun with that perk (pairing happens on the list)
 const yard = W.find(w => w.n === '1000 Yard Stare' && rolls(w, ['Lone Wolf', 'Demoralize']));  // one of its versions has both
 await p.goto(`http://localhost:8765/#/weapon/${yard.h}`); await p.waitForSelector('.perk');
 await p.click('.perk:has-text("Lone Wolf")');
-await p.waitForSelector('#perkinfo a:has-text("Every gun with Lone Wolf")');
 await p.click('.perk:has-text("Demoralize")');
-await p.waitForSelector('#perkinfo a:has-text("Guns that roll Lone Wolf + Demoralize")');
-await p.click('#perkinfo a:has-text("Guns that roll Lone Wolf + Demoralize")'); await p.waitForSelector('#perkchips .chip');
-assert.deepEqual(await chips(), ['Lone Wolf', 'Demoralize']);
-assert.equal(await count(), both);
+await p.waitForSelector('#perkinfo button:has-text("All guns with Demoralize")');
+assert.deepEqual(await p.$$eval('#perkinfo a, #perkinfo button', els => els.map(e => `${e.tagName} ${e.textContent}`)),
+  ['A Everything about Demoralize in the wiki', 'BUTTON All guns with Demoralize']);
+await p.click('#perkinfo button:has-text("All guns with Demoralize")'); await p.waitForSelector('#perkchips .chip');
+assert.deepEqual(await chips(), ['Demoralize']);
+assert.equal(await count(), expect(['Demoralize']));
 // and from the perk's wiki page
 await p.goto('http://localhost:8765/#/wiki/Demoralize'); await p.waitForSelector('a:has-text("Pair Demoralize with another perk")');
 

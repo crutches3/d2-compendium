@@ -79,6 +79,7 @@ button.primary:hover { background: #8cc8ff; }
 .perkfind .chip img { width: 26px; height: 26px; }
 .perkfind input { flex: 0 1 240px; }
 .perkfind small { flex-basis: 100%; }
+.perkinfo .findguns { margin-top: 8px; font-size: 13px; padding: 6px 12px; }
 .card small.perkat { color: var(--accent); }
 .card small.perkat span { color: var(--muted); }
 

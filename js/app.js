@@ -310,13 +310,9 @@ async function weaponPage(hash) {
   };
   drawGoal();
 
-  // the perk finder from a pick: every gun with this perk, and once two or more perks are picked, the guns that roll all of them
-  const finderLinks = n => {
-    if (/^Masterworked/.test(n)) return '';
-    const names = [...new Set([...picked.values()].map(h => d.plugs[h].n).filter(x => !/^Masterworked/.test(x)))];
-    return `\n<a href="${perkFinderHref([n])}">Every gun with ${esc(n)}</a>` + (names.length > 1 && names.includes(n)
-      ? ` · <a href="${perkFinderHref(names.slice(0, 4))}">Guns that roll ${names.length === 2 ? names.map(esc).join(' + ') : `all ${Math.min(names.length, 4)} of your picks`}</a>` : '');
-  };
+  // the perk finder from a pick: one button to every gun with this perk (more perks can be added there)
+  const finderLinks = n => /^Masterworked/.test(n) ? '' : `\n<button type="button" class="findguns" data-find="${esc(n)}">All guns with ${esc(n)}</button>`;
+  $app.querySelector('#perkinfo').addEventListener('click', e => { const b = e.target.closest('[data-find]'); if (b) location.hash = perkFinderHref([b.dataset.find]); });
   $app.querySelectorAll('.perk').forEach(el => el.addEventListener('click', async () => {
     if (editing) { if (el.dataset.col) toggleGoalPerk(el); return; }
     const info = document.getElementById('perkinfo');
