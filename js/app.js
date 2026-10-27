@@ -265,6 +265,7 @@ async function weaponPage(hash) {
   $app.innerHTML = `
     ${hero(w, `<span class="badge">${esc(w.ti)}</span><span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span><span class="badge">${esc(w.ty)}</span><span class="badge">${esc(w.sl)} · ${esc(w.am)}</span>${tierBadge(er)}`)}
     ${same.length ? `<p class="versions">Other versions: ${same.map((x, i) => `<a href="#/weapon/${x.h}">${esc(bungieSource(x) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
+    ${obtainPanel(w.h)}
     <div class="wtop"><section class="panel perkpanel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll <span class="key cur"></span> Curated roll${goalBuilds.length ? ' <span class="key goal"></span> Build roll' : ''}</p>
       ${goalBuilds.length ? `<div class="goalbar"><label for="goal">Build roll</label><select id="goal"><option value="">None</option>${goalBuilds.map(b => `<option value="${esc(b.key)}"${b.key === goalKey ? ' selected' : ''}>${esc(b.name)}</option>`).join('')}</select>
         <button type="button" id="editgoal"${goalKey ? '' : ' hidden'}>Pick perks</button><small class="muted" id="goalhint"></small></div>` : ''}
@@ -277,7 +278,7 @@ async function weaponPage(hash) {
       <section class="panel copies" id="mine"><h3>Your copies</h3><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies here.'}</p></section>
     </div></div>
     <div class="cols2"><div>
-      <section class="panel"><h2>Source</h2><p id="farmsrc">${esc(bungieSource(w) || 'Unknown')}</p><div id="sheetsrc" class="muted">Looking up community sheets…</div><p>${farmButton(w.h)}</p></section>
+      <section class="panel"><h2>Community sheets</h2><div id="sheetsrc" class="muted">Looking up community sheets…</div></section>
     </div><div>
       <section class="panel"><h2>Endgame Analysis</h2>${endgamePanel(d, er)}</section>
     </div></div>
@@ -370,6 +371,8 @@ async function weaponPage(hash) {
   $app.querySelector('#clearroll').addEventListener('click', () => pickAll([]));
 
   wireFarmButton();
+  const obtainBox = $app.querySelector('#obtain .obtains');
+  whereToFarm(w).then(srcs => obtainHtml(w, srcs, [w.n])).then(h => { obtainBox.innerHTML = h; });
   if (Bungie.token()) showCopies(d, w, er, mw.p.filter(h => godNames.has(d.plugs[h].n)).map(h => d.plugs[h].n), goal);  // runs alongside the slower sheet lookups below
 
   // Community sheet rows mentioning this weapon by name, or its frame for the same weapon type.
@@ -377,7 +380,6 @@ async function weaponPage(hash) {
   const frameName = frame && d.plugs[frame.p[0]]?.n;
   const hits = [...await sheetRows(w.n),
     ...(frameName && w.ti !== 'Exotic' ? await sheetRows(frameName, (t, r) => t.tab === 'Weapons' && r.some(c => c.toLowerCase() === w.ty.toLowerCase())) : [])];
-  document.getElementById('farmsrc').innerHTML = await sourcesHtml(w, await wikiData()) || 'Unknown';
   document.getElementById('sheetsrc').innerHTML = hits.length ? rowTable(hits) : 'Not mentioned in the community sheets.';
 }
 
@@ -574,10 +576,11 @@ async function armorPage(hash) {
   $app.innerHTML = `
     ${hero(x, `<span class="badge">${esc(x.ti)}</span><span class="badge">${esc(x.cl)}</span><span class="badge">${esc(x.ty)}</span>${set ? `<span class="badge">${esc(set.n)} set</span>` : ''}${x.a3 ? '' : '<span class="badge">Legacy armor</span>'}`)}
     ${same.length ? `<p class="versions">Other versions: ${same.map((y, i) => `<a href="#/armor/${y.h}">${esc(bungieSource(y) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
+    ${obtainPanel(x.h)}
     <div class="cols2"><div>
       ${x.ex ? `<section class="panel"><h2>Exotic perk</h2><div class="bonus">${x.ex[2] ? `<img src="${BNET}${x.ex[2]}" alt="">` : ''}<div><b>${esc(x.ex[0])}</b><br><span class="muted">${esc(x.ex[1])}</span></div></div></section>` : ''}
       ${set ? `<section class="panel"><h2>Set bonus</h2>${setBonus(set)}<p class="muted"><a href="#/armor?set=${x.set}">See every ${esc(set.n)} piece</a></p></section>` : ''}
-      <section class="panel"><h2>Source</h2><p id="farmsrc">${esc(bungieSource(x) || 'Unknown')}</p><div id="sheetsrc" class="muted">Looking up community sheets…</div><p>${farmButton(x.h)}</p></section>
+      <section class="panel"><h2>Community sheets</h2><div id="sheetsrc" class="muted">Looking up community sheets…</div></section>
     </div><div>
       <section class="panel" id="mine"><h2>Your copies</h2><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies, their tier, archetype and stats.'}</p></section>
       ${x.a3 ? `<section class="panel"><h2>Archetypes</h2><p class="muted">Every current armor piece can drop as any of these. The archetype sets its two highest stats.</p>
@@ -586,8 +589,9 @@ async function armorPage(hash) {
     </div></div>`;
 
   wireFarmButton();
+  const obtainBox = $app.querySelector('#obtain .obtains');
+  armorSource(a, x).then(srcs => obtainHtml(x, srcs, [x.n, set && `${set.n} Armor`].filter(Boolean), slotOf(x.ty))).then(h => { obtainBox.innerHTML = h; });
   const hits = [...await sheetRows(x.n), ...(set ? await sheetRows(`${set.n} Armor`) : [])];
-  document.getElementById('farmsrc').textContent = (await armorSource(a, x)).join(' · also: ') || 'Unknown';
   document.getElementById('sheetsrc').innerHTML = hits.length ? rowTable(hits) : 'Not mentioned in the community sheets.';
 
   if (Bungie.token()) {
@@ -616,6 +620,7 @@ async function setsPage() {
     const o = ((owned[x.set] ||= {})[x.cl] ||= { slots: new Set(), tier: 0 });
     o.slots.add(x.ty); o.tier = Math.max(o.tier, i.tier);
   }
+  const W = await wikiData();
   const sets = await Promise.all(Object.entries(a.sets).map(async ([h, st]) => {
     const first = a.armor.find(x => x.set === h);
     return { h, ...st, src: first ? (await armorSource(a, first))[0] || '' : '' };
@@ -626,7 +631,7 @@ async function setsPage() {
   const draw = () => {
     const q = $app.querySelector('#q').value.toLowerCase();
     $app.querySelector('#list').innerHTML = sets.filter(st => !q || [st.n, st.src, ...st.perks.flatMap(pk => [pk[1], pk[2]])].some(t => t.toLowerCase().includes(q)))
-      .map(st => `<section class="panel"><h2><a href="#/armor?set=${st.h}">${esc(st.n)}</a></h2>${st.src ? `<p class="muted">${esc(st.src)}</p>` : ''}${setBonus(st)}
+      .map(st => `<section class="panel"><h2><a href="#/armor?set=${st.h}">${esc(st.n)}</a></h2>${st.src ? `<p class="muted">${sourceLink(W, st.src)}</p>` : ''}${setBonus(st)}
         ${p ? `<p class="owned">${['Titan', 'Hunter', 'Warlock'].map(cl => { const o = owned[st.h]?.[cl];
           return `<span class="badge${o?.slots.size === 5 ? ' good' : ''}">${cl}: ${o ? `${o.slots.size}/5 pieces${o.tier ? `, best Tier ${o.tier}` : ''}` : 'none'}</span>`; }).join('')}</p>` : ''}</section>`).join('')
       || '<p class="empty">No set matches this filter.</p>';
@@ -1577,7 +1582,8 @@ async function wikiPage(raw) {
   const rollers = plugs.size ? [...new Map(d.weapons.filter(w => w.cols.some(c => c.c !== 'Weapon Mods' && c.p.some(h => plugs.has(h)))).map(w => [w.n, w])).values()]
     .sort((x, y) => rank(x) - rank(y) || x.n.localeCompare(y.n)) : [];
   const re = nameRe(rxEsc(name), 'i'), mentions = [...W.terms.values()].flat().filter(x => x.e.term.toLowerCase() !== key && re.test(x.e.desc));
-  const srcHtml = await sourcesHtml(weapon, W);
+  const srcHtml = weapon ? await obtainHtml(weapon, await whereToFarm(weapon), [weapon.n])
+    : armor ? await obtainHtml(armor, await armorSource(a, armor), [armor.n, a.sets[armor.set] && `${a.sets[armor.set].n} Armor`].filter(Boolean), slotOf(armor.ty)) : '';
   // the loot table links each weapon to its page: the version from this activity if the names repeat, else a rated one
   const lootWeapon = x => { const l = d.weapons.filter(w => w.n.toLowerCase() === x.key); return l.find(w => act && w.src.includes(act.name)) || l.find(w => d.rolls[w.h]) || l[0]; };
   const tags = [act?.kind, champ && 'Champion', weapon && `${weapon.ti} ${weapon.ty}`, armor && `${armor.ti} ${armor.ty}`, ...new Set(defs.map(x => x.where === 'Artifact perks' ? 'Artifact perk' : x.where)), rollers.length && !defs.some(x => x.where === 'Weapon perks') && 'Weapon perk'].filter(Boolean);
@@ -1603,7 +1609,8 @@ async function wikiPage(raw) {
     ${mentions.length ? `<section class="panel"><h2>Mentioned in <span class="count">${mentions.length}</span></h2>${byWhere.map(([where, l]) => `<h3 class="mentionhead">${esc(where)}</h3><ul class="mentions">${l.map(x => {
       const line = x.e.desc.split('\n').find(t => re.test(t)) || '';
       return `<li><a href="${wikiHref(x.e.term)}">${esc(x.e.term)}</a><span>${esc(line).replace(nameRe(rxEsc(esc(name)), 'gi'), m => `<mark>${m}</mark>`)}</span></li>`; }).join('')}</ul>`).join('')}</section>` : ''}`.trim();
-  const side = `${raid?.side || ''}${weapon || armor ? `<section class="panel"><h2>${weapon ? 'Gun page' : 'Armor page'}</h2><div class="grid">${weapon ? card(weapon, `<small>${tierBadge(d.rolls[weapon.h])}${esc(weapon.ty)}</small>${srcHtml ? `<small>${srcHtml}</small>` : ''}`) : ''}${armor ? card(armor, `<small>${esc(armor.ty)}</small>`, 'armor') : ''}</div></section>` : ''}
+  const side = `${raid?.side || ''}${weapon || armor ? `<section class="panel"><h2>${weapon ? 'Gun page' : 'Armor page'}</h2><div class="grid">${weapon ? card(weapon, `<small>${tierBadge(d.rolls[weapon.h])}${esc(weapon.ty)}</small>`) : ''}${armor ? card(armor, `<small>${esc(armor.ty)}</small>`, 'armor') : ''}</div>
+    <h3>How to get it</h3><div class="obtains">${srcHtml}</div></section>` : ''}
     ${plug?.s.length ? `<section class="panel"><h2>Stat changes</h2>${deltaList(plug.s)}</section>` : ''}
     ${champ ? `<section class="panel"><h2>Counters</h2><p>Everything here mentions ${esc(champ)} champions.${counters ? ` Court's full list of what stuns them is in the <a href="${esc(counters)}" target="_blank" rel="noopener">Champion counters sheet ↗</a>.` : ''}</p></section>` : ''}`.trim();
   const found = main || side;
@@ -1616,6 +1623,10 @@ async function wikiPage(raw) {
   $app.querySelector('#morerollers')?.addEventListener('click', e => { showRollers(Infinity); e.target.remove(); });
 }
 
+// Llama's sheets list raid and dungeon armor by slot ("Helm", "Class Item")
+const SLOT = { helm: 'Helm', helmet: 'Helm', arms: 'Arms', gauntlets: 'Arms', chest: 'Chest', legs: 'Legs', class: 'Class Item', 'class item': 'Class Item' };
+const slotOf = ty => /Helmet/.test(ty) ? 'Helm' : /Gauntlets/.test(ty) ? 'Arms' : /Chest/.test(ty) ? 'Chest' : /Leg/.test(ty) ? 'Legs' : 'Class Item';
+
 // A raid, dungeon or exotic mission page: every weapon and armor piece as a card with its picture and the encounters that drop it (Llama's
 // Raid and Dungeon Loot, then the Monument's list for anything they leave out), adept and catalyst notes, this week's rotation, and, signed
 // in, which drops you own. Exotic missions have no encounter list, so their cards come from the Monument's list and the exotic's source.
@@ -1624,7 +1635,6 @@ function lootPage(act, d, a, rot, place) {
   const R = act.llama || { title: act.name, notes: [], items: [], encs: [] }, drops = [], armor = [], extras = [];
   const letters = t => fold(t).replace(/[^a-z0-9]/g, '');
   const find = n => { const l = d.weapons.filter(w => near(w.n, n)); return l.find(w => w.src.includes(act.name)) || l.find(w => d.rolls[w.h]) || l[0]; };
-  const SLOT = { helm: 'Helm', helmet: 'Helm', arms: 'Arms', gauntlets: 'Arms', chest: 'Chest', legs: 'Legs', class: 'Class Item', 'class item': 'Class Item' };
   for (const it of R.items) {
     if (SLOT[it.n.toLowerCase()]) { if (!it.adept) armor.push({ ...it, slot: SLOT[it.n.toLowerCase()], epic: /epic/i.test(it.label) }); continue; }
     const cat = it.n.match(/^(.+) Catalyst$/i), base = drops.find(x => near(x.n, cat ? cat[1] : it.n));
@@ -1644,7 +1654,6 @@ function lootPage(act, d, a, rot, place) {
   for (const w of d.weapons) if (w.ti === 'Exotic' && !place && act.kind !== 'Raid' && letters(w.src).includes(letters(act.name)) && !drops.some(x => near(x.n, w.n)))
     drops.push({ n: w.n, w, encs: [], how: [], note: '' });
   // the raid's armor, one piece per slot and class (its Bungie source names the raid), with the encounters Llama lists for that slot
-  const slotOf = ty => /Helmet/.test(ty) ? 'Helm' : /Gauntlets/.test(ty) ? 'Arms' : /Chest/.test(ty) ? 'Chest' : /Leg/.test(ty) ? 'Legs' : 'Class Item';
   const order = ['Helm', 'Arms', 'Chest', 'Legs', 'Class Item'], CLASSES = ['Hunter', 'Titan', 'Warlock'];
   // armor whose Bungie source names the activity, or from a set the Monument lists for it ("Untethered Edge Armor")
   const sets = act.loot.filter(x => x.type === 'Armor').map(x => x.n.replace(/\s+Armor$/i, '')).filter(n => !SLOT[n.toLowerCase()]);
@@ -1749,12 +1758,50 @@ async function showRaidCopies(d, a, panel) {
   } catch (e) { box.innerHTML = `<h2>Your collection</h2><p>${esc(e.message)}</p>`; }
 }
 
-// a weapon's drop sources, with each activity linked to its wiki page
-async function sourcesHtml(w, W) {
-  if (!w) return '';
-  return (await whereToFarm(w)).map(s => { const [, pre = '', act, rest = ''] = s.match(/^(.*? · )?(.*?)( \(.*\))?$/);
-    return W.acts.has(act.toLowerCase()) ? `${esc(pre)}<a href="${wikiHref(act)}">${esc(act)}</a>${esc(rest)}` : esc(s); }).join(' · also: ');
+// a source as text, linked to its activity's wiki page
+const sourceLink = (W, s) => { const { act } = sourceAct(W, s); return act ? `<a href="${wikiHref(act.name)}">${esc(s)}</a>` : esc(s); };
+
+// The activities Bungie's source text names ("Complete Iron Banner matches…", "Xûr", "Exploring the Pale Heart"), first named first.
+// Wiki names lose their extras ("Banshee-44 | Gunsmith", "Desert Perpetual & Epic DP"); "World" and "Ghost" are too common a word to link.
+// A campaign is filed under the destination it's played on; Saturn's moon Titan isn't the Moon.
+const ACT_ALIAS = { edz: 'European Dead Zone', trials: 'Trials of Osiris', 'emissary of the nine': 'Trials of Osiris', 'throne world': "Savathun's Throne World",
+  shadowkeep: 'Moon', 'beyond light': 'Europa', 'witch queen': "Savathun's Throne World", lightfall: 'Neomuna', 'final shape': 'The Pale Heart', 'edge of fate': 'Kepler',
+  "saturn's moon": '' };
+function actsIn(W, text) {
+  if (!W.actRe) {
+    W.actBy = new Map([...W.acts.values()].filter(a => !/^(world|ghost)$/i.test(a.name)).map(a => [fold(a.name.replace(/ [|&] .*$/, '')), a]));
+    for (const [k, n] of Object.entries(ACT_ALIAS)) W.actBy.set(k, W.acts.get(n.toLowerCase()));
+    W.actRe = new RegExp(`\\b(${[...W.actBy.keys()].sort((x, y) => y.length - x.length).map(rxEsc).join('|')})\\b`, 'g');
+  }
+  return [...new Set([...fold(text).matchAll(W.actRe)].map(m => W.actBy.get(m[1])).filter(Boolean))];
 }
+// a source's parts: the Monument's rows read "Raids · Vault of Glass (3rd, 4th)", Bungie's text names its activity somewhere, if at all
+function sourceAct(W, s) {
+  const [, tab, group, , enc] = s.match(/^(.*?) · (.*?)( \((.*)\))?$/) || [];
+  return { tab, group, enc, act: tab ? W.acts.get(group.toLowerCase()) : actsIn(W, s)[0] };
+}
+
+// How to get an item, a card per source (whereToFarm or armorSource order): the activity's art, kind and wiki page, the encounters that
+// drop it (Llama's sheets, else the Monument's) and how. keys are the names the Monument lists it under; slot is an armor piece's.
+async function obtainHtml(x, srcs, keys, slot) {
+  const W = await wikiData(), letters = t => fold(t).replace(/[^a-z0-9]/g, '');
+  return srcs.map(s => {
+    const { tab, group, enc, act } = sourceAct(W, s), name = act?.name || group || s;
+    const llama = (act?.llama?.items || []).filter(it => !it.adept && (slot ? SLOT[it.n.toLowerCase()] === slot && /epic/i.test(it.label) === /epic/i.test(x.src) : near(it.n, x.n)));
+    const encs = [...new Set(llama.flatMap(it => it.encs))], row = act?.loot.find(r => keys.some(k => r.key === k.toLowerCase()));
+    const how = [...new Set([...llama.flatMap(it => it.how), row?.how].filter(Boolean))];
+    // Bungie's text under the activity it names, unless it only names it ("\"Vault of Glass\" Raid")
+    if (!tab && act && letters(s.replace(/\b(raid|dungeon)\b/gi, '')) !== letters(act.name.replace(/ [|&] .*$/, ''))) how.unshift(s);
+    const art = act && [W.art.img[act.name.toLowerCase()], W.art.places[fold(act.name)]?.img, W.art.icon[act.name.toLowerCase()]].find(i => i && !/placeholder/.test(i));
+    const tag = act ? `a href="${wikiHref(act.name)}"` : 'div';
+    return `<${tag} class="obtain"><span class="oart">${art ? `<img loading="lazy" src="${BNET}${art}" alt="">` : ''}</span>
+      <span class="obody"><small>${esc(act?.kind || tab || 'Source')}</small><b>${esc(name)}</b>
+        ${encs.length || enc ? `<span class="encs">${(encs.length ? encs : enc.split(/,\s*/)).map(e => `<span class="enc">${esc(e)}</span>`).join('')}</span>` : ''}
+        ${how.map(t => `<span class="ohow">${esc(t)}</span>`).join('')}</span></${tag.split(' ')[0]}>`;
+  }).join('') || '<p class="muted">Bungie and the community sheets don\'t say where this drops.</p>';
+}
+// the panel at the top of a weapon or armor page; the cards come in once the sheets load
+const obtainPanel = h => `<section class="panel" id="obtain"><h2>How to get it</h2><div class="obtains"><p class="muted">Looking up where it drops…</p></div><p>${farmButton(h)}</p></section>`;
 
 function images() {
   $app.innerHTML = `<h1>Infographics</h1><p class="muted">Click an image to zoom.</p>

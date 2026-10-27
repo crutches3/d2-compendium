@@ -66,11 +66,36 @@ assert.equal(await p.textContent('ul.mentions li:has(a:text-is("Ions")) mark'), 
 
 // a raid's drops link to the weapon page, which links back (raid, dungeon and mission pages have their own test: tools/raid.test.mjs)
 await p.goto("http://localhost:8765/#/wiki/King's%20Fall"); await p.waitForSelector('.drop');
-await p.click('.dropname:has(b:text-is("Defiance of Yasmin"))'); await p.waitForSelector('#farmsrc a');
-assert.equal(await p.getAttribute('#farmsrc a', 'href'), "#/wiki/King's%20Fall");
+await p.click('.dropname:has(b:text-is("Defiance of Yasmin"))'); await p.waitForSelector('#obtain a.obtain');
+assert.equal(await p.getAttribute('#obtain a.obtain', 'href'), "#/wiki/King's%20Fall");
 // a perk on the weapon page offers the perk finder, not a wiki link
 await p.click('.perk >> nth=0'); await p.waitForSelector('#perkinfo .findguns.primary');
 assert.equal(await p.$('#perkinfo a'), null);
+// how to get it: a card per source with its kind, the encounters that drop it and the wiki page
+const cards = sel => p.$$eval(sel, cs => cs.map(c => [c.getAttribute('href'), c.querySelector('small').textContent, c.querySelector('b').textContent,
+  [...c.querySelectorAll('.enc')].map(e => e.textContent), [...c.querySelectorAll('.ohow')].map(e => e.textContent)]));
+const [yasmin] = await cards('#obtain .obtain');
+assert.deepEqual(yasmin.slice(0, 3), ["#/wiki/King's%20Fall", 'Raid', "King's Fall"]);
+assert.ok(yasmin[3].length > 0, 'King\'s Fall should name the encounters');
+// armor: a dungeon's encounters for that slot (Llama's sheets), and a vendor with how it sells it
+const A = JSON.parse(fs.readFileSync('data/armor.json')).armor, piece = (n, cl) => A.find(x => x.n === n && (!cl || x.cl === cl) && x.a3) || A.find(x => x.n === n);
+await p.goto(`http://localhost:8765/#/armor/${piece("Apostate's Blade Mask").h}`); await p.waitForSelector('#obtain .obtain');
+const apostate = await cards('#obtain .obtain');
+assert.deepEqual(apostate.map(c => c.slice(0, 3)), [['#/wiki/Pit%20of%20Heresy', 'Dungeon', 'Pit of Heresy'], ['#/wiki/Ada-1', 'Vendor', 'Ada-1']]);
+assert.ok(apostate[0][3].length > 0 && apostate[1][4].includes('Vendor Exclusive'), JSON.stringify(apostate));
+// Bungie's own text links the activity it names, and keeps the text when it says more
+await p.goto(`http://localhost:8765/#/weapon/${JSON.parse(fs.readFileSync('data/weapons.json')).weapons.find(w => w.n === 'Dimensional Hypotrochoid').h}`); await p.waitForSelector('#obtain .obtain');
+assert.deepEqual((await cards('#obtain .obtain'))[0], ['#/wiki/Neomuna', 'Destination', 'Neomuna', [], ['Lightfall Campaign']]);
+assert.deepEqual(await p.evaluate(async () => { const W = await wikiData();
+  return ['Complete Iron Banner matches and earn rank-up packages from Lord Saladin.', 'Xûr', 'Exotic engrams; extremely rare world drops.', 'Complete activities and earn rank-up packages on Saturn\'s Moon, Titan.']
+    .map(t => actsIn(W, t).map(x => x.name)); }), [['Iron Banner'], ['Xur'], [], []]);
+// a wiki page for a gun shows the same cards beside its gun card, not inside it
+await p.goto('http://localhost:8765/#/wiki/Fatebringer'); await p.waitForSelector('.obtains .obtain');
+assert.equal(await p.$('a.card a'), null);
+assert.equal(await p.getAttribute('.obtains a.obtain', 'href'), '#/wiki/Vault%20of%20Glass');
+// armor sets link their source's activity
+await p.goto('http://localhost:8765/#/sets'); await p.waitForSelector('#list section');
+assert.equal(await p.getAttribute('#list section:has(h2 a:text-is("Apostate\'s Blade")) p.muted a', 'href'), '#/wiki/Pit%20of%20Heresy');
 
 // pages look like gun pages: a banner with the raid's art, or the perk's icon and Bungie's description, and a perk's stat changes
 await p.goto("http://localhost:8765/#/wiki/King's%20Fall"); await p.waitForSelector('.hero h1');
