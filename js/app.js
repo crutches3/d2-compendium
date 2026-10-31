@@ -1814,11 +1814,11 @@ function images() {
 // Distortions move to the next destination every hour on the hour, always in this order (community trackers; Bungie's API doesn't say which
 // is live). A week is 168 hours, a multiple of 7, so the same destination opens every weekly reset: DISTORT_AT_RESET is its index.
 const DISTORTIONS = ['Cosmodrome', 'European Dead Zone', 'The Dreaming City', "Savathun's Throne World", 'Moon', 'Europa', 'Nessus'];
-const DISTORT_AT_RESET = 1; // EDZ: Randy saw Europa distorted at 16:44 UTC on Oct 31 2026; viewers can still correct it on the page
-const distortOffset = () => { try { const v = localStorage.getItem('d2c_distort'); return v === null ? DISTORT_AT_RESET : +v; } catch { return DISTORT_AT_RESET; } };
+const DISTORT_AT_RESET = 1; // EDZ: Randy saw Europa distorted at 16:44 UTC and Nessus after 17:00 on Oct 31 2026
+try { localStorage.removeItem('d2c_distort'); } catch {} // the old per-browser starting-planet override
 // which destination is distorted in the hour holding time t (ms), counting hours from a weekly reset (Tuesday June 9 2026, 17:00 UTC)
 const resetHours = t => Math.floor((t - Date.UTC(2026, 5, 9, 17)) / 3600e3);
-const distortionAt = (t, off = distortOffset()) => DISTORTIONS[((resetHours(t) + off) % 7 + 7) % 7];
+const distortionAt = t => DISTORTIONS[((resetHours(t) + DISTORT_AT_RESET) % 7 + 7) % 7];
 const untilText = ms => { const s = Math.max(0, Math.floor(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor(s / 3600) % 24, m = Math.floor(s / 60) % 60;
   return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m ${String(s % 60).padStart(2, '0')}s`; };
 
@@ -1839,9 +1839,7 @@ async function home() {
   const drawDistortion = () => {
     const now = Date.now(), h = hourStart(now), n = distortionAt(now);
     $app.querySelector('#distort').innerHTML = `<div class="orbit">${sphere('now', n, 'Ends in <span class="countdown" id="dcount"></span>')}
-      ${[1, 2, 3, 4, 5, 6].map(i => sphere('next', distortionAt(h + i * 3600e3), `From ${at(h + i * 3600e3)}`)).join('')}</div>
-      <details class="calibrate"><summary>Not what the Director shows?</summary><p class="muted">Pick the destination that's distorted right now and the schedule shifts to match (saved in this browser).</p>
-        <div class="tabs">${DISTORTIONS.map((d, i) => `<button type="button" data-distort="${i}"${d === n ? ' class="on" aria-pressed="true"' : ''}>${esc(d)}</button>`).join('')}</div></details>`;
+      ${[1, 2, 3, 4, 5, 6].map(i => sphere('next', distortionAt(h + i * 3600e3), `From ${at(h + i * 3600e3)}`)).join('')}</div>`;
   };
   $app.innerHTML = `<h1>This week</h1><p class="muted">Week ${cur.week ?? ''} · reset ${new Date(cur.start + 'T17:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · next reset in <b id="rcount"></b>${cur.pvp ? ` · PvP: <a href="${wikiHref(cur.pvp)}">${esc(cur.pvp)}</a>` : ''}</p>
     <section class="panel bare"><h2>Distortions</h2><div id="distort"></div></section>
@@ -1861,12 +1859,6 @@ async function home() {
     const pick = n => d.weapons.filter(w => baseName(w.n) === n).sort((x, y) => !d.rolls[y.h]?.c?.length - !d.rolls[x.h]?.c?.length)[0];
     const el = $app.querySelector('#gmguns');
     if (el) el.innerHTML = cur.gmWeapons.map(pick).filter(Boolean).map(w => `<a href="#/weapon/${w.h}" title="${esc(w.n)}">${img(w.i)}</a>`).join('');
-  });
-  $app.querySelector('#distort').addEventListener('click', e => {
-    const b = e.target.closest('[data-distort]'); if (!b) return;
-    const off = ((+b.dataset.distort - resetHours(Date.now())) % 7 + 7) % 7;
-    try { localStorage.setItem('d2c_distort', off); } catch {}
-    drawDistortion();
   });
   let hour = hourStart(Date.now());
   const tick = () => {

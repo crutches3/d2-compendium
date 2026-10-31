@@ -539,10 +539,6 @@ section.panel.bare h2.acthead { font: 400 15px/1.4 Georgia, "Times New Roman", s
 .sphere small { color: var(--muted); font-size: 13px; white-space: nowrap; }
 .countdown { color: var(--worse); font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
 #rcount { color: var(--text); font-variant-numeric: tabular-nums; }
-.calibrate { margin-top: 14px; }
-.calibrate summary { cursor: pointer; color: var(--muted); font-size: 13px; }
-.calibrate .tabs button { padding: 4px 10px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); font-size: 13px; color: var(--text); }
-.calibrate .tabs button.on { border-color: var(--accent); color: var(--accent); }
 /* home: vendor stock, floating on the background like the rest of the home page */
 .vhead { font: 400 14px/1.4 Georgia, "Times New Roman", serif; letter-spacing: .25em; text-transform: uppercase; color: #f3ead8; margin: 20px 0 10px; }
 .vhead img { width: 24px; height: 24px; }

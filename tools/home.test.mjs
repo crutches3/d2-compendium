@@ -22,15 +22,15 @@ await p.waitForSelector('#gmguns a');
 assert.equal(await p.$$eval('#gmguns a', l => l.length), 2);
 await p.click('#gmguns a'); await p.waitForSelector('#app h1'); assert(p.url().includes('#/weapon/'));
 await p.goBack(); await p.waitForSelector('#distort .sphere');
-// calibrating to Nessus makes it current and the rest follow the cycle; it sticks across a reload
-await p.click('.calibrate summary'); await p.click('[data-distort="6"]');
-assert.deepEqual((await names()).slice(0, 3), ['Nessus', 'Cosmodrome', 'EDZ']);
-await p.reload(); await p.waitForSelector('#distort .sphere');
-assert.equal((await names())[0], 'Nessus');
+// an old saved starting planet is ignored and cleared
+await p.evaluate(() => localStorage.setItem('d2c_distort', '6')); await p.reload(); await p.waitForSelector('#distort .sphere');
+assert.equal(await p.evaluate(() => localStorage.getItem('d2c_distort')), null);
+assert.equal(await p.$('.calibrate'), null);
 // Randy's sighting: Europa at 16:44 UTC on Oct 31
-await p.evaluate(() => localStorage.removeItem('d2c_distort')); await p.clock.setFixedTime(new Date('2026-10-31T16:44:00Z'));
+await p.clock.setFixedTime(new Date('2026-10-31T16:44:00Z'));
 await p.reload(); await p.waitForSelector('#distort .sphere');
 assert.equal((await names())[0], 'Europa');
+assert.equal((await names())[1], 'Nessus');
 // the weapon list moved to #/weapons, and its nav link lights up there
 await p.click('nav a[href="#/weapons"]'); await p.waitForSelector('#list .card');
 assert.equal(await p.getAttribute('nav a[href="#/weapons"]', 'aria-current'), '');
