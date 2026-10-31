@@ -1838,7 +1838,7 @@ async function home() {
   const drawDistortion = () => {
     const now = Date.now(), h = hourStart(now), n = distortionAt(now);
     $app.querySelector('#distort').innerHTML = `<div class="orbit">${sphere('now', n, 'Ends in <span class="countdown" id="dcount"></span>')}
-      ${[1, 2].map(i => sphere('next', distortionAt(h + i * 3600e3), `From ${at(h + i * 3600e3)}`)).join('')}</div>
+      ${[1, 2, 3, 4, 5, 6].map(i => sphere('next', distortionAt(h + i * 3600e3), `From ${at(h + i * 3600e3)}`)).join('')}</div>
       <details class="calibrate"><summary>Not what the Director shows?</summary><p class="muted">Pick the destination that's distorted right now and the schedule shifts to match (saved in this browser).</p>
         <div class="tabs">${DISTORTIONS.map((d, i) => `<button type="button" data-distort="${i}"${d === n ? ' class="on" aria-pressed="true"' : ''}>${esc(d)}</button>`).join('')}</div></details>`;
   };
