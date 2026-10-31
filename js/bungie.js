@@ -155,5 +155,5 @@ const Bungie = (() => {
     return all[hash];
   }
 
-  return { token, signIn, signOut, handleRedirect, loadProfile, move, pull, equip, equipAll, snapshot, item, vendors, vendor, locate, store };
+  return { token, signIn, signOut, handleRedirect, call, loadProfile, move, pull, equip, equipAll, snapshot, item, vendors, vendor, locate, store };
 })();

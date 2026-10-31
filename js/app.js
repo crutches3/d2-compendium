@@ -1871,9 +1871,22 @@ async function home() {
 }
 
 // Every vendor's weapons and armor this week for one character, weapons graded against the tier list like your own copies
-async function vendorsPage() {
-  $app.innerHTML = '<h1>Vendors</h1><p class="muted">What each vendor sells this week.</p><section class="panel bare"><div id="vendors"><p class="muted">Checking what vendors sell this week…</p></div></section>';
-  await vendorStock();
+// The Monument to Lost Lights keeps its stock in three archive vendors; their lists are fixed, so the manifest is enough (no sign-in)
+const MONUMENT = [2779423129, 523199268, 1092954315];
+async function vendorsPage(tab) {
+  const mon = tab === 'monument';
+  $app.innerHTML = `<h1>Vendors</h1><div class="tabs gear">${[['', 'Vendors'], ['/monument', 'Monument']].map(([path, label]) => `<a href="#/vendors${path}"${(label === 'Monument') === mon ? ' class="on" aria-current="page"' : ''}>${label}</a>`).join('')}</div>
+    <p class="muted">${mon ? 'Exotics and legacy gear the Monument to Lost Lights in the Tower always sells.' : 'What each vendor sells this week.'}</p><section class="panel bare"><div id="vendors"><p class="muted">Loading…</p></div></section>`;
+  await (mon ? monument() : vendorStock());
+}
+async function monument() {
+  const box = $app.querySelector('#vendors');
+  try {
+    const [d, defs] = await Promise.all([data(), live(Promise.all(MONUMENT.map(h => Bungie.call(`/Destiny2/Manifest/DestinyVendorDefinition/${h}/`))))]);
+    const row = w => `<a class="vitem" href="#/weapon/${w.h}">${icon(w)}<div><b>${esc(w.n)}</b><small>${esc(w.ty)}</small><div class="vsub">${tierBadge(d.rolls[w.h])}</div></div></a>`;
+    box.innerHTML = defs.flatMap(v => v.displayCategories.map(c => [c.displayProperties.name, v.itemList.filter(i => i.displayCategoryIndex === c.index).map(i => d.byHash[i.itemHash]).filter(Boolean)]))
+      .filter(([, ws]) => ws.length).map(([n, ws]) => `<h3 class="vhead">${esc(n)}</h3><div class="vitems">${ws.map(row).join('')}</div>`).join('');
+  } catch (e) { if (box.isConnected) box.innerHTML = `<p class="muted">Couldn't load the Monument: ${esc(e.message)}</p>`; }
 }
 async function vendorStock(ci = 0) {
   const box = $app.querySelector('#vendors');
@@ -1922,7 +1935,7 @@ async function route() {
     else if (parts[0] === 'sets') await setsPage();
     else if (parts[0] === 'build') await buildPage(parts[1]);
     else if (parts[0] === 'farm') await farm();
-    else if (parts[0] === 'vendors') await vendorsPage();
+    else if (parts[0] === 'vendors') await vendorsPage(parts[1]);
     else if (parts[0] === 'ref') await reference(parts[1] ? +parts[1] : -1);
     else if (parts[0] === 'wiki') await (parts[1] ? wikiPage(parts[1]) : reference(-1));
     else if (parts[0] === 'images') images();
