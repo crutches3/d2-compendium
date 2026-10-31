@@ -1814,7 +1814,7 @@ function images() {
 // Distortions move to the next destination every hour on the hour, always in this order (community trackers; Bungie's API doesn't say which
 // is live). A week is 168 hours, a multiple of 7, so the same destination opens every weekly reset: DISTORT_AT_RESET is its index.
 const DISTORTIONS = ['Cosmodrome', 'European Dead Zone', 'The Dreaming City', "Savathun's Throne World", 'Moon', 'Europa', 'Nessus'];
-const DISTORT_AT_RESET = 0; // shortcut: a guess until someone reads the Director at a known hour; viewers can correct it on the page
+const DISTORT_AT_RESET = 1; // EDZ: Randy saw Europa distorted at 16:44 UTC on Oct 31 2026; viewers can still correct it on the page
 const distortOffset = () => { try { const v = localStorage.getItem('d2c_distort'); return v === null ? DISTORT_AT_RESET : +v; } catch { return DISTORT_AT_RESET; } };
 // which destination is distorted in the hour holding time t (ms), counting hours from a weekly reset (Tuesday June 9 2026, 17:00 UTC)
 const resetHours = t => Math.floor((t - Date.UTC(2026, 5, 9, 17)) / 3600e3);
