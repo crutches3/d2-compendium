@@ -58,7 +58,7 @@ await ctx.route('https://www.bungie.net/Platform/**', route => {
 });
 const p = await ctx.newPage();
 const errs = []; p.on('pageerror', e => errs.push(e.message));
-await p.goto('http://localhost:8765/'); await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', expires_at: Date.now() + 3e6 })));
+await p.goto('http://localhost:8765/#/weapons'); await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', expires_at: Date.now() + 3e6 })));
 await p.waitForSelector('#list .card');  // let the weapon list finish so it can't redraw over the Builds page
 const open = async link => { await p.goto('http://localhost:8765/#/build'); await p.fill('#link', link); await p.click('#open button'); await p.waitForTimeout(1500); };
 

@@ -499,3 +499,14 @@ a.obtain b { color: var(--accent); }
 .ohow { font-size: 13px; color: var(--muted); }
 .oart:empty { display: none; }
 #obtain > p:last-child { margin: 12px 0 0; }
+
+/* home: the distorted destination gets a big card with a live countdown */
+.distortnow .obtain { border-color: rgba(240, 113, 107, .55); }
+.distortnow .oart { width: min(320px, 45%); }
+.distortnow .obody b { font-size: 20px; }
+.countdown { color: var(--worse); font-size: 18px; font-variant-numeric: tabular-nums; }
+#rcount { color: var(--text); font-variant-numeric: tabular-nums; }
+.calibrate { margin-top: 14px; }
+.calibrate summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+.calibrate .tabs button { padding: 4px 10px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); font-size: 13px; color: var(--text); }
+.calibrate .tabs button.on { border-color: var(--accent); color: var(--accent); }
