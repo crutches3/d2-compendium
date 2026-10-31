@@ -18,6 +18,9 @@ p { margin: 0 0 12px; }
 .muted { color: var(--muted); }
 .empty { color: var(--muted); padding: 24px 0; }
 main { max-width: 1200px; margin: 0 auto; padding: 16px; }
+/* the page background: a looping, muted video behind everything (its first frame while it loads, and instead of it when motion is turned off) */
+.bgvid { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .bgvid { display: none; } body { background: var(--bg) url(../img/bg.jpg) center / cover fixed; } }
 footer { max-width: 1200px; margin: 32px auto; padding: 0 16px; font-size: 12px; }
 
 /* shell */
