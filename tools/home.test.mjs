@@ -9,7 +9,7 @@ await p.clock.setFixedTime(new Date('2026-10-29T05:30:00Z'));
 await p.goto('http://localhost:8765/#/'); await p.waitForSelector('#distort .sphere');
 const names = async () => p.$$eval('#distort .sphere b', l => l.map(x => x.textContent));
 // 36.5 hours after Tuesday's reset: hour 36 is 36 % 7 = 1 step past the reset's EDZ
-assert.deepEqual(await names(), ['The Dreaming City', "Savathun's Throne World", 'Moon']);
+assert.deepEqual(await names(), ['Dreaming City', "Savathûn's\nThrone World", 'Moon']);
 assert.equal(await p.textContent('#dcount'), '30m 00s');
 assert.equal(await p.textContent('#rcount'), '5d 11h');
 assert.deepEqual(await p.$$eval('#distort .sphere.next small', l => l.map(x => x.textContent)), ['From 6:00 AM', 'From 7:00 AM']);
@@ -19,7 +19,7 @@ const text = await p.textContent('#app');
 for (const n of ['Root of Nightmares', 'Deep Stone Crypt', 'Desert Perpetual', 'Duality', 'Equilibrium', 'Defiant BG: EDZ', 'Trials of Osiris', 'Warpriest']) assert(text.includes(n), n);
 // calibrating to Nessus makes it current and the rest follow the cycle; it sticks across a reload
 await p.click('.calibrate summary'); await p.click('[data-distort="6"]');
-assert.deepEqual(await names(), ['Nessus', 'Cosmodrome', 'European Dead Zone']);
+assert.deepEqual(await names(), ['Nessus', 'Cosmodrome', 'EDZ']);
 await p.reload(); await p.waitForSelector('#distort .sphere');
 assert.equal((await names())[0], 'Nessus');
 // Randy's sighting: Europa at 16:44 UTC on Oct 31

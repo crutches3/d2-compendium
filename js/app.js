@@ -1827,9 +1827,10 @@ async function home() {
   const { cur } = rotationWeeks(rot), seq = routeSeq;
   const reset = new Date(cur.start + 'T17:00:00Z').getTime() + 7 * 864e5;
   const pic = n => (p => p && BNET + p)([art.img[n.toLowerCase()], art.places[fold(n)]?.img].find(i => i && !/placeholder/.test(i)));
-  // round planet art cut from Randy's Destiny 2 system map and Director screenshot
+  // round planets cut from Randy's Director screenshot, with its activity icons and names painted out; the page writes the name across the middle like the Director
   const planet = n => `img/planets/${{ Cosmodrome: 'cosmodrome', 'European Dead Zone': 'edz', 'The Dreaming City': 'dreaming', "Savathun's Throne World": 'throne', Moon: 'moon', Europa: 'europa', Nessus: 'nessus' }[n]}.webp`;
-  const sphere = (cls, n, when) => `<a class="sphere ${cls}" href="${wikiHref(n)}"><img src="${planet(n)}" alt=""><b>${esc(n)}</b><small>${when}</small></a>`;
+  const label = n => ({ 'European Dead Zone': 'EDZ', 'The Dreaming City': 'Dreaming City', "Savathun's Throne World": 'Savathûn\'s\nThrone World' })[n] || n;
+  const sphere = (cls, n, when) => `<a class="sphere ${cls}" href="${wikiHref(n)}"><span class="globe"><img src="${planet(n)}" alt=""><b>${esc(label(n))}</b></span><small>${when}</small></a>`;
   const card = (kind, n, extra = '', link = true) => `<${link ? `a href="${wikiHref(n)}"` : 'div'} class="obtain"><span class="oart">${pic(n) ? `<img loading="lazy" src="${pic(n)}" alt="">` : ''}</span>
     <span class="obody"><small>${esc(kind)}</small><b>${esc(n)}</b>${extra}</span></${link ? 'a' : 'div'}>`;
   const master = n => cur.master.includes(n) ? '<span class="encs"><span class="badge good">Master available</span></span>' : '';
