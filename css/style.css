@@ -500,11 +500,24 @@ a.obtain b { color: var(--accent); }
 .oart:empty { display: none; }
 #obtain > p:last-child { margin: 12px 0 0; }
 
-/* home: the distorted destination gets a big card with a live countdown */
-.distortnow .obtain { border-color: rgba(240, 113, 107, .55); }
-.distortnow .oart { width: min(320px, 45%); }
-.distortnow .obody b { font-size: 20px; }
-.countdown { color: var(--worse); font-size: 18px; font-variant-numeric: tabular-nums; }
+/* home: the distorted planet big, with a live countdown, and the next two smaller beside it */
+section.panel.bare { background: none; border: 0; padding: 14px 0 0; }
+.orbit { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
+@media (max-width: 640px) { .orbit { justify-content: center; } .sphere.now { flex-basis: 100%; } }
+.sphere { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; color: var(--text); }
+.sphere:hover { text-decoration: none; }
+.globe { position: relative; display: grid; place-items: center; border-radius: 50%; transition: scale .2s var(--ease-out); }
+.sphere:hover .globe { scale: 1.04; }
+.globe img { width: clamp(72px, 22vw, 104px); aspect-ratio: 1; display: block; }
+.sphere.now img { width: clamp(150px, 45vw, 220px); }
+.sphere.now .globe { box-shadow: 0 0 0 2px rgba(240, 113, 107, .7), 0 0 40px rgba(240, 113, 107, .45); }
+/* the name across the middle of the planet, spaced out like the in-game Director */
+.globe b { position: absolute; inset: 0 -30%; display: grid; place-items: center; text-align: center; font: 400 clamp(9px, 2.4vw, 11px)/1.7 Georgia, "Times New Roman", serif;
+  white-space: pre-line; text-transform: uppercase; letter-spacing: .3em; color: #f3ead8; text-shadow: 0 0 4px #000, 0 0 10px #000, 0 0 18px rgba(0, 0, 0, .8); }
+.sphere.now .globe b { font-size: clamp(13px, 3.4vw, 19px); }
+.sphere.next .globe b { inset: 0 -12%; font-size: 9px; letter-spacing: .14em; }
+.sphere small { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.countdown { color: var(--worse); font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
 #rcount { color: var(--text); font-variant-numeric: tabular-nums; }
 .calibrate { margin-top: 14px; }
 .calibrate summary { cursor: pointer; color: var(--muted); font-size: 13px; }

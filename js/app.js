@@ -1814,7 +1814,7 @@ function images() {
 // Distortions move to the next destination every hour on the hour, always in this order (community trackers; Bungie's API doesn't say which
 // is live). A week is 168 hours, a multiple of 7, so the same destination opens every weekly reset: DISTORT_AT_RESET is its index.
 const DISTORTIONS = ['Cosmodrome', 'European Dead Zone', 'The Dreaming City', "Savathun's Throne World", 'Moon', 'Europa', 'Nessus'];
-const DISTORT_AT_RESET = 0; // shortcut: a guess until someone reads the Director at a known hour; viewers can correct it on the page
+const DISTORT_AT_RESET = 1; // EDZ: Randy saw Europa distorted at 16:44 UTC on Oct 31 2026; viewers can still correct it on the page
 const distortOffset = () => { try { const v = localStorage.getItem('d2c_distort'); return v === null ? DISTORT_AT_RESET : +v; } catch { return DISTORT_AT_RESET; } };
 // which destination is distorted in the hour holding time t (ms), counting hours from a weekly reset (Tuesday June 9 2026, 17:00 UTC)
 const resetHours = t => Math.floor((t - Date.UTC(2026, 5, 9, 17)) / 3600e3);
@@ -1826,22 +1826,24 @@ async function home() {
   const [rot, art] = await Promise.all([load('rotation'), load('wiki')]);
   const { cur } = rotationWeeks(rot), seq = routeSeq;
   const reset = new Date(cur.start + 'T17:00:00Z').getTime() + 7 * 864e5;
-  // planet art cut from Randy's Destiny 2 system map; Throne World isn't on it, so it keeps its Bungie screenshot
-  const planet = n => ({ Cosmodrome: 'earth', 'European Dead Zone': 'earth', 'The Dreaming City': 'dreaming', Moon: 'moon', Europa: 'europa', Nessus: 'nessus' })[n];
-  const pic = n => planet(n) ? `img/planets/${planet(n)}.jpg` : (p => p && BNET + p)([art.img[n.toLowerCase()], art.places[fold(n)]?.img].find(i => i && !/placeholder/.test(i)));
+  const pic = n => (p => p && BNET + p)([art.img[n.toLowerCase()], art.places[fold(n)]?.img].find(i => i && !/placeholder/.test(i)));
+  // round planets cut from Randy's Director screenshot, with its activity icons and names painted out; the page writes the name across the middle like the Director
+  const planet = n => `img/planets/${{ Cosmodrome: 'cosmodrome', 'European Dead Zone': 'edz', 'The Dreaming City': 'dreaming', "Savathun's Throne World": 'throne', Moon: 'moon', Europa: 'europa', Nessus: 'nessus' }[n]}.webp`;
+  const label = n => ({ 'European Dead Zone': 'EDZ', 'The Dreaming City': 'Dreaming City', "Savathun's Throne World": 'Savathûn\'s\nThrone World' })[n] || n;
+  const sphere = (cls, n, when) => `<a class="sphere ${cls}" href="${wikiHref(n)}"><span class="globe"><img src="${planet(n)}" alt=""><b>${esc(label(n))}</b></span><small>${when}</small></a>`;
   const card = (kind, n, extra = '', link = true) => `<${link ? `a href="${wikiHref(n)}"` : 'div'} class="obtain"><span class="oart">${pic(n) ? `<img loading="lazy" src="${pic(n)}" alt="">` : ''}</span>
     <span class="obody"><small>${esc(kind)}</small><b>${esc(n)}</b>${extra}</span></${link ? 'a' : 'div'}>`;
   const master = n => cur.master.includes(n) ? '<span class="encs"><span class="badge good">Master available</span></span>' : '';
   const hourStart = t => Math.floor(t / 3600e3) * 3600e3, at = t => new Date(t).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
   const drawDistortion = () => {
     const now = Date.now(), h = hourStart(now), n = distortionAt(now);
-    $app.querySelector('#distort').innerHTML = `<div class="distortnow">${card('Distorted now', n, '<span class="ohow">Ends in <b class="countdown" id="dcount"></b></span>')}</div>
-      <h3>Next up</h3><div class="obtains">${[1, 2, 3].map(i => card(`From ${at(h + i * 3600e3)}`, distortionAt(h + i * 3600e3))).join('')}</div>
+    $app.querySelector('#distort').innerHTML = `<div class="orbit">${sphere('now', n, 'Ends in <span class="countdown" id="dcount"></span>')}
+      ${[1, 2, 3, 4, 5, 6].map(i => sphere('next', distortionAt(h + i * 3600e3), `From ${at(h + i * 3600e3)}`)).join('')}</div>
       <details class="calibrate"><summary>Not what the Director shows?</summary><p class="muted">Pick the destination that's distorted right now and the schedule shifts to match (saved in this browser).</p>
         <div class="tabs">${DISTORTIONS.map((d, i) => `<button type="button" data-distort="${i}"${d === n ? ' class="on" aria-pressed="true"' : ''}>${esc(d)}</button>`).join('')}</div></details>`;
   };
   $app.innerHTML = `<h1>This week</h1><p class="muted">Week ${cur.week ?? ''} · reset ${new Date(cur.start + 'T17:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · next reset in <b id="rcount"></b></p>
-    <section class="panel"><h2>Distortions</h2><div id="distort"></div></section>
+    <section class="panel bare"><h2>Distortions</h2><div id="distort"></div></section>
     <section class="panel"><h2>Featured raids</h2><div class="obtains">${cur.raids.map(n => card(rot.always.raids.includes(n) ? 'Newest raid · every week' : 'Raid', n, master(n))).join('')}</div>
       <h3>Featured dungeons</h3><div class="obtains">${cur.dungeons.map(n => card(rot.always.dungeons.includes(n) ? 'Newest dungeon · every week' : 'Dungeon', n, master(n))).join('')}</div></section>
     <section class="panel"><h2>Also this week</h2><div class="obtains">
