@@ -1850,9 +1850,7 @@ async function home() {
       ${cur.pantheon.length ? `<section class="panel bare">${head('img/pantheon.png', 'Pantheon')}<a href="${wikiHref('Pantheon')}" class="act"><b>${esc(cur.pantheon.join(' · '))}</b><img loading="lazy" src="${pic('Pantheon')}" alt=""><small>Reprise and encore bosses</small></a></section>` : ''}
     </div>
     <section class="panel bare">
-      <p class="refsrc">Schedule from Court's Weekly Reset tab in Llama's sheets. Plan around it on the <a href="#/farm">Farming</a> page.</p></section>
-    <section class="panel bare"><h2 class="acthead">Vendors</h2><div id="vendors"><p class="muted">Checking what vendors sell this week…</p></div></section>`;
-  vendorStock();
+      <p class="refsrc">Schedule from Court's Weekly Reset tab in Llama's sheets. Plan around it on the <a href="#/farm">Farming</a> page.</p></section>`;
   drawDistortion();
   // the Grandmaster's reward weapons over its picture, each opening its weapon page (the version Aegis rated, as on the farming plan)
   if (cur.gmWeapons.length) data().then(d => {
@@ -1873,6 +1871,10 @@ async function home() {
 }
 
 // Every vendor's weapons and armor this week for one character, weapons graded against the tier list like your own copies
+async function vendorsPage() {
+  $app.innerHTML = '<h1>Vendors</h1><p class="muted">What each vendor sells this week.</p><section class="panel bare"><div id="vendors"><p class="muted">Checking what vendors sell this week…</p></div></section>';
+  await vendorStock();
+}
 async function vendorStock(ci = 0) {
   const box = $app.querySelector('#vendors');
   try {
@@ -1920,6 +1922,7 @@ async function route() {
     else if (parts[0] === 'sets') await setsPage();
     else if (parts[0] === 'build') await buildPage(parts[1]);
     else if (parts[0] === 'farm') await farm();
+    else if (parts[0] === 'vendors') await vendorsPage();
     else if (parts[0] === 'ref') await reference(parts[1] ? +parts[1] : -1);
     else if (parts[0] === 'wiki') await (parts[1] ? wikiPage(parts[1]) : reference(-1));
     else if (parts[0] === 'images') images();
