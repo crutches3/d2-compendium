@@ -1843,7 +1843,7 @@ async function home() {
         <div class="tabs">${DISTORTIONS.map((d, i) => `<button type="button" data-distort="${i}"${d === n ? ' class="on" aria-pressed="true"' : ''}>${esc(d)}</button>`).join('')}</div></details>`;
   };
   $app.innerHTML = `<h1>This week</h1><p class="muted">Week ${cur.week ?? ''} · reset ${new Date(cur.start + 'T17:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · next reset in <b id="rcount"></b></p>
-    <section class="panel"><h2>Distortions</h2><div id="distort"></div></section>
+    <section class="panel bare"><h2>Distortions</h2><div id="distort"></div></section>
     <section class="panel"><h2>Featured raids</h2><div class="obtains">${cur.raids.map(n => card(rot.always.raids.includes(n) ? 'Newest raid · every week' : 'Raid', n, master(n))).join('')}</div>
       <h3>Featured dungeons</h3><div class="obtains">${cur.dungeons.map(n => card(rot.always.dungeons.includes(n) ? 'Newest dungeon · every week' : 'Dungeon', n, master(n))).join('')}</div></section>
     <section class="panel"><h2>Also this week</h2><div class="obtains">
