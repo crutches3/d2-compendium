@@ -543,3 +543,14 @@ section.panel.bare h2.acthead { font: 400 15px/1.4 Georgia, "Times New Roman", s
 .calibrate summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 .calibrate .tabs button { padding: 4px 10px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); font-size: 13px; color: var(--text); }
 .calibrate .tabs button.on { border-color: var(--accent); color: var(--accent); }
+/* home: vendor stock, floating on the background like the rest of the home page */
+.vhead { font: 400 14px/1.4 Georgia, "Times New Roman", serif; letter-spacing: .25em; text-transform: uppercase; color: #f3ead8; margin: 20px 0 10px; }
+.vhead img { width: 24px; height: 24px; }
+.vitems { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 12px 20px; }
+.vitem { display: flex; gap: 12px; align-items: flex-start; min-width: 0; color: var(--text); }
+.vitem:hover { text-decoration: none; }
+.vitem:hover b { color: var(--accent); }
+.vitem > div { min-width: 0; }
+.vitem small { display: block; color: var(--muted); font-size: 12px; }
+.vsub { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.vsub .minis img { width: 22px; height: 22px; border-radius: 3px; margin-right: 3px; vertical-align: middle; }

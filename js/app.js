@@ -1852,7 +1852,9 @@ async function home() {
       ${cur.pantheon.length ? `<section class="panel bare">${head('img/pantheon.png', 'Pantheon')}<a href="${wikiHref('Pantheon')}" class="act"><b>${esc(cur.pantheon.join(' · '))}</b><img loading="lazy" src="${pic('Pantheon')}" alt=""><small>Reprise and encore bosses</small></a></section>` : ''}
     </div>
     <section class="panel bare">
-      <p class="refsrc">Schedule from Court's Weekly Reset tab in Llama's sheets. Plan around it on the <a href="#/farm">Farming</a> page.</p></section>`;
+      <p class="refsrc">Schedule from Court's Weekly Reset tab in Llama's sheets. Plan around it on the <a href="#/farm">Farming</a> page.</p></section>
+    <section class="panel bare"><h2 class="acthead">Vendors</h2><div id="vendors"><p class="muted">Checking what vendors sell this week…</p></div></section>`;
+  vendorStock();
   drawDistortion();
   // the Grandmaster's reward weapons over its picture, each opening its weapon page (the version Aegis rated, as on the farming plan)
   if (cur.gmWeapons.length) data().then(d => {
@@ -1876,6 +1878,37 @@ async function home() {
   };
   const timer = setInterval(tick, 1000);
   tick();
+}
+
+// Every vendor's weapons and armor this week for one character, weapons graded against the tier list like your own copies
+async function vendorStock(ci = 0) {
+  const box = $app.querySelector('#vendors');
+  try {
+    const prof = Bungie.token() ? await profile() : null; renderAccount();
+    const [d, a, stock] = await Promise.all([data(), armorData(), Bungie.vendors(prof, prof?.chars[ci]?.id)]);
+    const sold = stock.filter(x => d.byHash[x.itemHash] || a.byHash[x.itemHash]), byVendor = new Map();
+    sold.forEach(x => byVendor.has(x.vendorHash) ? byVendor.get(x.vendorHash).push(x) : byVendor.set(x.vendorHash, [x]));
+    const names = await Promise.all([...byVendor.keys()].map(h => Bungie.vendor(h).catch(() => ({ n: 'Vendor' }))));
+    if (!box.isConnected) return;
+    const row = x => {
+      const w = d.byHash[x.itemHash], it = w || a.byHash[x.itemHash], rolled = x.plugs.size > 0;
+      let sub;
+      if (w) {
+        const perks = w.cols.filter(c => c.c === 'Weapon Perks').flatMap(c => c.p.filter(h => x.plugs.has(h))).map(h => d.plugs[h]).filter(Boolean);
+        sub = `${tierBadge(d.rolls[w.h])}${rolled ? rollPips(rollFit(d, d.rolls[w.h], x.plugs)) : ''}<span class="minis">${perks.map(p => p.i && `<img src="${BNET}${p.i}" alt="${esc(p.n)}" title="${esc(p.n)}">`).join('')}</span>`;
+      } else {
+        const arch = archetypeOf(a, x), st = Object.entries(a.stats).filter(([h]) => x.stats[h]);
+        sub = `${arch ? `<span class="badge mode">${esc(arch.n)}</span>` : ''}${st.length ? `${statTotal(a, x)} total · ${st.map(([h, n]) => `${esc(n)} ${x.stats[h]}`).join(' · ')}` : ''}`;
+      }
+      return `<a class="vitem" href="#/${w ? 'weapon' : 'armor'}/${it.h}">${icon(it)}<div><b>${esc(it.n)}</b><small>${esc(w ? w.ty : slotLabel(it))}</small><div class="vsub">${sub}</div></div></a>`;
+    };
+    box.innerHTML = `${prof?.chars.length > 1 ? `<div class="tabs charpick">${prof.chars.map((c, i) => `<button type="button" data-ci="${i}"${i === ci ? ' class="on" aria-pressed="true"' : ''}>${esc(c.cls)}</button>`).join('')}</div>` : ''}
+      ${byVendor.size ? [...byVendor.values()].map((items, k) => `<h3 class="acthead vhead">${names[k].i ? `<img src="${BNET}${names[k].i}" alt="">` : ''}${esc(names[k].n)}</h3>
+        <div class="vitems">${items.map(row).join('')}</div>`).join('') : '<p class="muted">No weapons or armor for sale right now.</p>'}
+      ${prof ? `<p class="hint">${rollLegend}</p>` : '<p class="muted">Signed out, Bungie only shares Xûr\'s stock, without rolls. <a href="#" id="vsign">Sign in</a> to see every vendor and grade their rolls.</p>'}`;
+    box.querySelector('#vsign')?.addEventListener('click', e => { e.preventDefault(); Bungie.signIn(); });
+    box.querySelectorAll('[data-ci]').forEach(b => b.addEventListener('click', () => { box.innerHTML = '<p class="muted">Loading…</p>'; vendorStock(+b.dataset.ci); }));
+  } catch (e) { if (box.isConnected) box.innerHTML = `<p class="muted">Couldn't load vendors: ${esc(e.message)}</p>`; }
 }
 
 async function route() {
