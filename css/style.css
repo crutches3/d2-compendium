@@ -502,6 +502,7 @@ a.obtain b { color: var(--accent); }
 
 /* home: the distorted planet big, with a live countdown, and the next two smaller beside it */
 section.panel.bare { background: none; border: 0; padding: 14px 0 0; }
+.bare .obtains { grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); }
 .orbit { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
 @media (max-width: 640px) { .orbit { justify-content: center; } .sphere.now { flex-basis: 100%; } }
 .sphere { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; color: var(--text); }
