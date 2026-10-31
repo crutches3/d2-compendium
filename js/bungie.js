@@ -84,7 +84,7 @@ const Bungie = (() => {
         items: l.items.filter(i => +i.itemInstanceId).length })) }));
     // Postmaster slots used per character (it holds 21), counting engrams and materials the site doesn't list
     const postmasterUsed = Object.fromEntries(Object.entries(p.characterInventories.data || {}).map(([cid, inv]) => [cid, inv.items.filter(i => i.bucketHash === POSTMASTER).length]));
-    const profile = { name: m.bungieNetUser.uniqueName || m.bungieNetUser.displayName, membershipType: dm.membershipType, chars, items, postmasterUsed };
+    const profile = { name: m.bungieNetUser.uniqueName || m.bungieNetUser.displayName, membershipType: dm.membershipType, membershipId: dm.membershipId, chars, items, postmasterUsed };
     const sockets = p.itemComponents.sockets.data || {}, reusable = p.itemComponents.reusablePlugs.data || {}, inst = p.itemComponents.instances.data || {};
     const stats = p.itemComponents.stats?.data || {};
     for (const it of items) {
@@ -136,5 +136,24 @@ const Bungie = (() => {
   // One DestinyInventoryItemDefinition, for hashes the site's data files don't cover (subclasses, mods, artifact perks).
   const item = hash => call(`/Destiny2/Manifest/DestinyInventoryItemDefinition/${hash}/`);
 
-  return { token, signIn, signOut, handleRedirect, loadProfile, move, pull, equip, equipAll, snapshot, item, locate, store };
+  // What each vendor sells this week to one character, rolls included: [{ vendorHash, itemHash, plugs, stats }], items shaped like
+  // loadProfile's. With no profile (signed out) Bungie's public endpoint only lists Xûr's stock, without rolls.
+  async function vendors(p, characterId) {
+    const r = await call(p ? `/Destiny2/${p.membershipType}/Profile/${p.membershipId}/Character/${characterId}/Vendors/?components=400,402,304,305,310`
+      : '/Destiny2/Vendors/?components=400,402');
+    return Object.entries(r.sales?.data || {}).flatMap(([vh, s]) => Object.values(s.saleItems).map(x => {
+      const c = r.itemComponents?.[vh] || {}, i = x.vendorItemIndex, plugs = new Set();
+      (c.sockets?.data?.[i]?.sockets || []).forEach(k => k.plugHash && plugs.add(k.plugHash));
+      Object.values(c.reusablePlugs?.data?.[i]?.plugs || {}).forEach(col => col.forEach(pl => plugs.add(pl.plugItemHash)));
+      return { vendorHash: +vh, itemHash: x.itemHash, plugs, stats: Object.fromEntries(Object.entries(c.stats?.data?.[i]?.stats || {}).map(([h, st]) => [h, st.value])) };
+    }));
+  }
+  // A vendor's name and icon, kept in this browser since its full definition is large
+  async function vendor(hash) {
+    const all = store.get('d2c_vendors') || {};
+    if (!all[hash]) { const d = (await call(`/Destiny2/Manifest/DestinyVendorDefinition/${hash}/`)).displayProperties; all[hash] = { n: d.name, i: d.smallTransparentIcon || d.icon }; store.set('d2c_vendors', all); }
+    return all[hash];
+  }
+
+  return { token, signIn, signOut, handleRedirect, loadProfile, move, pull, equip, equipAll, snapshot, item, vendors, vendor, locate, store };
 })();
