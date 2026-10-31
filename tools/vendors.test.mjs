@@ -1,4 +1,4 @@
-// Browser test for the home page's Vendors section against a mocked Bungie API, signed out (public Xûr stock) and signed in (graded rolls).
+// Browser test for the Vendors page against a mocked Bungie API, signed out (public Xûr stock) and signed in (graded rolls).
 // Run from the repo root: python3 -m http.server 8765 & npm i --no-save playwright && node tools/vendors.test.mjs
 import { chromium } from 'playwright';
 import fs from 'fs';
@@ -25,7 +25,7 @@ await ctx.route('https://www.bungie.net/Platform/**', route => {
 const p = await ctx.newPage();
 const errs = []; p.on('pageerror', e => errs.push(e.message));
 // signed out: Xûr-only public list, unknown items (engrams) dropped, no grading
-await p.goto('http://localhost:8765/#/'); await p.waitForSelector('#vendors .vitem');
+await p.goto('http://localhost:8765/#/vendors'); await p.waitForSelector('#vendors .vitem');
 assert.equal(await p.textContent('#vendors .vhead'), 'Banshee-44');
 assert.deepEqual(await p.$$eval('#vendors .vitem b', l => l.map(x => x.textContent)), ['No Hesitation']);
 assert.equal(await p.$$eval('#vendors .pips', l => l.length), 0);
@@ -42,6 +42,9 @@ assert.equal(await p.$$eval('#vendors .vhead', l => l.length), 1);  // vendor 20
 // switching character refetches for the Hunter
 await p.click('#vendors [data-ci="1"]'); await p.waitForSelector('#vendors [data-ci="1"].on');
 assert(urls.some(u => u.includes('/Character/H1/Vendors/')));
+// the home page no longer lists vendors
+await p.click('nav a[href="#/"]'); await p.waitForSelector('#distort .sphere');
+assert.equal(await p.$('#vendors'), null);
 assert.deepEqual(errs, []);
 await b.close();
 console.log('vendors ok');
