@@ -17,6 +17,11 @@ assert.deepEqual(await p.$$eval('#distort .sphere.next small', l => l.map(x => x
 assert(await p.$$eval('#distort .sphere img', l => l.every(i => i.complete && i.naturalWidth > 0)));
 const text = await p.textContent('#app');
 for (const n of ['Root of Nightmares', 'Deep Stone Crypt', 'Desert Perpetual', 'Duality', 'Equilibrium', 'Defiant BG: EDZ', 'Trials of Osiris', 'Warpriest']) assert(text.includes(n), n);
+// the Grandmaster's reward weapons sit on its picture and open their weapon pages
+await p.waitForSelector('#gmguns a');
+assert.equal(await p.$$eval('#gmguns a', l => l.length), 2);
+await p.click('#gmguns a'); await p.waitForSelector('#app h1'); assert(p.url().includes('#/weapon/'));
+await p.goBack(); await p.waitForSelector('#distort .sphere');
 // calibrating to Nessus makes it current and the rest follow the cycle; it sticks across a reload
 await p.click('.calibrate summary'); await p.click('[data-distort="6"]');
 assert.deepEqual((await names()).slice(0, 3), ['Nessus', 'Cosmodrome', 'EDZ']);

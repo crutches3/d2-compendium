@@ -1832,7 +1832,7 @@ async function home() {
   const label = n => ({ 'European Dead Zone': 'EDZ', 'The Dreaming City': 'Dreaming City', "Savathun's Throne World": 'Savathûn\'s\nThrone World' })[n] || n;
   const sphere = (cls, n, when) => `<a class="sphere ${cls}" href="${wikiHref(n)}"><span class="globe"><img src="${planet(n)}" alt=""><b>${esc(label(n))}</b></span><small>${when}</small></a>`;
   const head = (icon, title) => `<h2 class="acthead"><img src="${BNET}/common/destiny2_content/icons/${icon}.png" alt="">${title}</h2>`;
-  const act = (n, extra = '', link = true) => `<${link ? `a href="${wikiHref(n)}"` : 'div'} class="act"><b>${esc(n)}</b>${pic(n) ? `<img loading="lazy" src="${pic(n)}" alt="">` : ''}${extra}</${link ? 'a' : 'div'}>`;
+  const act = (n, extra = '', link = true, over = '') => `<${link ? `a href="${wikiHref(n)}"` : 'div'} class="act"><b>${esc(n)}</b>${pic(n) ? `<span class="actart"><img loading="lazy" src="${pic(n)}" alt="">${over}</span>` : ''}${extra}</${link ? 'a' : 'div'}>`;
   const chips = (l, note) => `<span class="encs">${l.map(x => `<span class="enc">${esc(x)}</span>`).join('')}</span><small>${note}</small>`;
   const master = n => cur.master.includes(n) ? '<span class="encs"><span class="badge good">Master available</span></span>' : '';
   const hourStart = t => Math.floor(t / 3600e3) * 3600e3, at = t => new Date(t).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
@@ -1848,12 +1848,18 @@ async function home() {
     ${[['Featured raids', 'raids', 'DestinyActivityModeDefinition_bfe80e3dafe6686a9dc42df0606bdc9b', 'raid'], ['Featured dungeons', 'dungeons', 'DestinyActivityModeDefinition_f20ebb76bee675ca429e470cec58cc7b', 'dungeon']].map(([title, key, icon, kind]) =>
       `<section class="panel bare">${head(icon, title)}<div class="acts">${cur[key].map(n => act(n, `${rot.always[key].includes(n) ? `<small>Newest ${kind} · featured every week</small>` : ''}${master(n)}`)).join('')}</div></section>`).join('')}
     <div class="weekly">
-      <section class="panel bare">${head('3642cf9e2acd174dcab5b5f9e3a3a45d', 'Grandmaster')}${act(cur.gm, cur.gmWeapons.length ? chips(cur.gmWeapons, 'Shiny and bonus focus weapons') : '', false)}</section>
+      <section class="panel bare">${head('3642cf9e2acd174dcab5b5f9e3a3a45d', 'Grandmaster')}${act(cur.gm, cur.gmWeapons.length ? chips(cur.gmWeapons, 'Shiny and bonus focus weapons') : '', false, '<span class="gmguns" id="gmguns"></span>')}</section>
       ${cur.pantheon.length ? `<section class="panel bare">${head('bd7a1fc995f87be96698263bc16698e7', 'Pantheon')}<a href="${wikiHref('Pantheon')}" class="act"><b>${esc(cur.pantheon.join(' · '))}</b><img loading="lazy" src="${pic('Pantheon')}" alt=""><small>Reprise and encore bosses</small></a></section>` : ''}
     </div>
     <section class="panel bare">
       <p class="refsrc">Schedule from Court's Weekly Reset tab in Llama's sheets. Plan around it on the <a href="#/farm">Farming</a> page.</p></section>`;
   drawDistortion();
+  // the Grandmaster's reward weapons over its picture, each opening its weapon page (the version Aegis rated, as on the farming plan)
+  if (cur.gmWeapons.length) data().then(d => {
+    const pick = n => d.weapons.filter(w => baseName(w.n) === n).sort((x, y) => !d.rolls[y.h]?.c?.length - !d.rolls[x.h]?.c?.length)[0];
+    const el = $app.querySelector('#gmguns');
+    if (el) el.innerHTML = cur.gmWeapons.map(pick).filter(Boolean).map(w => `<a href="#/weapon/${w.h}" title="${esc(w.n)}">${img(w.i)}</a>`).join('');
+  });
   $app.querySelector('#distort').addEventListener('click', e => {
     const b = e.target.closest('[data-distort]'); if (!b) return;
     const off = ((+b.dataset.distort - resetHours(Date.now())) % 7 + 7) % 7;
