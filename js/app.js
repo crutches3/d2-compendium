@@ -1844,9 +1844,9 @@ async function home() {
   };
   $app.innerHTML = `<h1>This week</h1><p class="muted">Week ${cur.week ?? ''} · reset ${new Date(cur.start + 'T17:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · next reset in <b id="rcount"></b></p>
     <section class="panel bare"><h2>Distortions</h2><div id="distort"></div></section>
-    <section class="panel"><h2>Featured raids</h2><div class="obtains">${cur.raids.map(n => card(rot.always.raids.includes(n) ? 'Newest raid · every week' : 'Raid', n, master(n))).join('')}</div>
+    <section class="panel bare"><h2>Featured raids</h2><div class="obtains">${cur.raids.map(n => card(rot.always.raids.includes(n) ? 'Newest raid · every week' : 'Raid', n, master(n))).join('')}</div>
       <h3>Featured dungeons</h3><div class="obtains">${cur.dungeons.map(n => card(rot.always.dungeons.includes(n) ? 'Newest dungeon · every week' : 'Dungeon', n, master(n))).join('')}</div></section>
-    <section class="panel"><h2>Also this week</h2><div class="obtains">
+    <section class="panel bare"><h2>Also this week</h2><div class="obtains">
       ${card('Grandmaster Nightfall', cur.gm, cur.gmWeapons.length ? `<span class="encs">${cur.gmWeapons.map(w => `<span class="enc">${esc(w)}</span>`).join('')}</span><span class="ohow">Shiny and bonus focus weapons</span>` : '', false)}
       ${card('PvP event', cur.pvp)}
       ${cur.pantheon.length ? card('Pantheon', 'Pantheon', `<span class="encs">${cur.pantheon.map(b => `<span class="enc">${esc(b)}</span>`).join('')}</span><span class="ohow">Reprise and encore bosses</span>`) : ''}</div>
