@@ -16,6 +16,9 @@ const b = await chromium.launch(), ctx = await b.newContext({ viewport: { width:
 await ctx.route('https://www.bungie.net/Platform/**', route => {
   const u = route.request().url(); urls.push(u);
   const body = u.includes('GetMemberships') ? { primaryMembershipId: '9', destinyMemberships: [{ membershipId: '9', membershipType: 3 }], bungieNetUser: { uniqueName: 'Randy#1' } }
+    : u.includes('DestinyVendorDefinition/2779423129') ? { displayCategories: [{ index: 0, displayProperties: { name: 'The Final Shape Exotics' } }, { index: 1, displayProperties: { name: 'Empty' } }],
+        itemList: [{ itemHash: nh.h, displayCategoryIndex: 0 }, { itemHash: 3158812152, displayCategoryIndex: 1 }] }
+    : u.includes('DestinyVendorDefinition/523199268') || u.includes('DestinyVendorDefinition/1092954315') ? { displayCategories: [], itemList: [] }
     : u.includes('DestinyVendorDefinition/100') ? { displayProperties: { name: 'Banshee-44', smallTransparentIcon: '/x.png' } }
     : u.includes('/Destiny2/Vendors/') ? pub : u.includes('/Vendors/') ? char
     : { characters: { data: { T1: { classType: 0 }, H1: { classType: 1 } } }, profileInventory: { data: { items: [] } }, characterInventories: { data: {} }, characterEquipment: { data: {} },
@@ -42,6 +45,11 @@ assert.equal(await p.$$eval('#vendors .vhead', l => l.length), 1);  // vendor 20
 // switching character refetches for the Hunter
 await p.click('#vendors [data-ci="1"]'); await p.waitForSelector('#vendors [data-ci="1"].on');
 assert(urls.some(u => u.includes('/Character/H1/Vendors/')));
+// the Monument tab: its archive vendors' lists by category, categories with nothing the site knows left out
+await p.click('.tabs a[href="#/vendors/monument"]'); await p.waitForSelector('#vendors .vhead:text("The Final Shape Exotics")');
+assert.deepEqual(await p.$$eval('#vendors .vhead', l => l.map(x => x.textContent)), ['The Final Shape Exotics']);
+assert.deepEqual(await p.$$eval('#vendors .vitem b', l => l.map(x => x.textContent)), ['No Hesitation']);
+assert.equal(await p.getAttribute('.tabs a[href="#/vendors/monument"]', 'aria-current'), 'page');
 // the home page no longer lists vendors
 await p.click('nav a[href="#/"]'); await p.waitForSelector('#distort .sphere');
 assert.equal(await p.$('#vendors'), null);
