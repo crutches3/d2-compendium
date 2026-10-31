@@ -514,6 +514,7 @@ section.panel.bare h2.acthead { font: 400 15px/1.4 Georgia, "Times New Roman", s
 .act b, .globe b { font-family: Georgia, "Times New Roman", serif; font-weight: 400; text-transform: uppercase; letter-spacing: .3em; color: #f3ead8; }
 .act b { font-size: 14px; text-shadow: 0 0 8px rgba(0, 0, 0, .8); }
 .act small { color: var(--muted); font-size: 12px; }
+.weekly { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 0 24px; }
 .bare .obtains { grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); }
 .orbit { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
 @media (max-width: 640px) { .orbit { justify-content: center; } .sphere.now { flex-basis: 100%; } }

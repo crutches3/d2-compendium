@@ -123,6 +123,8 @@ def build_wiki(d, tabs):
     A, V, I, DMG = d['DestinyActivityDefinition'], d['DestinyVendorDefinition'], d['DestinyInventoryItemDefinition'], d['DestinyDamageTypeDefinition']
     cells = {c.strip().split('\n')[0].strip().lower() for t in tabs for r in t['rows'] for c in r if c and c.strip()}
     cells = {c for c in cells if len(c) <= 60}
+    # the home page shows each week's Grandmaster strike; Court's schedule shortens "Battleground" to "BG"
+    cells |= {w['gm'].lower() for w in json.load(open(os.path.join(ROOT, 'data', 'rotation.json'), encoding='utf-8'))['weeks'] if w['gm']}
     acts, vendors, icons = {}, {}, {}
     for a in A.values():
         n, pg = a.get('displayProperties', {}).get('name', ''), a.get('pgcrImage', '')
@@ -137,7 +139,7 @@ def build_wiki(d, tabs):
     img = {}
     for c in cells:
         f = fold(c)
-        for k in (f, 'the ' + f, re.sub(r'^the ', '', f), f.split(' & ')[0], 'the ' + f.split(' & ')[0], f.split(' | ')[0]):
+        for k in (f, 'the ' + f, re.sub(r'^the ', '', f), f.split(' & ')[0], 'the ' + f.split(' & ')[0], f.split(' | ')[0], f.replace('bg:', 'battleground:')):
             if k in acts or k in vendors: img[c] = acts.get(k) or vendors[k]; break
     for t in DMG.values():
         dp = t.get('displayProperties', {})
