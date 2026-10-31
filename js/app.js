@@ -1831,8 +1831,9 @@ async function home() {
   const planet = n => `img/planets/${{ Cosmodrome: 'cosmodrome', 'European Dead Zone': 'edz', 'The Dreaming City': 'dreaming', "Savathun's Throne World": 'throne', Moon: 'moon', Europa: 'europa', Nessus: 'nessus' }[n]}.webp`;
   const label = n => ({ 'European Dead Zone': 'EDZ', 'The Dreaming City': 'Dreaming City', "Savathun's Throne World": 'Savathûn\'s\nThrone World' })[n] || n;
   const sphere = (cls, n, when) => `<a class="sphere ${cls}" href="${wikiHref(n)}"><span class="globe"><img src="${planet(n)}" alt=""><b>${esc(label(n))}</b></span><small>${when}</small></a>`;
-  const card = (kind, n, extra = '', link = true) => `<${link ? `a href="${wikiHref(n)}"` : 'div'} class="obtain"><span class="oart">${pic(n) ? `<img loading="lazy" src="${pic(n)}" alt="">` : ''}</span>
-    <span class="obody"><small>${esc(kind)}</small><b>${esc(n)}</b>${extra}</span></${link ? 'a' : 'div'}>`;
+  const head = (icon, title) => `<h2 class="acthead"><img src="${BNET}/common/destiny2_content/icons/${icon}.png" alt="">${title}</h2>`;
+  const act = (n, extra = '', link = true) => `<${link ? `a href="${wikiHref(n)}"` : 'div'} class="act"><b>${esc(n)}</b>${pic(n) ? `<img loading="lazy" src="${pic(n)}" alt="">` : ''}${extra}</${link ? 'a' : 'div'}>`;
+  const chips = (l, note) => `<span class="encs">${l.map(x => `<span class="enc">${esc(x)}</span>`).join('')}</span><small>${note}</small>`;
   const master = n => cur.master.includes(n) ? '<span class="encs"><span class="badge good">Master available</span></span>' : '';
   const hourStart = t => Math.floor(t / 3600e3) * 3600e3, at = t => new Date(t).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
   const drawDistortion = () => {
@@ -1842,16 +1843,15 @@ async function home() {
       <details class="calibrate"><summary>Not what the Director shows?</summary><p class="muted">Pick the destination that's distorted right now and the schedule shifts to match (saved in this browser).</p>
         <div class="tabs">${DISTORTIONS.map((d, i) => `<button type="button" data-distort="${i}"${d === n ? ' class="on" aria-pressed="true"' : ''}>${esc(d)}</button>`).join('')}</div></details>`;
   };
-  $app.innerHTML = `<h1>This week</h1><p class="muted">Week ${cur.week ?? ''} · reset ${new Date(cur.start + 'T17:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · next reset in <b id="rcount"></b></p>
+  $app.innerHTML = `<h1>This week</h1><p class="muted">Week ${cur.week ?? ''} · reset ${new Date(cur.start + 'T17:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · next reset in <b id="rcount"></b>${cur.pvp ? ` · PvP: <a href="${wikiHref(cur.pvp)}">${esc(cur.pvp)}</a>` : ''}</p>
     <section class="panel bare"><h2>Distortions</h2><div id="distort"></div></section>
-    ${[['Featured raids', 'raids', 'bfe80e3dafe6686a9dc42df0606bdc9b', 'raid'], ['Featured dungeons', 'dungeons', 'f20ebb76bee675ca429e470cec58cc7b', 'dungeon']].map(([title, key, icon, kind]) =>
-      `<section class="panel bare"><h2 class="acthead"><img src="${BNET}/common/destiny2_content/icons/DestinyActivityModeDefinition_${icon}.png" alt="">${title}</h2>
-        <div class="acts">${cur[key].map(n => `<a class="act" href="${wikiHref(n)}"><b>${esc(n)}</b>${pic(n) ? `<img loading="lazy" src="${pic(n)}" alt="">` : ''}
-          ${rot.always[key].includes(n) ? `<small>Newest ${kind} · featured every week</small>` : ''}${master(n)}</a>`).join('')}</div></section>`).join('')}
-    <section class="panel bare"><h2>Also this week</h2><div class="obtains">
-      ${card('Grandmaster Nightfall', cur.gm, cur.gmWeapons.length ? `<span class="encs">${cur.gmWeapons.map(w => `<span class="enc">${esc(w)}</span>`).join('')}</span><span class="ohow">Shiny and bonus focus weapons</span>` : '', false)}
-      ${card('PvP event', cur.pvp)}
-      ${cur.pantheon.length ? card('Pantheon', 'Pantheon', `<span class="encs">${cur.pantheon.map(b => `<span class="enc">${esc(b)}</span>`).join('')}</span><span class="ohow">Reprise and encore bosses</span>`) : ''}</div>
+    ${[['Featured raids', 'raids', 'DestinyActivityModeDefinition_bfe80e3dafe6686a9dc42df0606bdc9b', 'raid'], ['Featured dungeons', 'dungeons', 'DestinyActivityModeDefinition_f20ebb76bee675ca429e470cec58cc7b', 'dungeon']].map(([title, key, icon, kind]) =>
+      `<section class="panel bare">${head(icon, title)}<div class="acts">${cur[key].map(n => act(n, `${rot.always[key].includes(n) ? `<small>Newest ${kind} · featured every week</small>` : ''}${master(n)}`)).join('')}</div></section>`).join('')}
+    <div class="weekly">
+      <section class="panel bare">${head('3642cf9e2acd174dcab5b5f9e3a3a45d', 'Grandmaster')}${act(cur.gm, cur.gmWeapons.length ? chips(cur.gmWeapons, 'Shiny and bonus focus weapons') : '', false)}</section>
+      ${cur.pantheon.length ? `<section class="panel bare">${head('bd7a1fc995f87be96698263bc16698e7', 'Pantheon')}<a href="${wikiHref('Pantheon')}" class="act"><b>${esc(cur.pantheon.join(' · '))}</b><img loading="lazy" src="${pic('Pantheon')}" alt=""><small>Reprise and encore bosses</small></a></section>` : ''}
+    </div>
+    <section class="panel bare">
       <p class="refsrc">Schedule from Court's Weekly Reset tab in Llama's sheets. Plan around it on the <a href="#/farm">Farming</a> page.</p></section>`;
   drawDistortion();
   $app.querySelector('#distort').addEventListener('click', e => {
