@@ -1826,8 +1826,8 @@ async function home() {
   const [rot, art] = await Promise.all([load('rotation'), load('wiki')]);
   const { cur } = rotationWeeks(rot), seq = routeSeq;
   const reset = new Date(cur.start + 'T17:00:00Z').getTime() + 7 * 864e5;
-  // planet art cut from Randy's Destiny 2 system map; Throne World isn't on it, so it keeps its Bungie screenshot
-  const planet = n => ({ Cosmodrome: 'earth', 'European Dead Zone': 'earth', 'The Dreaming City': 'dreaming', Moon: 'moon', Europa: 'europa', Nessus: 'nessus' })[n];
+  // planet art cut from Randy's Destiny 2 system map; Throne World from his Director screenshot
+  const planet = n => ({ Cosmodrome: 'earth', 'European Dead Zone': 'earth', 'The Dreaming City': 'dreaming', "Savathun's Throne World": 'throne', Moon: 'moon', Europa: 'europa', Nessus: 'nessus' })[n];
   const pic = n => planet(n) ? `img/planets/${planet(n)}.jpg` : (p => p && BNET + p)([art.img[n.toLowerCase()], art.places[fold(n)]?.img].find(i => i && !/placeholder/.test(i)));
   const card = (kind, n, extra = '', link = true) => `<${link ? `a href="${wikiHref(n)}"` : 'div'} class="obtain"><span class="oart">${pic(n) ? `<img loading="lazy" src="${pic(n)}" alt="">` : ''}</span>
     <span class="obody"><small>${esc(kind)}</small><b>${esc(n)}</b>${extra}</span></${link ? 'a' : 'div'}>`;
