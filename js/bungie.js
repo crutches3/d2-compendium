@@ -141,7 +141,10 @@ const Bungie = (() => {
   async function vendors(p, characterId) {
     const r = await call(p ? `/Destiny2/${p.membershipType}/Profile/${p.membershipId}/Character/${characterId}/Vendors/?components=400,402,304,305,310`
       : '/Destiny2/Vendors/?components=400,402');
-    return Object.entries(r.sales?.data || {}).flatMap(([vh, s]) => Object.values(s.saleItems).map(x => {
+    // only the vendors the game shows in the Tower and Director (vendorGroups, as DIM does), in its order; this drops hidden
+    // vendors like the season pass and the Monument's archives
+    const shown = (r.vendorGroups?.data?.groups || []).flatMap(g => g.vendorHashes).map(String);
+    return Object.entries(r.sales?.data || {}).filter(([vh]) => shown.includes(vh)).sort(([x], [y]) => shown.indexOf(x) - shown.indexOf(y)).flatMap(([vh, s]) => Object.values(s.saleItems).map(x => {
       const c = r.itemComponents?.[vh] || {}, i = x.vendorItemIndex, plugs = new Set();
       (c.sockets?.data?.[i]?.sockets || []).forEach(k => k.plugHash && plugs.add(k.plugHash));
       Object.values(c.reusablePlugs?.data?.[i]?.plugs || {}).forEach(col => col.forEach(pl => plugs.add(pl.plugItemHash)));

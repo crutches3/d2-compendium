@@ -8,8 +8,10 @@ const nh = W.find(w => w.h === 1801007332), helm = A.armor.find(x => x.a3 && x.c
 const perks = nh.cols.filter(c => c.c === 'Weapon Perks').map(c => c.p[0]);  // Arrowhead Brake, Accurized Rounds, Physic, Incandescent
 const [wst, hst] = Object.keys(A.stats);
 const sale = (i, itemHash) => ({ [i]: { vendorItemIndex: i, itemHash, quantity: 1, costs: [] } });
-const pub = { sales: { data: { 100: { saleItems: { ...sale(0, nh.h), ...sale(1, 3158812152) } } } } };
-const char = { sales: { data: { 100: { saleItems: { ...sale(0, nh.h), ...sale(1, helm.h) } }, 200: { saleItems: sale(0, 3158812152) } } },
+const pub = { vendorGroups: { data: { groups: [{ vendorHashes: [100] }] } }, sales: { data: { 100: { saleItems: { ...sale(0, nh.h), ...sale(1, 3158812152) } } } } };
+// 300 (say, the season pass) sells a weapon too but isn't in a vendor group, so it stays hidden
+const char = { vendorGroups: { data: { groups: [{ vendorHashes: [200, 100] }] } },
+  sales: { data: { 100: { saleItems: { ...sale(0, nh.h), ...sale(1, helm.h) } }, 200: { saleItems: sale(0, 3158812152) }, 300: { saleItems: sale(0, nh.h) } } },
   itemComponents: { 100: { sockets: { data: { 0: { sockets: perks.map(plugHash => ({ plugHash })) } } }, stats: { data: { 1: { stats: { [wst]: { value: 30 }, [hst]: { value: 12 } } } } } } } };
 const urls = [];
 const b = await chromium.launch(), ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
