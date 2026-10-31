@@ -34,6 +34,7 @@ await p.goto('http://localhost:8765/#/vendors'); await p.waitForSelector('#vendo
 assert.equal(await p.textContent('#vendors .vhead'), 'Banshee-44');
 assert.deepEqual(await p.$$eval('#vendors .vitem b', l => l.map(x => x.textContent)), ['No Hesitation']);
 assert.equal(await p.$$eval('#vendors .pips', l => l.length), 0);
+assert.equal(await p.textContent('#vendors .vitem .badge.good'), 'God roll possible');  // rolls unseen, so whether its pool can roll Physic/Burning Ambition + Chaos Reshaped/…
 assert(await p.isVisible('#vsign'));
 // signed in: the character endpoint, with the weapon graded and armor stats shown
 await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', membership_id: '9', expires_at: Date.now() + 3e6 })));
@@ -51,6 +52,7 @@ assert(urls.some(u => u.includes('/Character/H1/Vendors/')));
 await p.click('.tabs a[href="#/vendors/monument"]'); await p.waitForSelector('#vendors .vhead:text("The Final Shape Exotics")');
 assert.deepEqual(await p.$$eval('#vendors .vhead', l => l.map(x => x.textContent)), ['The Final Shape Exotics']);
 assert.deepEqual(await p.$$eval('#vendors .vitem b', l => l.map(x => x.textContent)), ['No Hesitation']);
+assert.equal(await p.textContent('#vendors .vitem .badge.good'), 'God roll possible');
 assert.equal(await p.getAttribute('.tabs a[href="#/vendors/monument"]', 'aria-current'), 'page');
 // the home page no longer lists vendors
 await p.click('nav a[href="#/"]'); await p.waitForSelector('#distort .sphere');

@@ -1879,11 +1879,20 @@ async function vendorsPage(tab) {
     <p class="muted">${mon ? 'Exotics and legacy gear the Monument to Lost Lights in the Tower always sells.' : 'What each vendor sells this week.'}</p><section class="panel bare"><div id="vendors"><p class="muted">Loading…</p></div></section>`;
   await (mon ? monument() : vendorStock());
 }
+// A vendor gun's tier-list roll: its own, else another version's with the same name (vendors often sell a reissued hash)
+const vendorRoll = (d, w) => d.rolls[w.h] || d.rolls[d.weapons.find(v => v !== w && baseName(v.n) === baseName(w.n) && d.rolls[v.h]?.p)?.h];
+// For a gun whose roll you can't see: can its perk pool roll both main perks of the tier list's god roll?
+function godPossible(d, w, r) {
+  const main = Object.entries(r?.p || {}).filter(([c, v]) => /^Perk \d$/.test(c) && v.length);
+  if (!main.length) return '';
+  const pool = new Set(w.cols.filter(c => c.c === 'Weapon Perks').flatMap(c => c.p.map(h => d.plugs[h]?.n)));
+  return main.every(([, v]) => v.some(n => pool.has(n))) ? '<span class="badge good">God roll possible</span>' : '<span class="badge">God roll can\'t drop here</span>';
+}
 async function monument() {
   const box = $app.querySelector('#vendors');
   try {
     const [d, defs] = await Promise.all([data(), live(Promise.all(MONUMENT.map(h => Bungie.call(`/Destiny2/Manifest/DestinyVendorDefinition/${h}/`))))]);
-    const row = w => `<a class="vitem" href="#/weapon/${w.h}">${icon(w)}<div><b>${esc(w.n)}</b><small>${esc(w.ty)}</small><div class="vsub">${tierBadge(d.rolls[w.h])}</div></div></a>`;
+    const row = w => `<a class="vitem" href="#/weapon/${w.h}">${icon(w)}<div><b>${esc(w.n)}</b><small>${esc(w.ty)}</small><div class="vsub">${tierBadge(vendorRoll(d, w))}${godPossible(d, w, vendorRoll(d, w))}</div></div></a>`;
     box.innerHTML = defs.flatMap(v => v.displayCategories.map(c => [c.displayProperties.name, v.itemList.filter(i => i.displayCategoryIndex === c.index).map(i => d.byHash[i.itemHash]).filter(Boolean)]))
       .filter(([, ws]) => ws.length).map(([n, ws]) => `<h3 class="vhead">${esc(n)}</h3><div class="vitems">${ws.map(row).join('')}</div>`).join('');
   } catch (e) { if (box.isConnected) box.innerHTML = `<p class="muted">Couldn't load the Monument: ${esc(e.message)}</p>`; }
@@ -1902,7 +1911,8 @@ async function vendorStock(ci = 0) {
       let sub;
       if (w) {
         const perks = w.cols.filter(c => c.c === 'Weapon Perks').flatMap(c => c.p.filter(h => x.plugs.has(h))).map(h => d.plugs[h]).filter(Boolean);
-        sub = `${tierBadge(d.rolls[w.h])}${rolled ? rollPips(rollFit(d, d.rolls[w.h], x.plugs)) : ''}<span class="minis">${perks.map(p => p.i && `<img src="${BNET}${p.i}" alt="${esc(p.n)}" title="${esc(p.n)}">`).join('')}</span>`;
+        const r = vendorRoll(d, w);
+        sub = `${tierBadge(r)}${rolled ? rollPips(rollFit(d, r, x.plugs)) : godPossible(d, w, r)}<span class="minis">${perks.map(p => p.i && `<img src="${BNET}${p.i}" alt="${esc(p.n)}" title="${esc(p.n)}">`).join('')}</span>`;
       } else {
         const arch = archetypeOf(a, x), st = Object.entries(a.stats).filter(([h]) => x.stats[h]);
         sub = `${arch ? `<span class="badge mode">${esc(arch.n)}</span>` : ''}${st.length ? `${statTotal(a, x)} total · ${st.map(([h, n]) => `${esc(n)} ${x.stats[h]}`).join(' · ')}` : ''}`;
