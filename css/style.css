@@ -502,6 +502,18 @@ a.obtain b { color: var(--accent); }
 
 /* home: the distorted planet big, with a live countdown, and the next two smaller beside it */
 section.panel.bare { background: none; border: 0; padding: 14px 0 0; }
+.acthead { display: flex; align-items: center; gap: 10px; }
+.acthead img { width: 28px; height: 28px; }
+section.panel.bare h2.acthead { font: 400 15px/1.4 Georgia, "Times New Roman", serif; letter-spacing: .3em; color: #f3ead8; margin-bottom: 16px; }
+.acts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 24px; }
+.act { display: flex; flex-direction: column; gap: 8px; color: var(--text); }
+.act:hover { text-decoration: none; }
+.act img { width: 100%; aspect-ratio: 21 / 9; object-fit: cover; border-radius: 6px; transition: scale .2s var(--ease-out); }
+.act:hover img { scale: 1.02; }
+/* the same spaced serif capitals as the Distortion planets */
+.act b, .globe b { font-family: Georgia, "Times New Roman", serif; font-weight: 400; text-transform: uppercase; letter-spacing: .3em; color: #f3ead8; }
+.act b { font-size: 14px; text-shadow: 0 0 8px rgba(0, 0, 0, .8); }
+.act small { color: var(--muted); font-size: 12px; }
 .bare .obtains { grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); }
 .orbit { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
 @media (max-width: 640px) { .orbit { justify-content: center; } .sphere.now { flex-basis: 100%; } }
