@@ -1826,17 +1826,18 @@ async function home() {
   const [rot, art] = await Promise.all([load('rotation'), load('wiki')]);
   const { cur } = rotationWeeks(rot), seq = routeSeq;
   const reset = new Date(cur.start + 'T17:00:00Z').getTime() + 7 * 864e5;
-  // planet art cut from Randy's Destiny 2 system map; Throne World from his Director screenshot
-  const planet = n => ({ Cosmodrome: 'earth', 'European Dead Zone': 'earth', 'The Dreaming City': 'dreaming', "Savathun's Throne World": 'throne', Moon: 'moon', Europa: 'europa', Nessus: 'nessus' })[n];
-  const pic = n => planet(n) ? `img/planets/${planet(n)}.jpg` : (p => p && BNET + p)([art.img[n.toLowerCase()], art.places[fold(n)]?.img].find(i => i && !/placeholder/.test(i)));
+  const pic = n => (p => p && BNET + p)([art.img[n.toLowerCase()], art.places[fold(n)]?.img].find(i => i && !/placeholder/.test(i)));
+  // round planet art cut from Randy's Destiny 2 system map and Director screenshot
+  const planet = n => `img/planets/${{ Cosmodrome: 'cosmodrome', 'European Dead Zone': 'edz', 'The Dreaming City': 'dreaming', "Savathun's Throne World": 'throne', Moon: 'moon', Europa: 'europa', Nessus: 'nessus' }[n]}.webp`;
+  const sphere = (cls, n, when) => `<a class="sphere ${cls}" href="${wikiHref(n)}"><img src="${planet(n)}" alt=""><b>${esc(n)}</b><small>${when}</small></a>`;
   const card = (kind, n, extra = '', link = true) => `<${link ? `a href="${wikiHref(n)}"` : 'div'} class="obtain"><span class="oart">${pic(n) ? `<img loading="lazy" src="${pic(n)}" alt="">` : ''}</span>
     <span class="obody"><small>${esc(kind)}</small><b>${esc(n)}</b>${extra}</span></${link ? 'a' : 'div'}>`;
   const master = n => cur.master.includes(n) ? '<span class="encs"><span class="badge good">Master available</span></span>' : '';
   const hourStart = t => Math.floor(t / 3600e3) * 3600e3, at = t => new Date(t).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
   const drawDistortion = () => {
     const now = Date.now(), h = hourStart(now), n = distortionAt(now);
-    $app.querySelector('#distort').innerHTML = `<div class="distortnow">${card('Distorted now', n, '<span class="ohow">Ends in <b class="countdown" id="dcount"></b></span>')}</div>
-      <h3>Next up</h3><div class="obtains">${[1, 2, 3].map(i => card(`From ${at(h + i * 3600e3)}`, distortionAt(h + i * 3600e3))).join('')}</div>
+    $app.querySelector('#distort').innerHTML = `<div class="orbit">${sphere('now', n, 'Ends in <span class="countdown" id="dcount"></span>')}
+      ${[1, 2].map(i => sphere('next', distortionAt(h + i * 3600e3), `From ${at(h + i * 3600e3)}`)).join('')}</div>
       <details class="calibrate"><summary>Not what the Director shows?</summary><p class="muted">Pick the destination that's distorted right now and the schedule shifts to match (saved in this browser).</p>
         <div class="tabs">${DISTORTIONS.map((d, i) => `<button type="button" data-distort="${i}"${d === n ? ' class="on" aria-pressed="true"' : ''}>${esc(d)}</button>`).join('')}</div></details>`;
   };
