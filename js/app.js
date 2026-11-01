@@ -174,7 +174,7 @@ async function weaponList(params) {
   $app.innerHTML = `<h1>Weapons</h1><p class="muted">Every weapon in the game, with perks, stats, Endgame Analysis tiers and rolls, and what your sheets say about it.</p><div class="filters">
     <input type="search" id="q" aria-label="Search weapons" placeholder="Search weapons, perks or sources" value="${esc(params.get('q') || '')}">
     ${select('ty', 'All types', uniq('ty'))}${select('dm', 'All elements', uniq('dm'))}${select('am', 'All ammo', uniq('am'))}${select('ti', 'All rarities', uniq('ti'))}
-    ${select('tier', 'All tiers', TIERS.map(t => [t, 'Tier ' + t]))}</div>
+    ${select('tier', 'All tiers', TIERS.map(t => [t, 'Tier ' + t]))}${select('cr', 'Craftable or not', [['yes', 'Craftable'], ['no', 'Not craftable']])}</div>
     <div class="perkfind"><span id="perkchips" class="chips"></span><input type="search" id="perkin" list="perknames" aria-label="Add a perk" placeholder="Add a perk…" autocomplete="off">
       <datalist id="perknames">${[...icons.keys()].map(n => `<option value="${esc(n)}">`).join('')}</datalist><small id="perkhint" class="muted"></small></div>
     <p id="count" class="muted"></p><div class="grid" id="list"></div>`;
@@ -193,6 +193,7 @@ async function weaponList(params) {
     const list = d.weapons.filter(w => (!q || w.n.toLowerCase().includes(q) || w.src.toLowerCase().includes(q) ||
         w.cols.some(c => c.p.some(p => d.plugs[p]?.n.toLowerCase() === q)))
       && ['ty', 'dm', 'am', 'ti'].every(k => !f(k).value || w[k] === f(k).value) && (!f('tier').value || d.rolls[w.h]?.t === f('tier').value)
+      && (!f('cr').value || ('rc' in w) === (f('cr').value === 'yes'))
       && (!perks.length || rollFor(d, w, perks)));
     // reissues share a name; list each name once (newest version first, by the build's sort) and link the rest from its page
     const byName = new Map();
@@ -671,13 +672,14 @@ async function inventory(tab) {
     return { w, r, list, best: bestFit(fits), god: fits.filter(isGod).length, hasRolls: !!r?.c?.length };
   }).sort((a, b) => gradeRank(a.best) - gradeRank(b.best) || tierOrder(a.r) - tierOrder(b.r) || a.w.n.localeCompare(b.w.n));
   $app.innerHTML = `<h1>My gear</h1>${gearTabs('Weapons')}<p class="muted">${plural(owned.length, 'weapon')}, ${plural(rows.reduce((s, r) => s + r.god, 0), 'god roll')}, ${plural(rows.filter(r => r.list.length > 1).length, 'weapon')} with duplicates.</p>
-    <div class="filters"><input type="search" id="q" aria-label="Filter your weapons" placeholder="Filter by name"><select id="show" aria-label="Show"><option value="">Everything</option><option value="god">God rolls</option><option value="nogod">Has a god roll I don't own yet</option><option value="dupe">Duplicates</option></select></div>
+    <div class="filters"><input type="search" id="q" aria-label="Filter your weapons" placeholder="Filter by name"><select id="show" aria-label="Show"><option value="">Everything</option><option value="god">God rolls</option><option value="nogod">Has a god roll I don't own yet</option><option value="dupe">Duplicates</option><option value="craft">Craftable</option><option value="crafted">Crafted copies</option><option value="pattern">Pattern not finished</option></select></div>
     <p>${rollLegend}</p><div class="grid" id="list"></div>`;
   const draw = () => {
     const q = $app.querySelector('#q').value.toLowerCase(), show = $app.querySelector('#show').value;
     $app.querySelector('#list').innerHTML = rows.filter(r => r.w.n.toLowerCase().includes(q) &&
-        (!show || show === 'god' && r.god || show === 'nogod' && r.hasRolls && !r.god || show === 'dupe' && r.list.length > 1))
-      .map(r => card(r.w, `<small>${tierBadge(r.r)}${esc(r.w.ty)} · owned ×${r.list.length}</small>
+        (!show || show === 'god' && r.god || show === 'nogod' && r.hasRolls && !r.god || show === 'dupe' && r.list.length > 1
+          || show === 'craft' && 'rc' in r.w || show === 'crafted' && r.list.some(i => i.crafted) || show === 'pattern' && /Pattern \d/.test(craftBadge(r.w, p))))
+      .map(r => card(r.w, `<small>${tierBadge(r.r)}${/craft|pattern/.test(show) ? craftBadge(r.w, p) : ''}${esc(r.w.ty)} · owned ×${r.list.length}</small>
         <small>${rollPips(r.best)}${r.god > 1 ? ` · ${r.god} god rolls` : ''}</small>`)).join('')
       || '<p class="empty">Nothing matches this filter.</p>';
   };
