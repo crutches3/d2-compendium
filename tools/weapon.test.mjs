@@ -50,6 +50,14 @@ assert.equal((await colHeads())[0], 'Intrinsic');
 await p.goto('http://localhost:8765/#/weapons'); await p.waitForSelector('#list .card');
 await p.selectOption('#cr', 'yes'); assert.equal(await p.locator('#list .card .icon.craftable').count(), await p.locator('#list .card').count()); assert.equal(await p.textContent('#count'), '219 weapons');
 await p.selectOption('#cr', 'no'); assert.equal(await p.locator('#list .card .icon.craftable').count(), 0); assert.ok(!(await p.innerText('#list')).includes('Defiance of Yasmin'));
+// retired versions (reissued since) are left out of lists, but their page still opens and says so
+const coup = W.filter(w => w.n === 'Midnight Coup'), oldCoup = coup.find(w => w.old);
+assert.ok(oldCoup && coup.some(w => !w.old));
+await p.selectOption('#cr', ''); await p.fill('#q', 'midnight coup');
+const hrefs = await p.$$eval('#list .card', cs => cs.map(c => (c.closest('a') || c.querySelector('a')).getAttribute('href')));
+assert.ok(hrefs.length && hrefs.every(h => !coup.find(w => w.old && h.endsWith('/' + w.h))), hrefs.join());
+await p.goto(`http://localhost:8765/#/weapon/${oldCoup.h}`); await p.waitForSelector('.versions');
+assert.match(await p.innerText('#app'), /Retired version/);
 assert.deepEqual(errs, []);
 await b.close();
 console.log('weapon tests passed');

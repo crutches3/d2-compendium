@@ -28,7 +28,9 @@ const hero = (x, badges) => `<div class="hero${x.ss ? '' : ' plain'}"${x.ss ? ` 
 async function data() {
   const [w, plugs, gr] = await Promise.all([load('weapons'), load('plugs'), load('godrolls')]);
   w.byHash ||= Object.fromEntries(w.weapons.map(x => [x.h, x]));
-  return { weapons: w.weapons, byHash: w.byHash, version: w.version, scales: w.scales, plugs, rolls: gr.rolls, source: gr.source };
+  // retired versions (old: reissued since, not craftable) are left out of every list; byHash keeps them so copies you own still show
+  w.current ||= w.weapons.filter(x => !x.old);
+  return { weapons: w.current, byHash: w.byHash, version: w.version, scales: w.scales, plugs, rolls: gr.rolls, source: gr.source };
 }
 
 // d.rolls[hash] is Aegis's Endgame Analysis rating; exotics are rated but have no roll to match.
@@ -269,6 +271,7 @@ async function weaponPage(hash) {
   const goal = () => { const b = savedBuilds().find(x => x.key === goalKey); return b ? buildRoll(d, b, w) : null; };
   $app.innerHTML = `
     ${hero(w, `<span class="badge">${esc(w.ti)}</span><span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span><span class="badge">${esc(w.ty)}</span><span class="badge">${esc(w.sl)} · ${esc(w.am)}</span>${tierBadge(er)}${craftBadge(w, S.profile)}`)}
+    ${w.old ? '<p class="versions">Retired version: it no longer drops, so lists show the current one.</p>' : ''}
     ${same.length ? `<p class="versions">Other versions: ${same.map((x, i) => `<a href="#/weapon/${x.h}">${esc(bungieSource(x) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
     ${obtainPanel(w.h)}
     <div class="wtop"><section class="panel perkpanel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll <span class="key cur"></span> Curated roll${goalBuilds.length ? ' <span class="key goal"></span> Build roll' : ''}</p>
