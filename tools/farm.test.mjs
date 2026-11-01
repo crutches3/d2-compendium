@@ -140,6 +140,11 @@ assert.ok((await section('Raids', "King's Fall")).includes('Build roll 0/1'));
 await p.goto(`http://localhost:8765/#/weapon/${W.find(w => w.n === zaouli.n && w.rc).h}`); await p.waitForSelector('.copy');
 assert.equal(await p.textContent('.hero .badge.craft'), 'Pattern 3/5');
 assert.ok((await p.textContent('.copy .where')).includes('· crafted'));
+// My gear's Weapons tab filters to craftable guns, crafted copies or unfinished patterns, with the pattern shown
+await p.goto('http://localhost:8765/#/inventory/weapons'); await p.waitForSelector('#list .card');
+const gear = async v => { await p.selectOption('#show', v); return p.innerText('#list'); };
+assert.ok((await gear('craft')).includes('Doom of Chelchis'));
+const crafted = await gear('crafted'); assert.ok(crafted.includes("Zaouli's Bane") && !crafted.includes('Doom of Chelchis'));
 
 assert.deepEqual(errs, []);
 assert.deepEqual(unversioned, []);
