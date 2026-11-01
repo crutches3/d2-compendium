@@ -12,8 +12,10 @@ const helm = A.armor.find(x => x.a3 && x.cl === 'Hunter' && x.ty === 'Helmet' &&
 const [setHash, set] = Object.entries(A.sets).find(([h]) => A.armor.some(x => x.set === h && x.a3 && x.cl === 'Hunter'));
 const profile = {
   characters: { data: { H1: { classType: 1, light: 480 } } },
-  profileInventory: { data: { items: [{ itemHash: doom.h, itemInstanceId: '1', bucketHash: 138197802 }, { itemHash: zaouli.h, itemInstanceId: '2', bucketHash: 138197802 },
+  profileInventory: { data: { items: [{ itemHash: doom.h, itemInstanceId: '1', bucketHash: 138197802 }, { itemHash: zaouli.h, itemInstanceId: '2', bucketHash: 138197802, state: 8 },
     { itemHash: helm.h, itemInstanceId: '3', bucketHash: 138197802 }] } },
+  // Zaouli's Bane is crafted, and its pattern is 3 of 5 red borders in
+  profileRecords: { data: { records: { [W.find(w => w.n === zaouli.n && w.rc).rc]: { objectives: [{ progress: 3, completionValue: 5 }] } } } },
   characterInventories: { data: { H1: { items: [] } } }, characterEquipment: { data: { H1: { items: [] } } },
   // Doom of Chelchis has a Perk 1 and a Perk 2 pick; Zaouli's Bane has neither
   itemComponents: { sockets: { data: { 1: { sockets: R[doom.h].c.map(col => ({ plugHash: col[0] })) }, 2: { sockets: [] } } }, reusablePlugs: { data: {} }, instances: { data: {} },
@@ -54,7 +56,8 @@ const types = () => p.$$eval('.typetabs button', bs => bs.map(b => b.dataset.typ
 assert.deepEqual((await types()).slice(0, 5), ['Raids', 'Dungeons', 'Pantheon', 'Grandmaster', 'PvP']);
 assert.equal(await p.getAttribute('[data-view="now"]', 'aria-pressed'), 'true');
 assert.equal(await p.locator('#plan section').count(), 1);
-assert.ok((await section('Raids', "King's Fall")).includes('Doom of Chelchis'));
+assert.ok((await section('Raids', "King's Fall")).includes('Doom of Chelchis\nTier S'));
+assert.match(await section('Raids', "King's Fall"), /Doom of Chelchis\n.*Craftable/, 'craftable badge, signed out');
 assert.ok(!(await plan()).includes('Doom of Chelchis (Harrowed)'), 'Harrowed copies merge into the base weapon');
 // the priority callout jumps back to its tab
 await section('PvP', 'Iron Banner');
@@ -82,6 +85,7 @@ assert.ok(!(await p.innerText('#app')).includes('Sign in with Bungie so the plan
 const kf = await section('Raids', "King's Fall");
 assert.ok(!kf.includes('Doom of Chelchis'), 'owned god roll should be skipped');
 assert.ok(kf.includes("Zaouli's Bane") && kf.includes('Your best:') && kf.includes('No match'));
+assert.match(kf, /Zaouli's Bane\n.*Pattern 3\/5/, 'pattern progress, signed in');
 
 // an armor set: only pieces for your classes (this account is Hunter only)
 await p.click('#prefs summary');
@@ -131,6 +135,11 @@ assert.ok(await p.locator('.perk.goal').count() === 1);
 // the farming plan now wants that roll from the build
 await p.goto('http://localhost:8765/#/farm'); await p.waitForSelector('#plan section');
 assert.ok((await section('Raids', "King's Fall")).includes('Build roll 0/1'));
+
+// the King's Fall version is craftable: its page shows the pattern's progress and marks the crafted copy
+await p.goto(`http://localhost:8765/#/weapon/${W.find(w => w.n === zaouli.n && w.rc).h}`); await p.waitForSelector('.copy');
+assert.equal(await p.textContent('.hero .badge.craft'), 'Pattern 3/5');
+assert.ok((await p.textContent('.copy .where')).includes('· crafted'));
 
 assert.deepEqual(errs, []);
 assert.deepEqual(unversioned, []);

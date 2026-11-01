@@ -13,7 +13,8 @@ TABLES = ['DestinyInventoryItemDefinition', 'DestinyPlugSetDefinition', 'Destiny
           'DestinyLoreDefinition', 'DestinySocketCategoryDefinition', 'DestinyDamageTypeDefinition', 'DestinyStatGroupDefinition',
           'DestinyEquipableItemSetDefinition', 'DestinySandboxPerkDefinition', 'DestinyActivityDefinition', 'DestinyVendorDefinition',
           'DestinyDestinationDefinition', 'DestinyActivityTypeDefinition', 'DestinyLoadoutConstantsDefinition', 'DestinyLoadoutNameDefinition',
-          'DestinyLoadoutIconDefinition', 'DestinyLoadoutColorDefinition']
+          'DestinyLoadoutIconDefinition', 'DestinyLoadoutColorDefinition', 'DestinyRecordDefinition', 'DestinyPresentationNodeDefinition']
+PATTERNS_NODE = 2642502414  # DestinyPresentationNodeDefinition "Patterns & Catalysts"; its records are named after the weapon
 LOST_SECTOR = 103143560  # DestinyActivityTypeDefinition "Lost Sector"
 PLACE_ALIAS = {'arcadian valley': 'nessus'}  # the manifest's name for Nessus's patrol zone
 SKIP_STATS = {1480404414, 1935470627}  # Attack, Power
@@ -58,6 +59,12 @@ def plug_list(entry, plugsets):
 def build(d):
     I, PS, ST = d['DestinyInventoryItemDefinition'], d['DestinyPlugSetDefinition'], d['DestinyStatDefinition']
     COL, LORE, CAT = d['DestinyCollectibleDefinition'], d['DestinyLoreDefinition'], d['DestinySocketCategoryDefinition']
+    # craftable guns: the pattern record (red borders, e.g. 3/5) by weapon name; Adept and Harrowed versions share the base pattern
+    REC, NODE, pattern, todo = d['DestinyRecordDefinition'], d['DestinyPresentationNodeDefinition'], {}, [PATTERNS_NODE]
+    while todo:
+        n = NODE[str(todo.pop())]['children']
+        todo += [c['presentationNodeHash'] for c in n['presentationNodes']]
+        for c in n['records']: pattern.setdefault(REC[str(c['recordHash'])]['displayProperties']['name'], c['recordHash'])
     DMG, SG = d['DestinyDamageTypeDefinition'], d['DestinyStatGroupDefinition']
     stat_name = lambda h: ST.get(str(h), {}).get('displayProperties', {}).get('name', '')
     weapons, plugs, scales = [], {}, []
@@ -108,7 +115,8 @@ def build(d):
                         'ty': it.get('itemTypeDisplayName', ''), 'ti': it['inventory'].get('tierTypeName', ''),
                         'dm': DMG.get(str(it.get('defaultDamageTypeHash')), {}).get('displayProperties', {}).get('name', ''),
                         'am': AMMO.get(it.get('equippingBlock', {}).get('ammoType'), ''), 'sl': SLOT.get(it['inventory'].get('bucketTypeHash'), ''),
-                        'fl': it.get('flavorText', ''), 'src': col.get('sourceString', ''), 'lore': lore, 'st': stats, 'cols': columns})
+                        'fl': it.get('flavorText', ''), 'src': col.get('sourceString', ''), 'lore': lore, 'st': stats, 'cols': columns,
+                        **({'rc': pattern.get(re.sub(r'\s*\((Adept|Timelost|Harrowed)\)$', '', dp['name']), 0)} if it['inventory'].get('recipeItemHash') else {})})
     weapons.sort(key=lambda w: (w['n'], -w['h']))
     return weapons, plugs, scales
 
@@ -318,6 +326,7 @@ def main():
           len(armor['armor']), 'armor', len(armor['sets']), 'sets', len(armor['archetypes']), 'archetypes')
     assert len(weapons) > 1000 and len(rolls) > 500 and sum(bool(r.get('c')) for r in rolls.values()) > 300, 'manifest or Endgame Analysis parse looks broken'
     assert len(armor['armor']) > 1000 and len(armor['sets']) > 20 and len(armor['archetypes']) >= 6, 'armor parse looks broken'
+    assert sum(w.get('rc', 0) > 0 for w in weapons) > 150, 'craftable pattern parse looks broken'
     assert len(scales) > 10 and "king's fall" in wiki['img'] and 'arc' in wiki['icon'], 'stat curve or wiki art parse looks broken'
     assert len(wiki['places']['moon']['lost']) >= 4 and wiki['places']['nessus']['img'], 'destination or lost sector parse looks broken'
     assert loadouts['count'] >= 10 and len(loadouts['names']) > 10 and loadouts['icons'] and loadouts['colors'], 'loadout constants parse looks broken'

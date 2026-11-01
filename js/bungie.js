@@ -64,17 +64,17 @@ const Bungie = (() => {
 
   // Returns { name, membershipType, chars: [{ id, cls, emblem, light, loadouts: [{ nameHash, iconHash, colorHash, items (count; 0 = empty slot) }] }],
   // items: [{ itemHash, instanceId, owner (character id, null = vault), equipped,
-  // postmaster, location, plugs: Set<plugHash> (socketed plus selectable), socketed: Set<plugHash>, power, tier, stats: {statHash: value} }] }
+  // postmaster, crafted, location, plugs: Set<plugHash> (socketed plus selectable), socketed: Set<plugHash>, power, tier, stats: {statHash: value} }] }
   // for every instanced item.
   async function loadProfile() {
     const m = await call('/User/GetMembershipsForCurrentUser/');
     const primary = m.primaryMembershipId;
     const dm = m.destinyMemberships.find(x => x.membershipId === primary) || m.destinyMemberships[0];
     if (!dm) throw new Error('No Destiny account found on this Bungie profile.');
-    const p = await call(`/Destiny2/${dm.membershipType}/Profile/${dm.membershipId}/?components=102,200,201,205,206,300,304,305,310`);
+    const p = await call(`/Destiny2/${dm.membershipType}/Profile/${dm.membershipId}/?components=102,200,201,205,206,300,304,305,310,900`);
     const items = [];
     const push = (list, owner, equipped) => list.forEach(i => i.itemInstanceId && items.push({ itemHash: i.itemHash, instanceId: i.itemInstanceId, owner, equipped,
-      postmaster: i.bucketHash === POSTMASTER }));
+      postmaster: i.bucketHash === POSTMASTER, crafted: !!(i.state & 8) }));
     push(p.profileInventory.data.items, null, false);
     for (const [cid, inv] of Object.entries(p.characterInventories.data || {})) push(inv.items, cid, false);
     for (const [cid, eq] of Object.entries(p.characterEquipment.data || {})) push(eq.items, cid, true);
@@ -84,7 +84,7 @@ const Bungie = (() => {
         items: l.items.filter(i => +i.itemInstanceId).length })) }));
     // Postmaster slots used per character (it holds 21), counting engrams and materials the site doesn't list
     const postmasterUsed = Object.fromEntries(Object.entries(p.characterInventories.data || {}).map(([cid, inv]) => [cid, inv.items.filter(i => i.bucketHash === POSTMASTER).length]));
-    const profile = { name: m.bungieNetUser.uniqueName || m.bungieNetUser.displayName, membershipType: dm.membershipType, membershipId: dm.membershipId, chars, items, postmasterUsed };
+    const profile = { name: m.bungieNetUser.uniqueName || m.bungieNetUser.displayName, membershipType: dm.membershipType, membershipId: dm.membershipId, chars, items, postmasterUsed, records: p.profileRecords?.data?.records || {} };
     const sockets = p.itemComponents.sockets.data || {}, reusable = p.itemComponents.reusablePlugs.data || {}, inst = p.itemComponents.instances.data || {};
     const stats = p.itemComponents.stats?.data || {};
     for (const it of items) {

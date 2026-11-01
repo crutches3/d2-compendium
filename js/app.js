@@ -67,6 +67,9 @@ function buildRoll(d, b, w) {
 const usesWeapon = (d, b, w) => [...b.loadout.equipped, ...(b.loadout.unequipped || [])].some(i => d.byHash[i.hash] && baseName(d.byHash[i.hash].n) === baseName(w.n));
 const TIERS = ['S', 'A', 'B', 'C', 'D', 'E', 'F'];
 const tierOrder = r => r ? (TIERS.indexOf(r.t) + 1 || 9) * 1000 + r.r : 1e5;
+// craftable guns: signed in, the pattern's red-border progress (3/5) from profile records, else just "Craftable"
+const craftBadge = (w, p) => { if (!w || !('rc' in w)) return ''; const o = p?.records?.[w.rc]?.objectives?.[0];
+  return `<span class="badge craft${o && o.progress >= o.completionValue ? ' good' : ''}">${!o ? 'Craftable' : o.progress >= o.completionValue ? 'Pattern unlocked' : `Pattern ${o.progress}/${o.completionValue}`}</span>`; };
 const tierBadge = r => r ? `<span class="badge tier tier-${esc(r.t)}">Tier ${esc(r.t)}</span>` : '';
 
 async function profile() {
@@ -263,7 +266,7 @@ async function weaponPage(hash) {
   let goalKey = goalBuilds.some(b => b.key === Bungie.store.get('d2c_goal')?.[baseName(w.n)]) ? Bungie.store.get('d2c_goal')[baseName(w.n)] : '', editing = false;
   const goal = () => { const b = savedBuilds().find(x => x.key === goalKey); return b ? buildRoll(d, b, w) : null; };
   $app.innerHTML = `
-    ${hero(w, `<span class="badge">${esc(w.ti)}</span><span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span><span class="badge">${esc(w.ty)}</span><span class="badge">${esc(w.sl)} · ${esc(w.am)}</span>${tierBadge(er)}`)}
+    ${hero(w, `<span class="badge">${esc(w.ti)}</span><span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span><span class="badge">${esc(w.ty)}</span><span class="badge">${esc(w.sl)} · ${esc(w.am)}</span>${tierBadge(er)}${craftBadge(w, S.profile)}`)}
     ${same.length ? `<p class="versions">Other versions: ${same.map((x, i) => `<a href="#/weapon/${x.h}">${esc(bungieSource(x) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
     ${obtainPanel(w.h)}
     <div class="wtop"><section class="panel perkpanel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll <span class="key cur"></span> Curated roll${goalBuilds.length ? ' <span class="key goal"></span> Build roll' : ''}</p>
@@ -390,6 +393,7 @@ async function showCopies(d, w, er, mwPicks, goal) {  // goal(): the selected bu
   try {
     const prof = await profile(); renderAccount();
     if (!box.isConnected) return;
+    $app.querySelector('.badge.craft')?.replaceWith(document.createRange().createContextualFragment(craftBadge(w, prof)));
     const mwName = h => d.plugs[h]?.n.match(/^Masterworked: (.+)/)?.[1];
     // masterwork plugs only count when socketed; every tier of a stat's masterwork shares its name
     const names = i => new Set([...i.plugs].filter(h => !mwName(h) || i.socketed.has(h)).map(h => d.plugs[h]?.n).filter(Boolean));
@@ -410,7 +414,7 @@ async function showCopies(d, w, er, mwPicks, goal) {  // goal(): the selected bu
       mine.sort((a, b) => gradeRank(a.gfit) - gradeRank(b.gfit) || gradeRank(a.fit) - gradeRank(b.fit) || a.missing.length - b.missing.length);
       pinned = null;
       box.innerHTML = `<h3>Your copies <span class="count">${mine.length}</span></h3>${mine.map((c, k) => `<button type="button" class="copy" data-k="${k}" aria-pressed="false">
-        <span class="where">${c.gfit ? rollPips(c.gfit) : ''}${rollPips(c.fit)}${esc(c.i.location)}${c.i.power ? ` · ${c.i.power}` : ''}${c.i.itemHash !== w.h ? ' · other version' : ''}</span>
+        <span class="where">${c.gfit ? rollPips(c.gfit) : ''}${rollPips(c.fit)}${esc(c.i.location)}${c.i.power ? ` · ${c.i.power}` : ''}${c.i.itemHash !== w.h ? ' · other version' : ''}${c.i.crafted ? ' · crafted' : ''}</span>
         <span class="minis">${c.shown.map(p => `<img src="${BNET}${p.i}" alt="${esc(p.n)}" title="${esc(p.n)}">`).join('')}</span>
         ${er?.p ? `<small class="${c.missing.length ? 'miss' : 'full'}">${c.missing.length ? 'Missing: ' + esc(c.missing.join(', ')) : 'Has every recommended pick'}</small>` : ''}</button>`).join('')}
         <p class="muted hint">Hover or tap a copy to see its perks in the grid. A dashed outline is a recommended perk it doesn't have.</p>${er?.p || g ? `<p class="hint">${rollLegend}</p>` : ''}`;
@@ -1227,6 +1231,8 @@ async function farm() {
   const fmtDate = s => new Date(s + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   const sets = Object.entries(a.sets).sort((x, y) => x[1].n.localeCompare(y[1].n));
   const builds = savedBuilds();
+  // the plan lists names, so a name with any craftable version shows its pattern (the Pantheon Zaouli's Bane isn't, the King's Fall one is)
+  const craftable = new Map(d.weapons.filter(w => 'rc' in w).map(w => [baseName(w.n), w]));
 
   $app.innerHTML = `<h1>Farming plan</h1><p class="muted">Week ${cur.week ?? ''} · ${fmtDate(cur.start)} reset. ${p ? '' : 'Sign in with Bungie so the plan skips what you already own.'}</p>
     <section class="panel"><h2>This week</h2><div class="eg"><span class="muted">Raids</span><div class="perks">${cur.raids.map(n => `<span class="badge${cur.master.includes(n) ? ' good' : ''}">${esc(n)}${cur.master.includes(n) ? ' · Master' : ''}</span>`).join('')}</div></div>
@@ -1286,7 +1292,7 @@ async function farm() {
     // the priority farm is this week's best rotating raid or dungeon
     const top = ['Raids', 'Dungeons'].flatMap(k => [...(plans.now.get(k)?.values() || [])]).filter(g => !g.rank).sort((x, y) => score(y) - score(x))[0];
     const [topType, topName] = top ? [...plans.now].flatMap(([k, acts]) => [...acts].map(([n, g]) => [k, n, g])).find(x => x[2] === top) : [];
-    const cards = items => `<div class="grid">${items.sort((m, n) => tierOrder(m.r) - tierOrder(n.r)).map(t => card(t.x, `<small>${tierBadge(t.r)}${t.want ? `${t.owned ? 'You have it, but not with' : 'Not owned · want'} ${esc(t.want)}` : t.owned && t.best ? `Your best: ${rollPips(t.best)}` : t.owned ? 'You have it, not the god roll' : 'Not owned'}</small>
+    const cards = items => `<div class="grid">${items.sort((m, n) => tierOrder(m.r) - tierOrder(n.r)).map(t => card(t.x, `<small>${tierBadge(t.r)}${t.kind === 'weapon' ? craftBadge(craftable.get(baseName(t.x.n)), p) : ''}${t.want ? `${t.owned ? 'You have it, but not with' : 'Not owned · want'} ${esc(t.want)}` : t.owned && t.best ? `Your best: ${rollPips(t.best)}` : t.owned ? 'You have it, not the god roll' : 'Not owned'}</small>
       <small>${t.reasons.map(esc).join(' · ')}</small>`, t.kind)).join('')}</div>`;
     const group = ([name, g]) => `<section class="panel${g === top ? ' priority' : ''}"><h2>${g === top ? 'Priority farm: ' : ''}${esc(name)} <span class="count">${g.note}${g.master ? ' · Master available' : ''} · ${plural(g.items.length, 'item')}</span></h2>${cards(g.items)}</section>`;
     const TYPES = ['Raids', 'Dungeons', 'Pantheon', 'Grandmaster', 'PvP'], rankType = k => (TYPES.indexOf(k) + 1 || 9);

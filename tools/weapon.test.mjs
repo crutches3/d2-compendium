@@ -12,6 +12,7 @@ const stat = async n => (await p.innerText(`#statrows .stat[data-stat="${n}"]`))
 
 await p.goto(`http://localhost:8765/#/weapon/${yasmin.h}`); await p.waitForSelector('#statrows .stat');
 assert.equal(await stat('Handling'), 'Handling 46');
+assert.equal(await p.textContent('.hero .badge.craft'), 'Craftable');  // signed out, no pattern progress
 // the masterwork stacks under a one-choice frame instead of taking a column; its picks still count toward the stats
 const colHeads = () => p.$$eval('.perkcol', cs => cs.map(c => [...c.querySelectorAll('h3')].map(h => h.textContent).join(' + ')));
 assert.deepEqual(await colHeads(), ['Intrinsic + Masterwork', 'Barrel', 'Magazine', 'Trait', 'Trait']);
