@@ -12,7 +12,8 @@ const load = name => live(cache[name] ||= fetch(`data/${name}.json${DATA_VERSION
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const img = (path, cls = '') => path ? `<img class="${cls}" loading="lazy" src="${BNET}${path}" alt="">` : '';
-const icon = w => `<span class="icon">${img(w.i)}${img(w.wm, 'wm')}</span>`;
+// craftable guns get the game's red corner mark
+const icon = w => `<span class="icon">${img(w.i)}${img(w.wm, 'wm')}${'rc' in w ? '<i class="craftmark" title="Craftable"></i>' : ''}</span>`;
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const card = (w, sub, kind = 'weapon') => `<a class="card" href="#/${kind}/${w.h}">${icon(w)}<div><b>${esc(w.n)}</b>${sub}</div></a>`;
 const select = (id, label, vals, cur = '') => `<select id="${id}" aria-label="${label}"><option value="">${label}</option>${vals.map(v => {

@@ -48,8 +48,8 @@ assert.equal(await p.$('.perkcol .stacked'), null);
 assert.equal((await colHeads())[0], 'Intrinsic');
 // the weapon list's craftable filter
 await p.goto('http://localhost:8765/#/weapons'); await p.waitForSelector('#list .card');
-await p.selectOption('#cr', 'yes'); assert.equal(await p.textContent('#count'), '219 weapons');
-await p.selectOption('#cr', 'no'); assert.ok(!(await p.innerText('#list')).includes('Defiance of Yasmin'));
+await p.selectOption('#cr', 'yes'); assert.equal(await p.locator('#list .card .craftmark').count(), await p.locator('#list .card').count()); assert.equal(await p.textContent('#count'), '219 weapons');
+await p.selectOption('#cr', 'no'); assert.equal(await p.locator('#list .card .craftmark').count(), 0); assert.ok(!(await p.innerText('#list')).includes('Defiance of Yasmin'));
 assert.deepEqual(errs, []);
 await b.close();
 console.log('weapon tests passed');
