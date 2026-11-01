@@ -117,6 +117,13 @@ def build(d):
                         'am': AMMO.get(it.get('equippingBlock', {}).get('ammoType'), ''), 'sl': SLOT.get(it['inventory'].get('bucketTypeHash'), ''),
                         'fl': it.get('flavorText', ''), 'src': col.get('sourceString', ''), 'lore': lore, 'st': stats, 'cols': columns,
                         **({'rc': pattern.get(re.sub(r'\s*\((Adept|Timelost|Harrowed)\)$', '', dp['name']), 0)} if it['inventory'].get('recipeItemHash') else {})})
+    # retired versions: a gun reissued later (e.g. Y1 Midnight Coup, pre-Edge of Fate Hung Jury) only drops in its newest release (the item's
+    # releases.vNNN trait); craftable versions stay because the Enclave can still make them. Flagged, not dropped, so copies you own still show.
+    release = lambda h: int((re.search(r'releases\.v(\d+)', ' '.join(I[str(h)].get('traitIds', []))) or [0, 0])[1])
+    newest = {}
+    for w in weapons: newest[w['n']] = max(newest.get(w['n'], 0), release(w['h']))
+    for w in weapons:
+        if release(w['h']) < newest[w['n']] and 'rc' not in w: w['old'] = 1
     weapons.sort(key=lambda w: (w['n'], -w['h']))
     return weapons, plugs, scales
 
@@ -327,6 +334,7 @@ def main():
     assert len(weapons) > 1000 and len(rolls) > 500 and sum(bool(r.get('c')) for r in rolls.values()) > 300, 'manifest or Endgame Analysis parse looks broken'
     assert len(armor['armor']) > 1000 and len(armor['sets']) > 20 and len(armor['archetypes']) >= 6, 'armor parse looks broken'
     assert sum(w.get('rc', 0) > 0 for w in weapons) > 150, 'craftable pattern parse looks broken'
+    assert 200 < sum('old' in w for w in weapons) < len(weapons) / 2, 'retired version check looks broken'
     assert len(scales) > 10 and "king's fall" in wiki['img'] and 'arc' in wiki['icon'], 'stat curve or wiki art parse looks broken'
     assert len(wiki['places']['moon']['lost']) >= 4 and wiki['places']['nessus']['img'], 'destination or lost sector parse looks broken'
     assert loadouts['count'] >= 10 and len(loadouts['names']) > 10 and loadouts['icons'] and loadouts['colors'], 'loadout constants parse looks broken'

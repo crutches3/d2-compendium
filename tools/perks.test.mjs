@@ -4,7 +4,7 @@ import { chromium } from 'playwright';
 import fs from 'fs';
 import assert from 'assert';
 const OUT = (await import('os')).tmpdir() + '/';
-const W = JSON.parse(fs.readFileSync('data/weapons.json')).weapons, P = JSON.parse(fs.readFileSync('data/plugs.json'));
+const W = JSON.parse(fs.readFileSync('data/weapons.json')).weapons.filter(w => !w.old), P = JSON.parse(fs.readFileSync('data/plugs.json'));
 // expected answers, worked out here independently: every way of giving each perk its own column
 const cols = w => w.cols.filter(c => c.c !== 'Weapon Mods').map(c => new Set(c.p.map(h => P[h]?.n)));
 const perms = (n, k) => k === 0 ? [[]] : perms(n, k - 1).flatMap(p => [...Array(n).keys()].filter(i => !p.includes(i)).map(i => [...p, i]));
