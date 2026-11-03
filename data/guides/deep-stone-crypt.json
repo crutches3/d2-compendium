@@ -1,0 +1,129 @@
+{
+  "name": "Deep Stone Crypt",
+  "checked": "2026-11-03",
+  "about": "A six-player raid from Beyond Light (2020), fought beneath the ice of Europa and aboard the Morning Star station above it. It has no Master version. Since Monument of Triumph (June 2026) raids launch from the Raids and Dungeons node in the Director, and Update 9.7.0.3 (July 2026) fixed its elevators often killing players.",
+  "sources": [
+    ["Shacknews: Deep Stone Crypt raid guide", "https://www.shacknews.com/article/121651/deep-stone-crypt-raid-guide-destiny-2"],
+    ["Destinypedia: Deep Stone Crypt (raid)", "https://destinypedia.com/Deep_Stone_Crypt_(Raid)"],
+    ["Destiny Tracker: Complete Deep Stone Crypt raid guide", "https://destinytracker.com/destiny-2/articles/complete-deep-stone-crypt-raid-guide"],
+    ["Prima Games: Atraks-1 boss fight guide", "https://primagames.com/gaming/destiny-2-atraks-1-deep-stone-crypt-guide"],
+    ["Prima Games: Rapture/Crash third encounter guide", "https://primagames.com/?p=314364"],
+    ["Charlie Intel: How to beat the Deep Stone Crypt raid", "https://www.charlieintel.com/destiny/how-to-beat-the-deep-stone-crypt-raid-in-destiny-2-beyond-light-66322/"],
+    ["Charlie Intel: Deep Stone Crypt secret chests", "https://www.charlieintel.com/destiny/how-to-find-the-deep-stone-crypt-secret-chests-in-destiny-2-beyond-light-66367/"],
+    ["TheGamer: Tips for defeating Taniks, the Abomination", "https://www.thegamer.com/destiny-2-beyond-light-defeat-taniks-abomination-tips/"],
+    ["Bungie Help: Monument of Triumph and Update 9.7.0 support guide", "https://help.bungie.net/hc/articles/49848696022548"],
+    ["Shattered Vault: Destiny 2 Update 9.7.0.3", "https://shatteredvault.com/destiny-2-update-9-7-0-3/"]
+  ],
+  "encounters": [
+    {
+      "name": "Crypt Security",
+      "title": "Disable Crypt Security",
+      "before": "Desolation: ride Sparrows or Pikes across the ice from one heat bubble to the next. Outside a bubble the storm adds Frostbite stacks and ten stacks kill you; standing in a bubble clears them. Fallen, including Dark Council Guards, hold the bubbles and Brigs guard the last one. A cleared bubble becomes a checkpoint, and every player has to reach the door into the Crypt.",
+      "what": "Two rooms, Light and Dark, sit above a basement full of keypads. The team uses the Operator and Scanner augments to shut down four keypads, then destroys the six fuses above the central augment terminal.",
+      "steps": [
+        "Split into two teams of three, one in the Light room and one in the Dark room. One player picks up the Operator augment.",
+        "Kill adds until a glowing Vandal drops the Scanner augment. Through the glass floor, the Scanner sees which two of their side's five basement keypads are correct.",
+        "The Operator drops into the basement and shoots the keypads the Scanner calls. Only the Operator can use them.",
+        "The Scanner hands the augment through the terminal to the other room, where a player reads and calls that side's two keypads for the Operator.",
+        "With all four keypads down, the Operator comes back upstairs before the basement purges with fire.",
+        "The Scanner calls which fuse is live. The whole team shoots only that fuse; a wrong one wipes the team.",
+        "Repeat the keypad and fuse cycle until all six fuses are destroyed. Most teams need one or two cycles."
+      ],
+      "roles": [
+        ["Operator (1)", "Drops into the basement, shoots the keypads the Scanner calls, and gets back out before the purge."],
+        ["Scanner (1 per room)", "Calls the right keypads seen through the floor, passes the augment to the other room, and calls the live fuse."],
+        ["Everyone else", "Clear adds, kill Sentinel Servitors and Overload Captains, and shoot the called fuse."]
+      ],
+      "wipes": [
+        "Shooting a fuse that wasn't called.",
+        "The Operator staying in the basement too long and dying in the fire purge.",
+        "Sentinel Servitors left alive, which shut down the augment terminals so the Scanner can't be passed.",
+        "Exploder Shanks catching players in the open during the fuse phase."
+      ],
+      "chests": [
+        "Near the end of Desolation, before the door into the Crypt: climb the ledges into the icebergs behind you and to the left until you reach a small alcove with the chest. Frostbite keeps building while you climb, so watch your stacks."
+      ]
+    },
+    {
+      "name": "Atraks-1",
+      "title": "Atraks-1, Fallen Exo",
+      "what": "Atraks-1 splits into copies on the Crypt floor and on the Morning Star station above it. The team kills the right copy on each floor, then ejects the Replication debuffs the copies drop out of a station airlock into space.",
+      "steps": [
+        "Split into a Crypt team of three on the ground and a station team of three in space. Kill the Sentinel Servitors first: they block the augment terminals.",
+        "Kill the Vandals that drop the Scanner and Operator augments. The Scanner finds the copy of Atraks-1 that glows yellow, and the team kills it and the cloud it leaves behind.",
+        "The dead copy drops a purple Replication orb. Someone must pick it up at once, and the holder then has a short timer before it kills them.",
+        "Only the Operator can shoot the debuff off a holder; a teammate then picks it up with a fresh timer.",
+        "Pass the Scanner through the terminal so the other team can find and kill its own glowing copy.",
+        "Bring the debuffs up to the station. The Operator shoots an airlock keypad to open it, holders step inside, and the Operator shoots the debuffs off so they are pulled into space. Leave the airlock straight away and push against the pull.",
+        "After four copies and four ejections the cycle resets. At about a quarter health the final stand starts: everyone goes up to the station, the Scanner calls the glowing copies in order, and the team kills each one before the wipe."
+      ],
+      "roles": [
+        ["Crypt team (3)", "Holds the ground floor, kills its glowing copy, and carries debuffs up to the station."],
+        ["Station team (3)", "Holds the space station, kills its copy, and works the airlock with the Operator."],
+        ["Scanner", "Calls the glowing copy, then passes the augment to the other team."],
+        ["Operator", "Resets debuff holders by shooting them, opens the airlocks, and ejects the debuffs into space."]
+      ],
+      "wipes": [
+        "Nobody picks up a Replication orb when a copy dies.",
+        "A holder's debuff timer runs out before it is reset or ejected.",
+        "The glowing copy isn't killed in time once the Extinction Protocol warning appears.",
+        "Players get pulled out of the airlock because they didn't leave before the doors closed.",
+        "Servitors left alive lock the terminal, so the Scanner can't be passed and the fight stalls."
+      ]
+    },
+    {
+      "name": "Nuclear Descent",
+      "title": "The Descent: Taniks, Reborn",
+      "before": "After Atraks-1 the route leads outside the Morning Star: a jumping section along the station's hull while Shanks attack, then back inside, where Brigs and Dark Council Guards hold the way into the reactor room.",
+      "what": "Taniks guards the Morning Star's nuclear core room and can't be damaged here. The team stuns him and feeds nuclear cores into the right receptacles until a hatch opens, then outruns him as the station falls.",
+      "steps": [
+        "Kill the Vandals that carry the three augments: Scanner, Operator and Suppressor.",
+        "The Operator shoots the panels at the core stations on the left and right of the room to release nuclear cores.",
+        "The Scanner watches the receptacles in the middle of the room and calls which ones are live this round.",
+        "Runners carry cores toward the called receptacles. Carrying a core builds Radiation and ten stacks kill, so hand the core to a teammate before that.",
+        "The Suppressor stands under each of the three drones in turn and shoots Taniks from beneath it. The third shot stuns him, and only then can cores be deposited.",
+        "After each stun and deposit, one augment switches off at random. Its holder drops it at the central augment terminal and a runner picks it up.",
+        "Repeat until the hatch in the floor opens (guides disagree on the number of deposits, so watch for it). Jump down and sprint to the far end of the corridor: Taniks kills anyone he catches, but the team is safe if one player reaches the end."
+      ],
+      "roles": [
+        ["Augment holders (3)", "Scanner calls the live receptacles, Operator releases cores, Suppressor stuns Taniks from the drones."],
+        ["Runners (3)", "Carry and trade cores to keep Radiation low. Each runner backs up one augment and takes it over when it switches off."]
+      ],
+      "wipes": [
+        "A carrier reaches ten Radiation stacks.",
+        "A core goes into the wrong receptacle or before the stun; failed deposits explode.",
+        "A switched-off augment isn't swapped quickly, so the next round can't start.",
+        "Everyone is caught by Taniks in the final run before reaching the end of the corridor."
+      ],
+      "chests": [
+        "On the space walk after Atraks-1: at a fork near some large blades, take the left path instead of the right and climb the platforms to the one with red lights. The chest is easy to miss."
+      ]
+    },
+    {
+      "name": "Taniks",
+      "title": "Taniks, the Abomination",
+      "what": "The final boss, fought in the wreckage of the Morning Star on Europa. Taniks flies around the arena; the team shoots nuclear cores out of his thrusters, banks them while he is stunned, and then damages him between two rings of debris.",
+      "steps": [
+        "Split into three pairs, one per area of the arena. Each pair has one augment holder (Scanner, Operator or Suppressor) and one runner, and each area has two receptacles.",
+        "Shoot Taniks' glowing thrusters to knock nuclear cores loose. Most teams take two cores per round.",
+        "The Scanner calls which receptacles are live; they are never on the side Taniks is on. Runners carry and trade cores to keep Radiation under ten.",
+        "Taniks traps players in purple spheres. The Operator shoots them free.",
+        "The Suppressor shoots Taniks from under three drones to stun him, which lets the cores be banked. The stun also switches off a random augment, so wait until the Operator has freed the second trapped player before finishing it.",
+        "Four banked cores (two rounds) start the damage phase. Stand between the two rings around Taniks, stay out of the circling debris, and expect him to push everyone out partway through.",
+        "Repeat. In the final stand Taniks teleports around the arena, and the team has to kill him before he finishes or it wipes."
+      ],
+      "roles": [
+        ["Scanner pair", "The Scanner calls the live receptacles each round; the partner runs cores."],
+        ["Operator pair", "The Operator frees players from Taniks' spheres and doesn't carry cores; the partner runs cores."],
+        ["Suppressor pair", "The Suppressor stuns Taniks from the drones once the cores are ready to bank; the partner runs cores."]
+      ],
+      "wipes": [
+        "A runner reaches ten Radiation stacks.",
+        "Stunning too early, which can switch off the Operator while players are still trapped.",
+        "A trapped player isn't freed in time.",
+        "Standing too close to Taniks or in the debris during the damage phase.",
+        "Not enough damage in the final stand."
+      ]
+    }
+  ]
+}
