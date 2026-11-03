@@ -1,0 +1,73 @@
+{
+  "name": "Vox Obscura",
+  "checked": "2026-11-03",
+  "about": "A three-player exotic mission from Season of the Risen (2022) against the Cabal on Mars, ending with the Dead Messenger grenade launcher. The airfield and the control room each run on a timer, and running out fails the run. Since Monument of Triumph (June 2026) exotic missions launch from Pinnacle Ops; in 2023 guides the Legend version added Barrier Champions and a locked loadout.",
+  "sources": [
+    ["Destinypedia: Vox Obscura", "https://www.destinypedia.com/Vox_Obscura"],
+    ["TheGamer: Vox Obscura exotic mission guide", "https://www.thegamer.com/destiny-2-vox-obscura-exotic-mission-guide/"],
+    ["Pro Game Guides: How to complete Vox Obscura", "https://progameguides.com/destiny/how-to-complete-vox-obscura-in-destiny-2/"],
+    ["HighGround Gaming: Vox Obscura guide", "https://www.highgroundgaming.com/destiny-2-vox-obscura-guide/"],
+    ["Bungie Help: Monument of Triumph and Update 9.7.0 support guide", "https://help.bungie.net/hc/articles/49848696022548"]
+  ],
+  "encounters": [
+    {
+      "name": "Airfield",
+      "title": "Clear the Airfield",
+      "before": "The mission opens untimed outside a Cabal hangar. Pick off the guards from range, fight through the Psions and turrets inside, and take the Interceptors. Ram or shoot open the blast door to leave.",
+      "what": "A timed vehicle fight. An orbital bombardment countdown starts, and the team has to destroy three Goliath tanks and three signal towers before it ends.",
+      "steps": [
+        "Destroy the Goliath outside the hangar with Interceptor fire, or by ramming its side.",
+        "Amanda Holliday drops a Drake tank. Use it to push into the airfield and destroy the two Goliaths there.",
+        "Kill the Psion Spotters to stop the artillery strikes they call in.",
+        "The signal towers start out shielded. Break the glowing generators on each tower, then finish it with tank shells.",
+        "Destroying the third tower stops the timer. Clear the remaining enemies and blast open the bunker door with a tank."
+      ],
+      "roles": [
+        ["Drake pilot", "Takes out the Goliaths, the tower generators and the towers."],
+        ["Everyone else", "Kill the Spotters and adds, and help on the Goliaths with Interceptors or the second Drake."]
+      ],
+      "wipes": [
+        "The bombardment timer runs out (two guides give eight minutes) and the mission restarts.",
+        "Psion Spotters left alive keep calling artillery onto the team."
+      ]
+    },
+    {
+      "name": "Control Room",
+      "title": "Race to the Control Room",
+      "what": "A second, longer timer starts inside the bunker and keeps running through the boss fight. Three terminals on the lower level have to be hacked to open the way to Qabix.",
+      "steps": [
+        "Plant a Rally Banner at the bunker entrance.",
+        "Fight through the Psions, War Beasts and the Unstoppable Champion. All three objective markers lead to the same lower level.",
+        "Each terminal is guarded by a Psion Codewarden inside a Psion Commander's protective field. Get inside the field and kill the Commander up close; the Codewarden is then vulnerable.",
+        "Kill the Codewarden and use its terminal to enter one override code. Repeat at the other two terminals, then head for the boss room."
+      ],
+      "roles": [
+        ["Whole team", "Stay together, clear one terminal room at a time, and keep moving: whatever time is left carries into the boss."]
+      ],
+      "wipes": [
+        "Spending too long here, so the timer runs out during the boss.",
+        "Shooting a Codewarden from outside the Commander's field, which does no damage."
+      ]
+    },
+    {
+      "name": "Qabix",
+      "title": "Qabix, Insurgent",
+      "what": "The rogue Psion leader behind the broadcast. He moves fast, is hard to hit, and turns immune at each third of his health.",
+      "steps": [
+        "Damage Qabix until he turns immune and calls in support.",
+        "Kill the three Psion Commanders around the room (left, right and back). Their fields block damage from outside, so go in close.",
+        "With all three dead, Qabix can be damaged again. The fight has three damage phases.",
+        "If you are caught in a purple dome, shoot the glowing orbs to break out.",
+        "When he dies the timer stops. Follow the marker to the console to shut off the broadcast."
+      ],
+      "roles": [
+        ["Whole team", "Burst Qabix in each damage phase, then split up to kill the three Commanders quickly."]
+      ],
+      "wipes": [
+        "The timer carried over from the control room runs out.",
+        "Standing in the open in front of the Scorpius turrets on the central pillar.",
+        "A full team wipe sends you back to the start of the control room section."
+      ]
+    }
+  ]
+}
