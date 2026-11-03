@@ -1,0 +1,130 @@
+{
+  "name": "Vow of the Disciple",
+  "checked": "2026-11-03",
+  "about": "Six-player raid from The Witch Queen (March 2022), set in a sunken Pyramid in Savathûn's Throne World and ending at Rhulk, Disciple of the Witness. Every encounter is solved by reading glyphs (symbols), so agree on one set of names for them before you start.",
+  "master": [
+    "In 2022 guides, Master adds no new mechanics: enemies outlevel you, and more of them are champions or carry elemental shields.",
+    "Destinypedia lists the extra threats: every Glyphkeeper and Resonant Glyphkeeper becomes a champion, the Taken Knights and the Wraiths carry Solar shields, and Taken Hobgoblins that are not champions carry Void shields."
+  ],
+  "sources": [
+    ["Shacknews: Vow of the Disciple raid guide", "https://www.shacknews.com/article/129163/vow-of-the-disciple-raid-guide-destiny-2"],
+    ["Destinypedia: Vow of the Disciple", "https://destinypedia.com/Vow_of_the_Disciple"],
+    ["TheGamer: Vow of the Disciple encounters and chests guide", "https://www.thegamer.com/destiny-2-vow-of-the-disciple-raid-encounters-chests-guide/"],
+    ["Windows Central: Vow of the Disciple raid walkthrough", "https://www.windowscentral.com/destiny-2-witch-queen-vow-disciple-raid"],
+    ["Destiny Tracker: Vow of the Disciple complete raid guide", "https://destinytracker.com/destiny-2/guides/vow-of-the-disciple-complete-raid-guide-by-suttledge-095cf690"],
+    ["GGRecon: Vow of the Disciple secret chest locations", "https://ggrecon.com/guides/destiny-2-vow-of-the-disciple-raid-secret-chest-locations"]
+  ],
+  "encounters": [
+    {
+      "name": "Acquisition",
+      "what": "Three obelisks have to be cleansed while Scorn attack them. Pairs of players work out a three-glyph code for an obelisk and shoot it; an obelisk that fills with energy wipes the team.",
+      "before": "At the entrance, kill the Projection of Savathûn, then escort the barge through Disciple's Bog. At each stop, kill the Knowledge Bearer Abominations and carry their Darkness shards (three at most) to the barge. Away from the barge Pervading Darkness builds and kills at 10 stacks; the barge clears it.",
+      "steps": [
+        "Split into three pairs, one per obelisk. In each pair one player reads and defends, the other runs.",
+        "One player shoots the floating Darkness switch in the middle to start. The switch also opens and closes the doors around the edge, so every shot is called first.",
+        "Readers watch the totem beside their obelisk. The top glyph says which side the Disciple's Compass, a Taken Knight, appears on (Pyramid left, Traveler right). The middle glyph names the edge room to enter. The bottom glyph, Light or Dark, says which of its two Glyphkeepers to kill.",
+        "The runner kills the Knight, enters the called room, kills the right Glyphkeeper and notes the glyph it reveals, until they hold three glyphs.",
+        "Find the one obelisk that shows all three of your glyphs and shoot them within a few seconds. A rejected offering is not a wipe, but it fills the obelisk and reshuffles its symbols, so find your three glyphs again and shoot them closer together.",
+        "A cleansed obelisk is not picked again, but readers keep calling from their totems. Cycle until all three are clean."
+      ],
+      "roles": [
+        ["Readers (3)", "One per obelisk. Call the totem's three glyphs in order and keep Scorn, above all the Abated Adherents, off the obelisk."],
+        ["Runners (3)", "Kill the called Taken Knight and Glyphkeeper, collect three glyphs, then shoot them on the obelisk that holds them."]
+      ],
+      "wipes": [
+        "An obelisk fills up. Scorn damage and wrong shots both fill it, so kill the Abated Adherents on sight and never spray the obelisk.",
+        "An uncalled switch shot shuts a door on another runner and costs the cycle its time.",
+        "Runners die leaving rooms to Screebs or the Unstoppable Abominations; clear the way out before running."
+      ],
+      "chests": [
+        "Disciple's Bog, on the way in: break three hidden Darkness cruxes along the barge route, one near each of the barge's first two stops and one under the bridge after them (go through the one window without bars). A doorway guarded by Scorn then opens at a later stop with the chest inside."
+      ]
+    },
+    {
+      "name": "Caretaker",
+      "title": "The Caretaker",
+      "what": "A huge boss walks toward an obelisk while runners fetch glyphs from dark rooms. The team stuns it to hold it back, finishes nine glyphs per floor, then damages it on timed plates, floor by floor.",
+      "steps": [
+        "Shoot one of the two floating Darkness switches behind the obelisk to open the door and start.",
+        "A runner enters a dark room on the current floor, picks up as many as three glyphs, and leaves before Pervading Darkness reaches 10 stacks. Leaving the room clears the stacks.",
+        "When the runner's name comes up on screen, they shoot their glyphs on the obelisk. Runners take turns until the floor's nine glyphs are done.",
+        "Meanwhile the stun team holds the Caretaker back: shoot its glowing face so its back opens, then shoot the back to drop it. It can't be stunned again for a few seconds, so be ready the moment it gets up.",
+        "With nine glyphs in, the Caretaker is locked out and damage plates light up one at a time, starting on the side it came from. Stand on the lit plate to damage it and move when the plate fades.",
+        "It then climbs to the next floor. Repeat the glyph runs, stuns and damage on each of the three floors.",
+        "On the fourth floor the plates run in a straight line. Kill it before the last plate fades or it wipes the team."
+      ],
+      "roles": [
+        ["Glyph runners (2)", "Take turns in the dark rooms and shoot the glyphs on the obelisk; the one waiting outside keeps the doorway clear."],
+        ["Stunners (2)", "One stands near the Caretaker's feet to bait its slam and hold its attention, the other shoots face then back. Shoot down the projectiles it launches from its back."],
+        ["Add clear (2)", "Kill the Abated Adherents first, then the Taken Vandal snipers on both sides, which can kill stunners, and the Scorn swarms."]
+      ],
+      "wipes": [
+        "The Caretaker reaches the obelisk. Have a stun ready every time it recovers.",
+        "A runner dies to Pervading Darkness. Leave before 10 stacks and don't fight the Shadow Thrall and Wizards inside the dark rooms.",
+        "Damage plates used late or out of order, leaving too much health for the final corridor.",
+        "Final stand not finished before the last plate fades."
+      ],
+      "master": [
+        "Destinypedia says the Taken Vandal snipers here become Overload Taken Hobgoblin champions on Master."
+      ]
+    },
+    {
+      "name": "Artifacts",
+      "title": "Exhibition",
+      "what": "A timed run through four rooms carrying relics, each of which counters one threat. Every door opens to the one glyph that both halves of the team can see.",
+      "before": "After the Caretaker, cross a platforming section where Darkness switches extend and retract the platforms. A shot at the wrong moment pulls a platform away, so let the confident jumpers go first while the others work the switches and adds.",
+      "steps": [
+        "Pick up the Resonant Shard to start the Terminal Resonance timer. At zero the team dies.",
+        "Kill the room's Taken and Scorn Glyphkeepers. The relic holder sees one glyph set, everyone else the other; shoot the glyph that appears in both above the door.",
+        "The Resonant Shard's holder strips the shield from the Disciple's Hourglass. Kill the Hourglass to add time.",
+        "Deposit the relic on the altar at the end of the room to add time and bring the next relic. The depositor gets Curbed Resonance and can't carry a relic for 30 seconds.",
+        "Room two adds the Aegis: walk through its barrier to clear Pervading Darkness. It has four Glyphkeepers, so the door needs two glyphs.",
+        "Each opened door lets a swarm of Screebs through. Kill them before moving on.",
+        "Room three adds the Taken relic, whose grenade destroys the small Taken Blights that shield enemies. All three relics now travel together.",
+        "The last room adds no relic but more Glyphkeepers, another Hourglass and a wide drop; a dropped relic returns to the start of the section. Deposit all three to finish."
+      ],
+      "roles": [
+        ["Two sides (3 each)", "Split left and right in each room for Glyphkeepers and Hourglasses, then meet at the door to compare glyphs. Moving as one group of six is slower but safer."],
+        ["Relic holders", "Use each relic on its threat, call their glyph set, and plan who carries next because of Curbed Resonance."]
+      ],
+      "wipes": [
+        "Terminal Resonance runs out. Kill every Hourglass and skip stragglers.",
+        "Pervading Darkness reaches 10 stacks. Rotate through the Aegis barrier early.",
+        "A relic falls in the last room and goes back to the start, which usually costs the run.",
+        "Nobody can carry the next relic because everyone nearby has Curbed Resonance."
+      ],
+      "chests": [
+        "In the platforming after the Caretaker, past the second large room of enemies, keep to the platforms on the window side to your right; a Darkness shard switches them, so one player times the shots. Cross the hexagonal pillars to what looks like a dead end and look for a small gap in the left wall."
+      ]
+    },
+    {
+      "name": "Rhulk",
+      "title": "Rhulk, Disciple of the Witness",
+      "what": "Rhulk sits behind a force field. The team turns Leeching Force into Emanating Force and banks it at pillars marked by glyphs, first to push the field back, then to open his weak spots for damage.",
+      "steps": [
+        "Shoot the floating Darkness crystal above Rhulk to get Leeching Force. The buff runs out, so keep passing it.",
+        "To pass it, the holder stands on the front plate; the two players who shoot the small crystals that appear behind take the buff.",
+        "One holder steps into Rhulk's big beam to turn it into Emanating Force, which can't be passed. Anyone the beam hits without Leeching Force gains Pervading Darkness.",
+        "Kill the Glyphkeepers on both sides. Leeching Force holders see one glyph set, everyone else the other; the glyph in both marks one of six pillars, three per side. Guide the carrier there to bank it.",
+        "Six deposits shrink the field and send Rhulk to the back of the arena.",
+        "He now charges players and drops his glaive. Shoot it for Leeching Force; the glyph where it broke matches a pillar in one of four corners. Convert in his beam, bank it there, and shoot the gold weak spot that lights up.",
+        "After four corner deposits his main weak spot opens. Burn him until he kneels and turns immune, then run back and start over.",
+        "Three damage phases are allowed, then final stand starts early: Pervading Darkness stacks on everyone nonstop and kills at 10, so save Supers and heavy ammo."
+      ],
+      "roles": [
+        ["Swappers (2)", "Keep Leeching Force alive by passing it through the front plate and crystals."],
+        ["Dunker (1)", "Takes the beam, carries Emanating Force and banks it on the called pillar."],
+        ["Readers and add clear (3)", "Kill Glyphkeepers, call the shared glyph and its pillar, and keep the sides clear."]
+      ],
+      "wipes": [
+        "Final stand runs long and Pervading Darkness reaches 10 stacks.",
+        "Leeching Force lapses with nobody holding it. Guides disagree on whether a second loss in a phase wipes the team or only costs time.",
+        "Players without Leeching Force wander through his beam and stack Pervading Darkness early."
+      ],
+      "chests": [
+        "Bonus chest after Rhulk: light the three of nine hidden glyph rooms that match a three-glyph code (TheGamer reads it from a totem in the Pyramid just after the barge; Destinypedia only says an obelisk shows it).",
+        "In each matching room shoot the switch, then the panel; a second shot turns it off. The rooms run from the Pyramid entrance to the platforming before Rhulk. The chest appears when he dies, once per week per account."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "name": "Equilibrium",
+  "checked": "2026-11-03",
+  "about": "A dungeon for one to three players on Venus against Cabal and Taken, released with Renegades in December 2025. Every fight runs on Shadow: fill Gathering Shadow for Shadow Novice (your grenade becomes a Shadow grenade), then Apprentice and Master. The Way Between quest adds relic puzzles and an extra boss, the Shade of Sere, reached from the Praxic Temple once all four relics are placed.",
+  "caveat": "Launch-week guides differ on some of Dredgen Sere's finer details, so those steps stay general. Both secret chest spots come from a single guide (Destructoid), and ProGameTalk places a hidden chest elsewhere, behind a vent in the first traversal puzzle.",
+  "sources": [
+    [
+      "Destinypedia: Equilibrium",
+      "https://www.destinypedia.com/Equilibrium"
+    ],
+    [
+      "Destinypedia: Blistered Shadow",
+      "https://www.destinypedia.com/Blistered_Shadow"
+    ],
+    [
+      "Shacknews: How to complete the Equilibrium dungeon",
+      "https://www.shacknews.com/article/147168/how-to-complete-the-equilibrium-dungeon-in-destiny-2?amphtml=1"
+    ],
+    [
+      "NoobFeed: How to beat the Equilibrium dungeon",
+      "https://noobfeed.com/articles/destiny-2-renegades-beat-equilibrium-dungeon"
+    ],
+    [
+      "ProGameTalk: Equilibrium dungeon walkthrough",
+      "https://progametalk.com/destiny-2/equilibrium-dungeon-walkthrough/"
+    ],
+    [
+      "Total Apex Gaming (Yardbarker): Dredgen Sere guide",
+      "https://www.yardbarker.com/video_games/articles/equilibrium_dungeon_defeat_dredgen_sere_3rd_encounter_guide/s1_17458_43206344"
+    ],
+    [
+      "GamesFuze: Equilibrium solo flawless and traversal guide",
+      "https://gamesfuze.com/guides/how-to-solo-flawless-the-equilibrium-dungeon-loadout-traversal-guide/"
+    ],
+    [
+      "Destructoid: All secret chest locations in Equilibrium",
+      "https://www.destructoid.com/?p=1154935"
+    ],
+    [
+      "Destructoid: How to complete The Way Between quest",
+      "https://www.destructoid.com/how-to-complete-the-way-between-quest-in-destiny-2s-equilibrium-dungeon/"
+    ],
+    [
+      "The Game Post: The Way Between quest and relic puzzles",
+      "https://thegamepost.com/destiny-2-equilibrium-the-way-between-quest-relic-puzzle-focus-loot/"
+    ],
+    [
+      "Kyber's Corner: Equilibrium dungeon",
+      "https://kyberscorner.com/destiny-2-equilibrium-dungeon/"
+    ]
+  ],
+  "encounters": [
+    {
+      "name": "Assault",
+      "title": "Barant Imperium Forces",
+      "what": "An add-clear outside the Praxic Temple against shielded Nameless Apprentices and waves of Cabal. You break the Apprentices' shields with a Shadow grenade that you earn by driving through Taken pools.",
+      "before": "Clear the Cabal in the Temple Grounds, then interact with the docked Harvester ship by the Praxic Temple to start the encounter.",
+      "steps": [
+        "Start the encounter at the ship. Three Nameless Apprentices drop in, each behind an immunity shield.",
+        "Three Cabal array devices stand around the arena next to red barriers. Pull an Apprentice close to one.",
+        "When the Apprentice starts charging its Darkness blast, use the device's console to open its core so the blast hits it. The device breaks and the nearby barrier drops.",
+        "Take the vehicle behind the barrier around the tunnel circuit. Each Taken pool you cross adds Gathering Shadow and clears the Creeping Shadows debuff.",
+        "A full bar gives Shadow Novice, a timed buff, and swaps your grenade for a Shadow grenade. More pools refresh it.",
+        "Throw the Shadow grenade at an Apprentice while it charges its blast to strip its shield, then kill it.",
+        "Each Apprentice kill brings in a Cabal drop pod with Behemoths and leaves a Shadow pool behind. Use the pool to keep your buff going.",
+        "Keep cycling until three large Behemoths arrive. Kill them and the remaining Cabal to end the encounter and open the chest."
+      ],
+      "roles": [
+        [
+          "Shadow carrier (1 or more)",
+          "Drives the tunnels for Shadow Novice and uses the Shadow grenade to break Apprentice shields."
+        ],
+        [
+          "Rest of team",
+          "Lead Apprentices to the devices, work the consoles and keep the Cabal and Behemoths under control."
+        ]
+      ],
+      "wipes": [
+        "Creeping Shadows running out while you are in the tunnels. Keep passing through pools to clear it.",
+        "Standing where a drop pod lands. Move away when pods come in after an Apprentice dies."
+      ]
+    },
+    {
+      "name": "Harrow",
+      "title": "Harrow, Dredgen-Apprentice",
+      "what": "A Cabal Gladiator with two Praxic Blades, fought in a ring of rooms on the Imperium carrier. He stays shielded until traps you power with Shadow break it.",
+      "before": "Board the Harvester and cross the carrier: wait at doors until all three lights turn green, and shoot fuses to open paths. Over the big gap the ship's drive pushes you sideways, so jump from the far left. From the Rally Flag room, shoot the fuse to drop into the arena.",
+      "steps": [
+        "Drop in and keep away from Harrow while he is shielded.",
+        "Cabal push in through the side doors, which stay open only while someone is on the hallway side. Get out to the outer rooms as they open.",
+        "Kill Psion and Centurion Lackeys for Shadow. Two stacks give Shadow Novice, four give Shadow Apprentice.",
+        "In each of the three outer rooms, hit all three switches with the Shadow grenade in quick succession; slow hits reset. The door light turns green when a room is done.",
+        "Harrow's Decree is the alert that he is in your room. When he charges his big blast, Spite of the Named, interrupt it with a Shadow grenade or get out of range.",
+        "With all nine switches done, regroup in the middle. Break his shield by luring him over a trapdoor and shooting the fuse above it, or by drawing his swings into a charged Arc coil.",
+        "Damage him up close while the shield is down, then repeat the switches and traps.",
+        "At low health he breaks through a door and runs. Chase him, kill the turrets on the way, and use another hatch or coil if his shield returns."
+      ],
+      "roles": [
+        [
+          "Whole team",
+          "Farm Lackeys for Shadow, clear the outer rooms' switches, then bait Harrow into traps."
+        ],
+        [
+          "Anyone with Shadow",
+          "Interrupt Harrow's Decree with a Shadow grenade."
+        ]
+      ],
+      "wipes": [
+        "Getting shut in the middle room with Harrow. Leave as soon as the doors open.",
+        "Taking the Spite of the Named blast."
+      ],
+      "chests": [
+        "Between the first encounter and Harrow: after jumping a gap onto another part of the carrier, find the area walled off by red lasers. From the doorway facing open space, look up and right past a mounted turret; the chest sits high between two parked ships. Only one guide (Destructoid) gives this spot."
+      ]
+    },
+    {
+      "name": "Dredgen Sere",
+      "what": "The final boss. The fight swaps between his arena and a Taken copy of it, the Ascendant Realm, and he takes damage only once his five blights are gone in both.",
+      "before": "After Harrow, use Shadow on the wall panels and pull the lever near his chest to open the bay door, then jump to the incoming ship and hit its two red-lit switches. In the hangar, kill the Behemoth and start the platforms at the console. Under the tank only one vent leads on. Use Shadow on the Taken panels to reach the boss door.",
+      "steps": [
+        "Keep your distance when the fight starts: his opening slam can kill anyone close.",
+        "He locks onto one player with a lightning beam that passes through cover. Shoot his glowing hands to stop it.",
+        "Kill Lackeys to build up to Shadow Master.",
+        "Strip each Nameless Apprentice's shield with the Shadow grenade as it charges, then kill it. Each kill lets you shoot one of the five Taken blights on the central slab.",
+        "When the countdown ends the team is pulled into the Ascendant Realm. Compel each of the five Blistered Shadows with Shadow Master rather than killing it, then shoot the blight it frees.",
+        "One Blistered Shadow floats high up. Hit the Taken panels with Shadow to raise platforms to it.",
+        "With all blights gone in both arenas, damage Sere in his own arena. Lightning floods the middle, so stay at the edge.",
+        "If he survives, shut the lightning off by hitting the nearby panels with a Shadow grenade, then repeat."
+      ],
+      "roles": [
+        [
+          "Whole team",
+          "Build Shadow, kill Apprentices, shoot blights and Compel the Blistered Shadows."
+        ],
+        [
+          "Anyone not targeted",
+          "Shoot Sere's hands when his beam locks onto a teammate."
+        ]
+      ],
+      "wipes": [
+        "Being near Sere for his opening slam, or leaving his lightning beam uninterrupted.",
+        "Standing in the middle when the lightning floods it.",
+        "Killing Blistered Shadows instead of Compelling them, which costs damage time.",
+        "Skipping the high Blistered Shadow, so a blight stays up and damage never starts."
+      ],
+      "chests": [
+        "On the Malphas Contemptus before Sere: entering the open room with the Shadow and switch platforming puzzle, look left; the chest is behind a stack of tall crates. Only one guide (Destructoid) gives this spot."
+      ]
+    }
+  ]
+}

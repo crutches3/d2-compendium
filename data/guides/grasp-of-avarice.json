@@ -1,0 +1,122 @@
+{
+  "name": "Grasp of Avarice",
+  "checked": "2026-11-03",
+  "sources": [
+    ["Shacknews: Grasp of Avarice dungeon guide", "https://www.shacknews.com/article/128012/grasp-of-avarice-dungeon-guide-destiny-2"],
+    ["PC Gamer: How to complete the Grasp of Avarice dungeon", "https://pcgamer.com/destiny-2-grasp-of-avarice-loot-table-solo-guide"],
+    ["TechRaptor: Grasp of Avarice dungeon walkthrough", "https://techraptor.net/gaming/guides/destiny-2-grasp-of-avarice-dungeon-walkthrough-guide"],
+    ["High Ground Gaming: Grasp of Avarice dungeon guide", "https://www.highgroundgaming.com/destiny-2-grasp-of-avarice-dungeon-guide-walkthrough/"],
+    ["PC Invasion: Grasp of Avarice Sparrow and mines", "https://pcinvasion.com/destiny-2-grasp-of-avarice-phryzhia-ogre-sparrow-guide/2"],
+    ["LFCarry: Gjallarhorn catalyst chests", "https://lfcarry.com/guides/destiny-2-gjallarhorn-catalyst"],
+    ["The Game Post: How to unlock the Gjallarhorn catalyst", "https://thegamepost.com/destiny-2-how-to-unlock-gjallarhorn-exotic-catalyst-guide/"]
+  ],
+  "about": "A three-player Fallen and Hive dungeon under the Cosmodrome's old loot cave, from the 30th Anniversary Pack. Almost every fight uses the Burdened by Riches debuff: picking up engrams adds stacks on a timer that kills you, and banking them at a crystal is what drops each boss's shield. A Scorch Cannon taken from a Vandal opens doors, fires launchers and breaks generators.",
+  "caveat": "Guides give different engram counts for each shield, so this page gives none; the Master notes come from Shacknews's 2021 guide and may have changed since.",
+  "master": [
+    "Master adds champions and extra modifiers on top of the normal version; the champion types in each tab are from 2021 guides, so check the launch screen."
+  ],
+  "encounters": [
+    {
+      "name": "Loot Cave",
+      "title": "Opening the loot cave",
+      "what": "The opening at the old loot cave teaches Burdened by Riches. Each engram you pick up adds a stack and resets a timer of about 30 seconds; if the timer runs out you die.",
+      "steps": [
+        "Kill the Hive pouring out of the cave. They drop engrams that turn red and explode if left on the ground, so grab them quickly.",
+        "Each pickup adds a stack and resets your timer. Don't hold stacks for long.",
+        "Stand next to the crystal inside the cave to pause the timer and drain your stacks into it.",
+        "Repeat until the crystal grows, breaks and opens a hole under the cave. Drop in."
+      ],
+      "roles": [
+        ["Whole team", "Kill adds, grab engrams and bank them at the crystal long before the debuff runs out."]
+      ],
+      "wipes": [
+        "A player's Burdened by Riches timer reaches zero while chasing one more engram.",
+        "Engrams are left on the ground until they explode."
+      ],
+      "chests": [
+        "The dungeon hides three Gjallarhorn catalyst chests, and they all open the same way: damage the chest's Reaver Vandal (yellow health bar) until it drops an engram, grab it, and reach the chest within about 30 seconds, before Burdened by Riches kills you. LFCarry adds that the Vandal should be left alive and that each player opens each chest for themselves.",
+        "Chest 1 is in the crystal cavern you drop into after this fight. The Vandal stands on a ledge on the right side of the cavern; the chest is on a metal platform by the crystal bridge."
+      ]
+    },
+    {
+      "name": "Phyr'zia",
+      "title": "Phry'zhia the Insatiable",
+      "before": "The Rusted Gangplank is a trap maze: wrong doors, levers and rusted pressure plates kill instantly and some floors drop away, so go slowly. It ends where a Vandal drops the Scorch Cannon. Shoot the door generators in turn, step into a side alcove to dodge the barrel rolling down the stairs, then go through the vent to the boss.",
+      "what": "A Hive Ogre behind a crystal, immune until the team banks enough engrams. The engrams come from Hive in two side garages whose doors are opened with the Scorch Cannon.",
+      "steps": [
+        "Take the Scorch Cannon from the Vandal and shoot the active generator (the one with lights) to open its garage. Opening one garage closes the other.",
+        "Clear the Hive in the open garage and pick up their engrams.",
+        "Bank the stacks at the crystal in front of the boss before your timer runs out.",
+        "Open the other garage and repeat until a message says Phry'zhia has succumbed to temptation: the shield is down.",
+        "Damage the boss, using the crystal as cover from its beams and grenades.",
+        "When it turns immune again, restart the garage loop. Expect more than one damage phase."
+      ],
+      "roles": [
+        ["Cannon carrier (1)", "Holds the Scorch Cannon and opens the next garage when the team is ready."],
+        ["Whole team", "Clears the open garage together, collects engrams and banks them at the crystal."]
+      ],
+      "wipes": [
+        "Being inside a garage when its door closes kills you.",
+        "Burdened by Riches runs out because a player stayed in the garage too long.",
+        "Standing in the open during damage and taking the Ogre's beam."
+      ],
+      "chests": [
+        "Catalyst chest 2 is on the way to this fight. At the top of the stairs where the barrel rolls down, a Reaver Vandal waits in the room ahead. Take its engram, go through the vent as usual, and the chest is on a platform to your right as you come out."
+      ],
+      "master": [
+        "In 2021 guides, Barrier Knights spawn in the garages. Clear one garage, bank, and move to the next as a group."
+      ]
+    },
+    {
+      "name": "Fallen Shield",
+      "before": "Past the Hive factory, pull the left switch at the hangar doors (the right one is a trap) and ride Sparrows through four mines, defusing each by driving through it before its countdown ends. Driving over the red buttons along the route adds time. A mine that goes off wipes the team and restarts the section. The cannon at the end throws you into the skull cave for the last mine.",
+      "what": "A Fallen shield covers the central structure. Abundance Monitor Servitors on the outer islands each leave a shell when killed, and four shells fired into the shield with a cannon bring it down.",
+      "steps": [
+        "Kill the Vandal in the hut for a Scorch Cannon. Shooting a launcher's terminal throws everyone on its plate to the island it faces; a charged shot delays the launch so the team can board together.",
+        "Find the Abundance Monitor Servitor with a white shield and kill the Fallen around it for engrams.",
+        "Bank the engrams at the island's crystal until the Servitor's shield drops, then kill it.",
+        "Push its shell onto the cannon, aim at the central structure and fire it with the Scorch Cannon. Each hit destroys one shield node.",
+        "Repeat on the other islands until four shells have landed, then launch up into the central structure to reach the final room."
+      ],
+      "roles": [
+        ["Cannon carrier (1)", "Holds the Scorch Cannon and fires the launchers and the shell cannon."],
+        ["Whole team", "Clears each island, banks engrams and moves the shell to the cannon."]
+      ],
+      "wipes": [
+        "Burdened by Riches runs out while the island is still being cleared.",
+        "A player misses the landing after a launch and falls.",
+        "Launching before everyone is on the plate, which leaves players stranded on separate islands."
+      ],
+      "chests": [
+        "Catalyst chest 3 appears only once the shield is down, before you go on to Avarokk. A Reaver Vandal spawns out by the waterfall. Take its engram, launch back to the central island and open the chest on top of the round building there."
+      ],
+      "master": [
+        "In 2021 guides, Overload Captains spawn at each island. Kill them first."
+      ]
+    },
+    {
+      "name": "Avarokk",
+      "title": "Captain Avarokk, the Covetous",
+      "what": "The Fallen captain sits behind the central crystal and is immune until the team banks enough engrams. The engrams spill from pods that break when the Scorch Cannon hits the active generator.",
+      "steps": [
+        "Kill the dangerous adds first: the cloaked Vandal and the sniper Shank, R-M80. Bank the engrams they drop.",
+        "Kill a Scorch Vandal for the cannon. Only one of the three generators (left, right, front) is active: shoot it to break the pods and spill engrams.",
+        "Collect the engrams and bank them at the central crystal, staying behind it for cover from Avarokk.",
+        "When enough are banked his shield drops. Damage him until a message says he resists temptation again.",
+        "A different generator is active next round. Repeat until he dies."
+      ],
+      "roles": [
+        ["Side players (2)", "Each holds one side, keeps its Dregs down and collects the engrams there."],
+        ["Cannon carrier (1)", "Takes the Scorch Cannon from a Scorch Vandal and shoots the active generator."]
+      ],
+      "wipes": [
+        "A player's Burdened by Riches timer runs out while carrying a large stack.",
+        "The sniper Shank or the cloaked Vandal is left alive and picks players off during collection.",
+        "Banking in the open instead of behind the crystal."
+      ],
+      "master": [
+        "In 2021 guides, Barrier Servitors spawn while the team collects. Group up behind a pod and kill them together."
+      ]
+    }
+  ]
+}

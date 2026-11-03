@@ -1492,12 +1492,16 @@ async function reference(idx) {
 // ---------- wiki ----------
 // One page per name with everything the site knows about it: an activity's loot and the encounters that drop it, what a perk, status,
 // ability or exotic does in every sheet that defines it, the weapons that can roll a perk, and every entry that mentions it.
+// (Grandmaster is no Monument tab: wikiData adds those strikes from the weekly schedule)
 const WIKI_KINDS = { Raids: ['Raid', 'Raids'], Dungeons: ['Dungeon', 'Dungeons'], 'Legacy Exotic Mission Gear (Cla': ['Exotic mission', 'Exotic missions'],
-  'Portal Attuneable Gear': ['Portal activity', 'Portal'], Destinations: ['Destination', 'Destinations'], Vendors: ['Vendor', 'Vendors'] };
+  Grandmaster: ['Strike', 'Grandmaster strikes'], 'Portal Attuneable Gear': ['Portal activity', 'Portal'], Destinations: ['Destination', 'Destinations'], Vendors: ['Vendor', 'Vendors'] };
 const CHAMPIONS = ['Barrier', 'Overload', 'Unstoppable'];
 const wikiHref = n => '#/wiki/' + encodeURIComponent(n);
 // names as the sheets and Bungie spell them differently: case, accents, curly quotes, a leading "The"
 const fold = t => t.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[’‘]/g, "'").toLowerCase().replace(/^the /, '').trim();
+// a page's guide file (data/guides/<this>.json): its name folded, so a re-cased or re-accented Monument name still finds it ("Desert Perpetual &
+// Epic DP" is desert-perpetual); the file's own name field keeps the exact spelling
+const guideFile = n => fold(n.replace(/ [|&] .*$/, '')).replace(/'/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 // the same name give or take one letter ("Quillim's" in one sheet, "Qullim's" in the game)
 // a sheet's typo: one letter off, or two in a long name ("Dimensional Hypertrochoid" for Hypotrochoid)
 const near = (a, b) => { a = fold(a).replace(/[^a-z0-9]/g, ''); b = fold(b).replace(/[^a-z0-9]/g, '');
@@ -1514,7 +1518,7 @@ const linkify = (W, html, self = '') => html.replace(W.linkRe, n => n === esc(se
 let wikiIndex;
 async function wikiData() {
   if (wikiIndex) return wikiIndex;
-  const [tabs, arts, art] = await Promise.all([sheets(), load('artifacts'), load('wiki')]);
+  const [tabs, arts, art, rot] = await Promise.all([sheets(), load('artifacts'), load('wiki'), load('rotation')]);
   const acts = new Map(), terms = new Map();
   // activities and their loot from the Monument of Triumph tabs, where a row with only a second cell starts a group
   for (const t of tabs) {
@@ -1526,6 +1530,8 @@ async function wikiData() {
         enc: r[col('Encounter(s)')] || '', how: r[col('Acquisition Method')] || '' });
     }
   }
+  // the Grandmaster strikes the schedule names, spelt as it spells them (each comes round about every six weeks); no sheet lists their loot
+  for (const n of [...new Set(rot.weeks.map(w => w.gm).filter(Boolean))].sort()) acts.has(n.toLowerCase()) || acts.set(n.toLowerCase(), { name: n, kind: 'Strike', loot: [] });
   // raids and dungeons from Llama's Raid Loot and Dungeon Loot (made by Court): a block per activity (its name in capitals, launch and refresh
   // dates), "Loot | 1st | 2nd…" headers, then a row per item with the encounter that drops it under each column. A cell can open with the
   // mode ("Standard & Epic\nAgraios" is Agraios) or wrap a name over two lines ("Dredgen\nSere").
@@ -1577,17 +1583,26 @@ async function wikiData() {
   }
   // linked in running text: raids, dungeons, missions, champions, statuses from the subclass glossaries, exotics, and names of two or more words
   // (single-word perk names like "Focus" or "Momentum" read as plain words too often)
-  const linkable = [...[...acts.values()].filter(x => /Raid|Dungeon|mission/.test(x.kind)).map(x => x.name), ...CHAMPIONS,
+  const linkable = [...[...acts.values()].filter(x => /Raid|Dungeon|mission|Strike/.test(x.kind)).map(x => x.name), ...CHAMPIONS,
     ...[...terms.values()].flat().filter(x => x.glossary || /^Exotic/.test(x.where) || x.e.term.includes(' ')).map(x => x.e.term)].filter(n => n.length > 3);
   const linkNames = new Map(linkable.map(n => [esc(n), n]));
   const names = [...new Set([...[...acts.values()].map(x => x.name), ...CHAMPIONS, ...[...terms.values()].map(l => l[0].e.term)])];
   return wikiIndex = { tabs, art, acts, terms, names, linkNames, linkRe: nameRe([...linkNames.keys()].sort((x, y) => y.length - x.length).map(rxEsc).join('|'), 'g') };
 }
 
-async function wikiPage(raw) {
+// #/wiki/<name>/guide/<n> opens the guide on encounter n, /drops/<n> opens Drops with it ready (the tabs keep it there with replaceState,
+// so a reload mid-run comes back to it)
+async function wikiPage(raw, pane, n) {
   const name = decodeURIComponent(raw), key = name.toLowerCase();
   const [W, d, a, rot, places] = await live(Promise.all([wikiData(), data(), armorData(), load('rotation'), load('destinations')]));
-  const act = W.acts.get(key), defs = W.terms.get(key) || [], champ = CHAMPIONS.find(c => c.toLowerCase() === key);
+  // an activity also answers to its name without the " & Epic DP" or " | Gunsmith" part, as the schedule spells it ("Desert Perpetual")
+  const act = W.acts.get(key) || [...W.acts.values()].find(x => fold(x.name.replace(/ [|&] .*$/, '')) === fold(name));
+  const defs = W.terms.get(key) || [], champ = CHAMPIONS.find(c => c.toLowerCase() === key);
+  // hand-written, one file per activity and only for activities (perk and weapon names would all 404); a missing or broken file means no guide
+  const guide = act && /Raid|Dungeon|mission|Strike/.test(act.kind) ? await load('guides/' + guideFile(act.name)).catch(() => null) : null;
+  const step = /^\d+$/.test(n) && n >= 1 && n <= (guide?.encounters?.length || 0) ? n - 1 : 0;
+  // so is one that parses but breaks the format (a hand edit): drawn once here, a throw leaves the page as it would be with no guide
+  let gh = ''; try { gh = guide ? guideHtml(W, act, guide, step) : '' } catch (e) { console.error(e) }
   const weapon = d.weapons.find(w => w.n.toLowerCase() === key), armor = a.armor.find(x => x.n.toLowerCase() === key);
   // weapons that can roll a perk or frame of this name, one per weapon name, best rated first
   const plugs = new Set(Object.keys(d.plugs).filter(h => d.plugs[h].n.toLowerCase() === key).map(Number)), rank = w => 'SABCDF'.indexOf(d.rolls[w.h]?.t) + 1 || 9;
@@ -1599,7 +1614,7 @@ async function wikiPage(raw) {
   // the loot table links each weapon to its page: the version from this activity if the names repeat, else a rated one
   const lootWeapon = x => { const l = d.weapons.filter(w => w.n.toLowerCase() === x.key); return l.find(w => act && w.src.includes(act.name)) || l.find(w => d.rolls[w.h]) || l[0]; };
   const tags = [act?.kind, champ && 'Champion', weapon && `${weapon.ti} ${weapon.ty}`, armor && `${armor.ti} ${armor.ty}`, ...new Set(defs.map(x => x.where === 'Artifact perks' ? 'Artifact perk' : x.where)), rollers.length && !defs.some(x => x.where === 'Weapon perks') && 'Weapon perk'].filter(Boolean);
-  const raid = act && /Raid|Dungeon|mission|Destination/.test(act.kind) && lootPage(act, d, a, rot, act.kind === 'Destination' && { ...places.places[act.name], how: places.events, distortions: places.distortions, art: W.art.places[fold(act.name)] });
+  const raid = act && /Raid|Dungeon|mission|Destination|Strike/.test(act.kind) && lootPage(act, d, a, rot, act.kind === 'Destination' && { ...places.places[act.name], how: places.events, distortions: places.distortions, art: W.art.places[fold(act.name)] }) || null;  // null, not false, for other kinds (Portal, Vendor): raid?.wire() below
   const loot = act && !raid && `<section class="panel"><h2>Loot <span class="count">${act.loot.length}</span></h2>${act.loot.some(x => x.enc) || act.kind === 'Dungeon' ? '<p class="refsrc">Which encounters drop each item, from the Monument of Triumph and Llama\'s loot sheets.</p>' : ''}
     <div class="datawrap"><table class="data"><thead><tr><th scope="col">Item</th><th scope="col">Type</th><th scope="col">Element</th>${act.loot.some(x => x.enc) ? '<th scope="col">Encounters</th>' : ''}${act.loot.some(x => x.how) ? '<th scope="col">How</th>' : ''}</tr></thead>
     <tbody>${act.loot.map(x => { const w = lootWeapon(x);
@@ -1612,7 +1627,8 @@ async function wikiPage(raw) {
   const art = weapon || armor || { n: title, ss: W.art.img[key] || W.art.places[fold(name)]?.img, fl: raid ? raid.flavor : plug?.d,
     // an activity named like a perk (the Encore mission) keeps its own banner, not the perk's icon and text
     i: raid ? null : plug?.i || W.art.icon[key] || defs.find(x => x.icon)?.icon || W.art.icon[defs[0]?.where.toLowerCase()] };
-  const main = `${raid?.main || loot || ''}
+  // a strike's page is its guide (one held back says so)
+  const main = `${act?.kind === 'Strike' ? gh ? gh : `<p class="empty">The guide for ${esc(act.name)} isn't written yet.</p>` : raid?.main || loot || ''}
     ${defs.length ? `<section class="panel"><h2>What it does</h2><dl class="entries">${defs.map(x => entryHtml(x.e, { W, self: name,
       where: x.i != null ? `<a href="#/ref/${x.i}">${esc(x.where)}</a>${x.section ? ' · ' + esc(x.section) : ''}` : `${esc(x.where)} · ${esc(x.section)}` })).join('')}</dl></section>` : ''}
     ${rollers.length ? `<section class="panel"><h2>Weapons that can roll it <span class="count">${rollers.length}</span></h2>
@@ -1625,14 +1641,48 @@ async function wikiPage(raw) {
     <h3>How to get it</h3><div class="obtains">${srcHtml}</div></section>` : ''}
     ${plug?.s.length ? `<section class="panel"><h2>Stat changes</h2>${deltaList(plug.s)}</section>` : ''}
     ${champ ? `<section class="panel"><h2>Counters</h2><p>Everything here mentions ${esc(champ)} champions.${counters ? ` Court's full list of what stuns them is in the <a href="${esc(counters)}" target="_blank" rel="noopener">Champion counters sheet ↗</a>.` : ''}</p></section>` : ''}`.trim();
-  const found = main || side;
+  const found = main || side, grid = main && side ? `<div class="wtop wiki"><div>${main}</div><div class="wside">${side}</div></div>` : main || side;
+  // a guide gets its own tab beside Drops, above the whole layout (phones move the side panels up); Drops opens first and is drawn as before
+  const tabbed = gh && act.kind !== 'Strike', open = tabbed && pane === 'guide';
   $app.innerHTML = `<p class="crumbs"><a href="#/wiki">Wiki</a></p>${found ? hero({ ...art, n: title }, `<span class="wikitags">${tags.map(t => `<span class="badge">${esc(t)}</span>`).join('')}${raid?.badge || ''}</span>`) : `<h1>${esc(title)}</h1>`}
-    ${main && side ? `<div class="wtop wiki"><div>${main}</div><div class="wside">${side}</div></div>` : main || side}
+    ${tabbed ? `<div class="tabs typetabs" role="group" aria-label="Page">${[['drops', 'Drops'], ['guide', 'Guide']].map(([k, t]) => `<button type="button" data-pane="${k}"${(k === 'guide') === open ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${t}</button>`).join('')}</div>
+      <div id="dropspane"${open ? ' hidden' : ''}>${grid}</div><div id="guidepane"${open ? '' : ' hidden'}>${gh}</div>` : grid}
     ${found ? '' : `<p class="empty">The wiki has nothing on “${esc(name)}” yet. <a href="#/wiki">Search the wiki</a></p>`}`;
   raid?.wire();
+  if (gh) wireGuide(act, step);
   const showRollers = n => { const box = $app.querySelector('#rollers'); if (box) box.innerHTML = rollers.slice(0, n).map(w => card(w, `<small>${tierBadge(d.rolls[w.h])}${esc(w.ty)}</small>`)).join(''); };
   showRollers(24);
   $app.querySelector('#morerollers')?.addEventListener('click', e => { showRollers(Infinity); e.target.remove(); });
+}
+
+// An activity's guide (data/guides, one hand-written file each): what it is, a pill per encounter (shaped like the drop filters, but showing
+// one encounter at a time), that encounter's mechanics, roles, common wipes, secret chests and Master or Epic changes, then the sources.
+// Prose links wiki names as sheet notes do; names, titles and source titles are only escaped. No whitespace between list tags, since
+// .entry dd keeps line breaks (pre-line).
+function guideHtml(W, act, g, step) {
+  const prose = t => linkify(W, esc(t), act.name), ul = l => `<ul>${l.map(t => `<li>${t}</li>`).join('')}</ul>`;
+  const rows = l => l.filter(([, x]) => x?.length).map(([k, x]) => `<div class="entry"><dt><b>${k}</b></dt><dd>${ul(x)}</dd></div>`).join('');
+  const all = rows([['Master, every encounter', g.master?.map(prose)], ['Epic, every encounter', g.epic?.map(prose)]]);
+  return `<section class="panel" id="guide"><h2>Guide</h2>${g.about ? `<p>${prose(g.about)}</p>` : ''}${g.caveat ? `<p class="muted">${prose(g.caveat)}</p>` : ''}
+    ${g.encounters.length > 1 ? `<div class="dropfilter" role="group" aria-label="Encounter">${g.encounters.map((e, i) => `<button type="button" data-step="${i}" aria-pressed="${i === step}"><small>${i + 1}</small>${esc(e.name)}</button>`).join('')}</div>` : ''}
+    ${g.encounters.map((e, i) => `<div class="gstep" data-step="${i}"${i === step ? '' : ' hidden'}><h3>${i + 1}. ${esc(e.title || e.name)}</h3><p>${prose(e.what)}</p>
+      ${e.before ? `<p><b>Getting there.</b> ${prose(e.before)}</p>` : ''}<h3 class="drophead">Mechanics</h3><ol>${e.steps.map(t => `<li>${prose(t)}</li>`).join('')}</ol>
+      <dl class="entries">${rows([['Roles', e.roles.map(([r, t]) => `<b>${esc(r)}</b> ${prose(t)}`)], ['Common wipes', e.wipes.map(prose)], ['Secret chests', e.chests?.map(prose)],
+        ['Master', e.master?.map(prose)], ['Epic', e.epic?.map(prose)]])}</dl></div>`).join('')}
+    ${all ? `<dl class="entries">${all}</dl>` : ''}
+    <p class="refsrc">Written from ${g.sources.map(([t, u]) => /^https:\/\//.test(u) ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} ↗</a>` : esc(t)).join(' · ')} · checked ${esc(g.checked)}</p></section>`;
+}
+// Drops | Guide and the encounter pills only show and hide what's drawn, so the drop filters, the vault and the scroll all survive; the
+// address follows with replaceState (a hash change would rebuild the page), and Back leaves the page as on the perk finder
+function wireGuide(act, step) {
+  const press = (l, on) => l.forEach(x => x.setAttribute('aria-pressed', String(on(x)))), pane = $app.querySelector('#guidepane');
+  // Drops keeps the encounter too (#/wiki/X/drops/5), so a reload there still has the guide on it
+  const url = () => history.replaceState(null, '', wikiHref(act.name) + (!pane || !pane.hidden ? '/guide' + (step ? '/' + (step + 1) : '') : step ? '/drops/' + (step + 1) : ''));
+  $app.querySelector('.typetabs[aria-label="Page"]')?.addEventListener('click', e => { const b = e.target.closest('button[data-pane]'); if (!b) return;
+    const tabs = $app.querySelectorAll('.typetabs [data-pane]'); press(tabs, x => x === b); tabs.forEach(x => x.classList.toggle('on', x === b));
+    $app.querySelector('#dropspane').hidden = b.dataset.pane !== 'drops'; pane.hidden = b.dataset.pane !== 'guide'; url(); });
+  $app.querySelector('#guide').addEventListener('click', e => { const b = e.target.closest('button[data-step]'); if (!b) return;
+    step = +b.dataset.step; press($app.querySelectorAll('#guide button[data-step]'), x => x === b); $app.querySelectorAll('#guide .gstep').forEach(x => x.hidden = x.dataset.step !== b.dataset.step); url(); });
 }
 
 // Llama's sheets list raid and dungeon armor by slot ("Helm", "Class Item")
@@ -1676,9 +1726,14 @@ function lootPage(act, d, a, rot, place) {
     .map(x => { const epic = /epic/i.test(x.src), row = armor.find(r => r.slot === slotOf(x.ty) && r.epic === epic);
       return { x, epic, slot: slotOf(x.ty), encs: row?.encs || [], notes: row ? [...row.how, row.note] : [] }; })
     .sort((p, q) => p.epic - q.epic || setOf(p.x) - setOf(q.x) || order.indexOf(p.slot) - order.indexOf(q.slot));
-  const list = { Raid: 'raids', Dungeon: 'dungeons' }[act.kind], { weeks, cur } = rotationWeeks(rot), on = w => list && w[list].find(n => fold(act.name).startsWith(fold(n)));
+  const strike = act.kind === 'Strike', list = { Raid: 'raids', Dungeon: 'dungeons' }[act.kind], { weeks, cur } = rotationWeeks(rot);
+  // Pantheon is scheduled by its reprise and encore bosses, never as a featured raid
+  const pantheon = act.name === 'Pantheon', on = w => strike ? w.gm === act.name : pantheon ? w.pantheon.length > 0 : list && w[list].find(n => fold(act.name).startsWith(fold(n)));
   const next = weeks.find(w => w.start > cur.start && on(w));
   const fmt = s => new Date(s + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const rotation = list || strike ? `<section class="panel"><h2>Rotation</h2><p>${on(cur) && pantheon ? `Featured this week: ${esc(cur.pantheon.join(' and '))}.` : on(cur) ? `Featured this week${cur.master.some(n => fold(act.name).startsWith(fold(n))) ? ', with Master' : ''}.` : `Not featured this week.${next ? ` Next featured the week of ${fmt(next.start)}.` : ''}`}</p></section>` : '';
+  // a strike has no loot sheet: its page is its guide, and when it is next the Grandmaster
+  if (strike) return { main: '', side: rotation, wire() {}, flavor: '', badge: on(cur) ? '<span class="badge good">Featured this week</span>' : '' };
   const chips = l => l.length ? `<p class="encs">${l.map(e => `<span class="enc">${esc(e)}</span>`).join('')}</p>` : '';
   const dropCard = (x, href, sub, facts, notes, attrs) => `<article class="drop" data-encs="${esc(x.encs.join('|'))}"${attrs}>
       <a class="dropart" href="${href}" tabindex="-1" aria-hidden="true">${x.ss ? `<img loading="lazy" src="${BNET}${x.ss}" alt="">` : ''}</a>
@@ -1702,7 +1757,7 @@ function lootPage(act, d, a, rot, place) {
   const side = `<section class="panel" id="raidmine"><h2>Your collection</h2><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see which drops you own and how good your best copy is.'}</p></section>
     ${place?.distorted ? `<section class="panel raidnotes"><h2>Distortions</h2><dl class="sidelist">${place.distortions.map(([t, x]) => `<dt>${esc(t)}</dt><dd>${esc(x)}</dd>`).join('')}</dl>
       <p class="refsrc">From Bungie's Monument of Triumph notes.</p></section>` : ''}
-    ${list ? `<section class="panel"><h2>Rotation</h2><p>${on(cur) ? `Featured this week${cur.master.some(n => fold(act.name).startsWith(fold(n))) ? ', with Master' : ''}.` : `Not featured this week.${next ? ` Next featured the week of ${fmt(next.start)}.` : ''}`}</p></section>` : ''}
+    ${rotation}
     ${R.notes.length || extras.length ? `<section class="panel raidnotes"><h2>Notes</h2>${[...extras, ...R.notes].map(n => `<p class="raidnote">${esc(n)}</p>`).join('')}
       ${R.tab ? `<p class="refsrc">From Llama's sheets (${R.tab}, by Court).</p>` : ''}</section>` : ''}`;
   const wire = () => {
@@ -1844,7 +1899,8 @@ async function home() {
   const label = n => ({ 'European Dead Zone': 'EDZ', 'The Dreaming City': 'Dreaming City', "Savathun's Throne World": 'Savathûn\'s\nThrone World' })[n] || n;
   const sphere = (cls, n, when) => `<a class="sphere ${cls}" href="${wikiHref(n)}"><span class="globe"><img src="${planet(n)}" alt=""><b>${esc(label(n))}</b></span><small>${when}</small></a>`;
   const head = (icon, title) => `<h2 class="acthead"><img src="${icon.includes('/') ? icon : `${BNET}/common/destiny2_content/icons/${icon}.png`}" alt="">${title}</h2>`;
-  const act = (n, extra = '', link = true, over = '') => `<${link ? `a href="${wikiHref(n)}"` : 'div'} class="act"><b>${esc(n)}</b>${pic(n) ? `<span class="actart"><img loading="lazy" src="${pic(n)}" alt="">${over}</span>` : ''}${extra}</${link ? 'a' : 'div'}>`;
+  // link 'name' links only the name, for a card that holds links of its own (the Grandmaster's weapons): links can't nest
+  const act = (n, extra = '', link = true, over = '') => `<${link === true ? `a href="${wikiHref(n)}"` : 'div'} class="act"><b>${link === 'name' ? `<a href="${wikiHref(n)}">${esc(n)}</a>` : esc(n)}</b>${pic(n) ? `<span class="actart"><img loading="lazy" src="${pic(n)}" alt="">${over}</span>` : ''}${extra}</${link === true ? 'a' : 'div'}>`;
   const chips = (l, note) => `<span class="encs">${l.map(x => `<span class="enc">${esc(x)}</span>`).join('')}</span><small>${note}</small>`;
   const master = n => cur.master.includes(n) ? '<span class="encs"><span class="badge good">Master available</span></span>' : '';
   const hourStart = t => Math.floor(t / 3600e3) * 3600e3, at = t => new Date(t).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
@@ -1858,7 +1914,7 @@ async function home() {
     ${[['Featured raids', 'raids', 'DestinyActivityModeDefinition_bfe80e3dafe6686a9dc42df0606bdc9b', 'raid'], ['Featured dungeons', 'dungeons', 'DestinyActivityModeDefinition_f20ebb76bee675ca429e470cec58cc7b', 'dungeon']].map(([title, key, icon, kind]) =>
       `<section class="panel bare">${head(icon, title)}<div class="acts">${cur[key].map(n => act(n, `${rot.always[key].includes(n) ? `<small>Newest ${kind} · featured every week</small>` : ''}${master(n)}`)).join('')}</div></section>`).join('')}
     <div class="weekly">
-      <section class="panel bare">${head('3642cf9e2acd174dcab5b5f9e3a3a45d', 'Grandmaster')}${act(cur.gm, cur.gmWeapons.length ? chips(cur.gmWeapons, 'Shiny and bonus focus weapons') : '', false, '<span class="gmguns" id="gmguns"></span>')}</section>
+      <section class="panel bare">${head('3642cf9e2acd174dcab5b5f9e3a3a45d', 'Grandmaster')}${act(cur.gm, cur.gmWeapons.length ? chips(cur.gmWeapons, 'Shiny and bonus focus weapons') : '', cur.gm ? 'name' : false, '<span class="gmguns" id="gmguns"></span>')}</section>
       ${cur.pantheon.length ? `<section class="panel bare">${head('img/pantheon.png', 'Pantheon')}<a href="${wikiHref('Pantheon')}" class="act"><b>${esc(cur.pantheon.join(' · '))}</b><img loading="lazy" src="${pic('Pantheon')}" alt=""><small>Reprise and encore bosses</small></a></section>` : ''}
     </div>
     <section class="panel bare">
@@ -1959,7 +2015,7 @@ async function route() {
     else if (parts[0] === 'farm') await farm();
     else if (parts[0] === 'vendors') await vendorsPage(parts[1]);
     else if (parts[0] === 'ref') await reference(parts[1] ? +parts[1] : -1);
-    else if (parts[0] === 'wiki') await (parts[1] ? wikiPage(parts[1]) : reference(-1));
+    else if (parts[0] === 'wiki') await (parts[1] ? wikiPage(parts[1], parts[2], parts[3]) : reference(-1));
     else if (parts[0] === 'images') images();
     else $app.innerHTML = '<p class="empty">Page not found. <a href="#/">Back home</a></p>';
   } catch (e) {

@@ -1,0 +1,89 @@
+{
+  "name": "Prophecy",
+  "checked": "2026-11-03",
+  "sources": [
+    ["Shacknews: Prophecy dungeon guide", "https://www.shacknews.com/article/118838/prophecy-dungeon-guide-destiny-2"],
+    ["Destinypedia: Prophecy", "https://destinypedia.com/Prophecy"],
+    ["Prima Games: Prophecy dungeon guide", "https://primagames.com/tips/destiny-2-prophecy-dungeon-guide-how-beat"],
+    ["PC Invasion: Prophecy dungeon guide (Wasteland and secret chest)", "https://www.pcinvasion.com/destiny-2-season-of-arrivals-the-prophecy-dungeon-guide/4"],
+    ["The Game Post: Prophecy secret chest locations", "https://thegamepost.com/destiny-2-season-arrivals-prophecy-dungeon-secret-chests-location-guide/"]
+  ],
+  "about": "A three-player Taken dungeon in the Realm of the Nine, from Season of Arrivals. One rule runs through it: kill Knight Echoes while standing in light for Light motes or in shadow for Dark motes, collect five of one kind, and cleanse the plate of that colour.",
+  "encounters": [
+    {
+      "name": "Phalanx Echo",
+      "before": "The entrance teaches the motes. Five motes of one kind let you cleanse a smoky plate of the same colour, and picking up the other kind resets your count. Motes last 30 seconds and each pickup refreshes the timer. Cleanse both pairs of plates, then climb the rubble into the arena.",
+      "what": "A Taken Phalanx shielded until the four smoke plates around the arena, two Light and two Dark, are cleansed. Then it can be damaged until the shield returns.",
+      "steps": [
+        "Agree which plate to do first. Kill Knight Echoes while standing in light or shadow to get the matching motes.",
+        "At five motes, cleanse the matching plate. Don't touch motes of the other kind while you carry a count.",
+        "Repeat for all four plates. The Phalanx's shield drops.",
+        "Damage it while Goblin reinforcements arrive. Its shield blast knocks players around, so keep near cover.",
+        "When it turns immune, go back to the plates. Repeat until it dies.",
+        "To move on, the whole team stands on the sandy plate in the centre."
+      ],
+      "roles": [
+        ["Mote carrier (1)", "Takes the Knight Echo kills in the right light or shadow and cleanses each plate."],
+        ["Others (2)", "Clear adds, weaken Knight Echoes for the carrier and hold the small arena."]
+      ],
+      "wipes": [
+        "Picking up the wrong mote type and losing the count.",
+        "Motes expire before the carrier reaches the plate.",
+        "The team gets caught in the open in the small arena; the outer structures give cover."
+      ]
+    },
+    {
+      "name": "Cube",
+      "title": "The Hexahedron",
+      "before": "Wasteland: ride Sparrows across the desert and destroy the Taken Blights and roaming Taken, watching for camouflaged Taken Minotaurs. When the game says the way is open, head for the twin pillars of light and the slim entrance in the large stone building.",
+      "what": "A giant cube that turns on its side six times. Each turn needs the plate marked by Toland's wisp cleansed; after the last turn two Centurion Echoes end the fight.",
+      "steps": [
+        "Find Toland's wisp: the plate below it is the one to cleanse. If he is on the roof, use the plate on the side of the cube that isn't lit.",
+        "Kill the two Hobgoblins; each one spawns a Knight Echo.",
+        "Kill the Knight Echoes in the right light or shadow for five matching motes and cleanse the marked plate.",
+        "Stand on the central plate. The room turns toward the side you cleansed.",
+        "Repeat for six turns. If the room turns the wrong way, cleanse the correct plate to turn it back.",
+        "After the last turn, kill the two Centurion Echoes on the corner platforms and leave through the narrow opening in the wall."
+      ],
+      "roles": [
+        ["Mote carrier (1)", "Reads Toland's position, takes the Knight Echo kills and cleanses the plate."],
+        ["Others (2)", "Kill the Hobgoblins and the adds, which keep respawning."]
+      ],
+      "wipes": [
+        "Cleansing the wrong plate and turning the room the wrong way.",
+        "Turns take too long and the respawning adds wear the team down.",
+        "The carrier picks up the other mote type and has to start the count again."
+      ],
+      "chests": [
+        "Wasteland, before the cube: head northwest from where you arrive to a building half buried in sand. Behind it, an opening in a patch of golden sand leads down to the chest."
+      ]
+    },
+    {
+      "name": "Kell Echo",
+      "before": "Leave the cube and follow the Kell Echo across the Wasteland to the portal. In the Singularity, ride the twisting ribbon road past Taken Vandals and Knights down to the large diamond, then stand on the platform to be pulled inside.",
+      "what": "Three copies of Kell Echo fire from the corners of a triangular room. Cleansing the plates sends them away and opens a damage phase down a long hallway, where staying close to the real Kell Echo stops Dark Entropy from building.",
+      "steps": [
+        "Touch the Toland wisp to start. Three Kell Echoes appear in the corners with Knight Echoes and other adds.",
+        "Find which mote type the first plate needs, kill Knight Echoes in the matching light or shadow and cleanse it. Kill the Ogre that spawns.",
+        "Do the same for the other two plates and their Ogres.",
+        "Restock heavy ammo and gather in the centre to be moved to the damage area.",
+        "Follow Kell Echo down the hallway and stay close. Away from him Dark Entropy stacks up, and 10 stacks kills you.",
+        "Dodge his Darkness bolt. It goes through cover, adds Dark Entropy and teleports you back to the start of the hallway.",
+        "Kill the Hobgoblins that spawn, and save most damage for when he stops at the end platform.",
+        "When he turns immune you return to the triangle room. Repeat until he dies."
+      ],
+      "roles": [
+        ["Mote carrier (1)", "Cleanses each plate with the right motes."],
+        ["Others (2)", "Kill the Knight Echoes, Ogres and Hobgoblins. In damage, all three stay near Kell Echo."]
+      ],
+      "wipes": [
+        "Dark Entropy reaches 10 stacks because a player fell behind or took the Darkness bolt.",
+        "Players die in the hallway, which sharply cuts the team's damage for that phase.",
+        "A Hobgoblin sniper picks players off in the hallway."
+      ],
+      "chests": [
+        "Singularity, before the boss: on the ribbon road, enter the last diamond before the large one, turn right, drop into the hole and follow the path across a gap to the chest. Then go back to the main diamond. Shacknews calls it a weekly chest."
+      ]
+    }
+  ]
+}

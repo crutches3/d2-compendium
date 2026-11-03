@@ -1,0 +1,162 @@
+{
+  "name": "Garden of Salvation",
+  "checked": "2026-11-03",
+  "about": "Six-player Vex raid from Shadowkeep (2019), built around linking tethers, banking Voltaic Motes and the Enlightened buff. It has no Master version.",
+  "caveat": "The guides behind this page date from 2019; no later rework of these encounters was found, but some counts differ between guides and are left out.",
+  "sources": [
+    [
+      "Shacknews: Garden of Salvation raid guide",
+      "https://shacknews.com/article/114369/garden-of-salvation-raid-guide-destiny-2"
+    ],
+    [
+      "PowerPyx: Garden of Salvation raid walkthrough",
+      "https://www.powerpyx.com/destiny-2-garden-of-salvation-raid-walkthrough/"
+    ],
+    [
+      "PCGamesN: Garden of Salvation raid guide",
+      "https://pcgamesn.com/destiny-2/shadowkeep-raid-garden-of-salvation-guide"
+    ],
+    [
+      "Destinypedia: Garden of Salvation",
+      "https://www.destinypedia.com/Garden_of_Salvation"
+    ],
+    [
+      "GameSpot: Garden of Salvation hidden chest guide",
+      "https://gamespot.com/articles/destiny-2-shadowkeep-raid-hidden-chests-guide-wher/1100-6470477/"
+    ]
+  ],
+  "encounters": [
+    {
+      "name": "Evade",
+      "title": "Evade the Consecrated Mind",
+      "what": "A moving fight through a series of rooms. The Consecrated Mind can't be hurt here; the team leapfrogs it by opening Vex barriers with tethers while collecting every Voltaic Overflow it drops.",
+      "steps": [
+        "Shoot the floating Vex box at the start and stand in the tether chain so it reaches the door. The door opens and the boss wakes.",
+        "Split into a front group and a back group; most guides use three and three.",
+        "The back group stays with the Consecrated Mind and picks up every Voltaic Overflow it drops. An Overflow left on the ground wipes the team within seconds.",
+        "Each pickup gives a debuff of about two and a half minutes, and picking up a second one while it is active kills you, so take turns.",
+        "The front group pushes to the next barrier, kills the Angelic (a Hydra) to unlock its Vex box, and links a tether from the box to the barrier. A chain needs at least three players.",
+        "When the barrier opens, the boss moves up to it. The back group moves past it and becomes the new front group.",
+        "The last barrier has three locks, so all three of its boxes need tethers. Then run through the final field of Cyclops and Overload Minotaurs; the encounter ends once a player reaches the far end."
+      ],
+      "roles": [
+        [
+          "Back group (3)",
+          "Stays with the boss, kills adds and takes turns collecting Voltaic Overflow."
+        ],
+        [
+          "Front group (3)",
+          "Kills the Angelic and adds at the next barrier and builds the tether chain."
+        ],
+        [
+          "Final run (whole team)",
+          "Some players kill the Cyclops while others draw the Minotaurs away, so at least one player gets through."
+        ]
+      ],
+      "wipes": [
+        "A Voltaic Overflow is left on the ground.",
+        "A player who already has the Overflow debuff grabs a second one and dies, and the next Overflow goes uncollected.",
+        "The tether chain doesn't reach because players stand too far apart.",
+        "Overload Minotaurs overrun the back group; stun them first, since they take little damage until stunned."
+      ]
+    },
+    {
+      "name": "Summon",
+      "title": "Summon the Consecrated Mind",
+      "before": "Drop through the tree hole and then the round hole into the Undergrowth, and jump across the floating leaves to reach the relay arena.",
+      "what": "Defend five Vex relays, four around the edge and one in the middle, from shielded Vex trying to sacrifice into them. Tethering at a relay gives Enlightened, which breaks those shields.",
+      "steps": [
+        "Put one defender at each of the four outer relays and keep two players roaming between them.",
+        "Tether from a relay's Vex box to get Enlightened, which lasts about 45 seconds. Only Enlightened players can break the white shields on the Vex heading for the relay.",
+        "Tether chains are short, so roamers help link a box to its relay. Tethering a relay also resets its sacrifice count.",
+        "Once two linked relays are tethered, a portal between them opens for fast travel.",
+        "Kill shielded Vex and Barrier Hobgoblins before they reach a relay. Too many sacrifices at a relay wipe the team.",
+        "Each outer relay gets a wave of three Angelics, 12 in all. The relay's box stays locked until they are dead.",
+        "After all four Angelic waves, the middle barrier drops. Everyone holds the center relay through three waves, tethering between waves, to finish."
+      ],
+      "roles": [
+        [
+          "Relay defenders (4)",
+          "One per outer relay. Kill the Vex heading for it and tether when Enlightened is needed."
+        ],
+        [
+          "Roamers (2)",
+          "Move between relays to lengthen tether chains, refresh Enlightened and help with Angelic waves."
+        ]
+      ],
+      "wipes": [
+        "Shielded Vex sacrifice into a relay because no one there was Enlightened.",
+        "Enlightened runs out mid-wave because the tether wasn't refreshed in time.",
+        "Angelics are left alive, so the relay's box stays locked and nobody can get Enlightened there."
+      ],
+      "chests": [
+        "In the Undergrowth, take the left path from the drop and cross to the stone platforms by a bronze Vex machine with a square lift. Ride the lift down; at the bottom, go through the gap in the wall beside it to reach the chest."
+      ]
+    },
+    {
+      "name": "Consecrated Mind",
+      "title": "Consecrated Mind, Sol Inherent",
+      "what": "The first real boss fight. One group banks motes from Minotaurs at a lit relay while the other follows the boss and frees whoever it detains by shooting the right eyes.",
+      "steps": [
+        "Tether from a Vex box to the center relay to start, then split into a mote team and a boss team of three each.",
+        "Mote team: kill Minotaurs for Voltaic Motes. You can hold up to 10, and they expire about 60 seconds after pickup, so bank them in time.",
+        "Bank at the corner relay that glows this round. Banking gives Enlightened, which breaks white shields; Vex that sacrifice at the relay take banked motes back.",
+        "Boss team: the boss leaves a Voltaic Overflow. The player who takes it is Detained, sees whether the inner or outer ring of eyes is red, and calls it.",
+        "The others shoot the matching eyes quickly, three in all. If they don't, the detained player dies.",
+        "When all three boss-team players carry the Overflow debuff, swap a mote-team player in.",
+        "Once 30 motes are banked, the boss flies to that relay. Shoot all its red eyes to expose its weak point, then damage it as it retreats. Repeat until it dies."
+      ],
+      "roles": [
+        [
+          "Mote team (3)",
+          "Kill Minotaurs, carry motes and bank them at the glowing relay; one player gathers about 10 before the next takes over."
+        ],
+        [
+          "Boss team (3)",
+          "Follow the boss. One takes the Overflow and calls inner or outer; the detained player shoots the top fin's eye and the other two the left and right fins."
+        ]
+      ],
+      "wipes": [
+        "Motes expire before they are banked.",
+        "The detained player's eyes aren't shot in time and they die.",
+        "Supplicant Harpies chase players down and explode on them.",
+        "Vex sacrifice at the relay and steal banked motes, so the 30 takes too long."
+      ]
+    },
+    {
+      "name": "Sanctified Mind",
+      "title": "Sanctified Mind, Sol Inherent",
+      "before": "After the Consecrated Mind, pass the turning wheels and climb up through the field of Vex statues and trees to the final arena.",
+      "what": "The final boss, on floating platforms. Pairs go through portals to collect colored motes, fill two matching relays, then tether to the boss's symbols to stun it for damage.",
+      "steps": [
+        "Shoot the boss to start, then kill the adds and the Angelic. This unlocks the relays.",
+        "Shoot the red weak point on the boss's knee or shoulder. The knee opens a blue portal and the shoulder an orange one, each to a side island, and each opening spawns a Cyclops on a pillar.",
+        "A mote pair goes through and kills the enemies on the island for motes of that color; a pair aims for about 15 per trip. Motes expire after about 60 seconds.",
+        "Breaking a weak point pulls everyone on the islands back, so time it for when the pairs are done. Bank the motes in the relay of the same color; banking gives Enlightened for breaking white shields.",
+        "The boss destroys platforms as the fight goes on. Anyone standing on one as it vanishes dies. Rebuild the gaps by tethering across them.",
+        "When both active relays hold 30 motes, the boss shows a blue or orange symbol. At least three players tether to it from the matching relay, then to the second symbol from the opposite relay.",
+        "Hitting both stuns the boss and exposes the weak spot in its midsection. Damage it, then repeat the cycle until it dies."
+      ],
+      "roles": [
+        [
+          "Mote pairs (2 x 2)",
+          "Each pair takes one portal color, collects motes on the island and banks them in the matching relay."
+        ],
+        [
+          "Platform team (2)",
+          "Kills the Cyclops, guards the relays, rebuilds broken platforms and breaks weak points when the pairs are ready."
+        ]
+      ],
+      "wipes": [
+        "A player stands on a platform as it disappears, or falls into the gap.",
+        "The Cyclops on the pillars are left alive and kill players in one hit.",
+        "A pair stays on the island too long and its motes expire.",
+        "The second tether is missed, so the phase ends and the relays have to be filled again.",
+        "Vex sacrifice at a relay. One guide says this costs motes, another that three sacrifices wipe the team."
+      ],
+      "chests": [
+        "Between the third and fourth encounters, climb the big tree on the right of the field and go on up the hill. Enter the left of the two openings into the tree, turn to face the way you came in, and jump from the thin stump on the right to the platform above the entrance."
+      ]
+    }
+  ]
+}

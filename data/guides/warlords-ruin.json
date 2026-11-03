@@ -1,0 +1,105 @@
+{
+  "name": "Warlord's Ruin",
+  "checked": "2026-11-03",
+  "about": "A Scorn and Taken dungeon for up to three players in a mountain castle in the EDZ, released in December 2023 with Season of the Wish. All three bosses run on Imminent Wish: cleanse Taken totems while it lasts, and each one cleansed lengthens the damage phase that follows. Watch for mimics: a chest with a faint, pulsing blue glow is a trap that spawns Screebs when opened.",
+  "caveat": "Master champion and shield types could not be confirmed from two independent guides, and guides give different hex timers, so neither is listed.",
+  "master": [
+    "Master enemies outlevel the team. Check the modifiers on the activity before launching, since this guide could not confirm which champions appear in each encounter."
+  ],
+  "sources": [
+    ["Shacknews: Warlord's Ruin guide", "https://www.shacknews.com/article/138052/destiny-2-warlords-ruin-guide"],
+    ["KeenGamer: Warlord's Ruin dungeon guide, all encounters explained", "https://keengamer.com/articles/guides/destiny-2-warlords-ruin-dungeon-guide-all-encounters-explained/"],
+    ["Destructoid: Warlord's Ruin full dungeon guide", "https://www.destructoid.com/destiny-2-warlords-ruin-full-dungeon-guide/"],
+    ["Destiny Tracker: Warlord's Ruin guide", "https://tracker.gg/checkpoint/articles/guide-warlords-ruin"],
+    ["Destinypedia: Warlord's Ruin", "https://destinypedia.com/Warlord's_Ruin"],
+    ["Sportskeeda: Hefnd's Vengeance final boss guide", "https://sportskeeda.com/mmo/destiny-2-warlord-s-ruin-guide-hefnd-s-vengeance-blighted-chimaera-final-boss-encounter"],
+    ["KeenGamer: All Warlord's Ruin secret chest locations", "https://www.keengamer.com/articles/guides/destiny-2-all-warlords-ruin-secret-bonus-chest-locations/"],
+    ["Kyber's Corner: Warlord's Ruin dungeon", "https://kyberscorner.com/destiny2/warlords-ruin-dungeon/"]
+  ],
+  "encounters": [
+    {
+      "name": "Rathil",
+      "title": "Rathil, First Broken Knight of Fikrul",
+      "what": "A Scorn Chieftain who traps players in rising cages and scatters Taken totems. Cleanse the totems during Imminent Wish to open a damage phase; a cell puzzle after the fight leads to the loot.",
+      "before": "The Climb runs up a snowy mountainside and over a rope bridge toward the castle. Some snowy platforms can give way under you, so keep moving.",
+      "steps": [
+        "Clear the Scorn in the arena. Rathil then drops Taken totems and pulls players into cages that rise into the air.",
+        "Shoot the three Blighted Eyes around your cage to open it. Teammates can shoot the Eyes around yours too.",
+        "While Imminent Wish runs, stand in each totem's white ring until the Taken matter clears and it glows blue. Rings that overlap can be cleansed together.",
+        "When Imminent Wish ends, Naeem's Wish Empowerment lets the team hurt Rathil. Each cleansed totem adds time to the damage phase.",
+        "Rathil stays on the ground with an easy crit spot. Repeat the cycle until he falls; there is no limit on rotations.",
+        "After his death the team is locked in separate cells with six gears. One shot spins a gear counterclockwise, a second stops it, a third spins it clockwise.",
+        "Skeletons beside tally marks give the answer: the hand each one reaches with shows the direction and its marks show how many gears turn that way, always six in total. Set them, then shoot the lock to open the cells and reach Rathil's chest."
+      ],
+      "roles": [
+        ["Whole team", "Each player takes a different totem during Imminent Wish, and anyone free shoots the Eyes around a caged teammate."],
+        ["In the cells", "Players who can see the tally marks call the counts; the player at the lock waits until the gears are set before shooting it."]
+      ],
+      "wipes": [
+        "A caged player is not freed before the cage reaches the top, which kills them.",
+        "The Blighted Eyes are tough and hit hard; shoot them from cover.",
+        "Totems are still Taken when Imminent Wish ends, so the damage phase is very short."
+      ],
+      "chests": [
+        "Secret chest 1 appears at one of six spots each run, and other chests along the route can be mimics. Spot 1 is on the climb before Rathil: a small alcove in the cliffside rock wall, before you reach the rope bridge."
+      ]
+    },
+    {
+      "name": "Locus",
+      "title": "Locus of Wailing Grief",
+      "what": "A Taken Ogre in an icy courtyard. Cleanse totems while a freezing wind stacks Biting Cold, turn the totems into Solar Charges, and light four braziers to damage it.",
+      "before": "After the cells, work through the castle maze, avoiding the spike panels and climbing through holes in the ceiling. Then scale the castle wall and fight through the Scorn at the gate, including an Abomination, to reach the courtyard.",
+      "steps": [
+        "Destroy the Blighted Eyes floating over the arena to start Imminent Wish.",
+        "Two Scorn Chieftains spawn on the left and right. They drop Taken totems over time and once more when they die, so let a totem appear before killing each one. Cleanse the totems as before.",
+        "Biting Cold builds the whole time; at 10 stacks you freeze and shatter. Stand at the Shelter from the Storm torches at the back of the arena to clear it.",
+        "When Imminent Wish ends, one Solar Charge appears for each totem cleansed. Each charge is on a short timer, and a dropped charge keeps ticking.",
+        "Carry the charges to the four braziers around the Locus. When the fourth is lit, damage starts.",
+        "Stand together at one brazier: it gives Naeem's Wish Empowerment and keeps the cold off. When it goes out, move to the next; each one works only once.",
+        "After the fourth brazier goes dark the Locus turns immune and the Eyes return. Repeat the cycle."
+      ],
+      "roles": [
+        ["Whole team", "No fixed split in the guides. Share the totems, run the Solar Charges to separate braziers, then damage together from one brazier at a time."]
+      ],
+      "wipes": [
+        "Biting Cold reaches 10 stacks; head to a torch well before that.",
+        "A Solar Charge times out before it reaches a brazier, so damage can't start that round.",
+        "Stepping away from the lit brazier during damage leaves you open to the cold."
+      ],
+      "chests": [
+        "Chest 1, spot 2: after the cells, go down the stone stairs and take the right-hand path to a collapsed tunnel; squeeze through the gap to the chest behind it.",
+        "Chest 1, spot 3: go back and take the left path toward the next encounter. Past an iron gate, about halfway along the tunnel, a small room on the right is guarded by Stasis Ravagers.",
+        "Chest 1, spot 4: after climbing the castle wall, clear the Scorn at the fortress gate and check the room they came from, on the right, instead of taking the left path."
+      ]
+    },
+    {
+      "name": "Hefnd",
+      "title": "Hefnd's Vengeance, Blighted Chimaera",
+      "what": "The final boss, fought on platforms that climb the mountain peak around a floating Ahamkara skeleton. Imminent Wish returns, now with a deadly hex the team has to pass to immune Scorn before it runs out.",
+      "before": "Past the Locus, climb toward the keep through a courtyard full of chests, then go up the mountain past large floating Taken orbs to the peak.",
+      "steps": [
+        "Shoot the Taken Blight on the lowest platform to start. Keep shooting new Blights as they appear; they knock players around and leave damaging ground.",
+        "Destroy the Blighted Eyes tethered to Hefnd. Two Scorn bosses spawn, one on each side, and bring Taken totems to cleanse.",
+        "Imminent Wish also gives the team Hex of Vengeful Corruption, which kills anyone still carrying it when it ends. Melee a Corrupted Hex-Drinker, an immune Scorn, to pass it on, then get clear before it punches you back.",
+        "When the wish ends, damage Hefnd. More cleansed totems mean a longer window.",
+        "At a health threshold Hefnd moves to the next section of the arena. Repeat the cycle there; there are three sections.",
+        "At the top, Hefnd floats between three islands. Stand on one together to damage and shoot Eyes to extend the window. When the Eyes are all back it goes immune and that island is spent, so move to the next.",
+        "After the third island the team is sent back down and the cycle repeats. When Hefnd is nearly dead, a final stand begins with no damage time limit."
+      ],
+      "roles": [
+        ["Whole team", "No fixed split in the guides. Cleanse totems, shoot Eyes and Blights, and everyone passes their own hex in time."]
+      ],
+      "wipes": [
+        "The hex is still on a player when Imminent Wish ends.",
+        "A Hex-Drinker punches the hex back onto someone who stayed too close after passing it.",
+        "The team spreads over several islands at the top and uses them up at once; stay on one island together.",
+        "Blights left alive throw players around and cover the platforms in damaging ground."
+      ],
+      "chests": [
+        "Secret chest 2 is in the courtyard of Scorn chests on the climb right after the Locus. Only one chest is real and it changes each run. Walk around each one for a few seconds: mimics pulse with a faint blue glow, so open the one that never glows.",
+        "Chest 1, spot 5: past the courtyard, where the path splits, take the higher mountain route instead of the way inside beside a large Taken sphere. The chest is in a snowy field.",
+        "Chest 1, spot 6: past the large Taken orb on the way to Hefnd, find a gap in the mountain with a smaller floating Taken orb. A sheltered passage near its bottom leads to a hidden cliff ledge with the chest."
+      ]
+    }
+  ]
+}

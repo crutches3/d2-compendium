@@ -1,0 +1,205 @@
+{
+  "name": "Crota's End",
+  "checked": "2026-11-03",
+  "about": "Six-player Hive raid on the Moon, a 2023 reprise of the original Destiny raid built around passing the Chalice of Light. Since Monument of Triumph (June 2026) it launches from the Raids and Dungeons node, and its Master version is still in the game, but only in weeks when it is featured (see Rotation).",
+  "caveat": "Current sources say little about Master: only extra Champions and shields are confirmed, not which enemies carry them, so check in game.",
+  "master": [
+    "Master has tougher enemies plus extra Champions and extra elemental shields (Destinypedia's Master modifier list). Which enemies become Champions in each encounter could not be confirmed from two sources.",
+    "Master still exists after Monument of Triumph: update 9.7.0.2 (June 2026) fixed Master Crota's End not showing in Fireteam Finder. It opens only in weeks when Crota's End is featured."
+  ],
+  "sources": [
+    [
+      "Shacknews: Crota's End raid guide",
+      "https://www.shacknews.com/article/136793/crotas-end-raid-guide-destiny-2"
+    ],
+    [
+      "Destructoid: Every encounter in Crota's End explained",
+      "https://www.destructoid.com/destiny-2-every-encounter-in-crotas-end-explained/"
+    ],
+    [
+      "PCGamesN: Crota's End raid guide",
+      "https://www.pcgamesn.com/destiny-2/crotas-end"
+    ],
+    [
+      "Twinfinite: How to complete the Abyss encounter",
+      "https://twinfinite.net/destiny-2/destiny-2-crotas-end-raid-how-complete-abyss-encounter/"
+    ],
+    [
+      "Pro Game Guides: Crota's End Bridge encounter guide",
+      "https://progameguides.com/destiny/destiny-2-crotas-end-bridge-encounter-guide/"
+    ],
+    [
+      "Mobalytics: How to beat Crota",
+      "https://mobalytics.gg/?p=65203"
+    ],
+    [
+      "KeenGamer: All Crota's End secret chest locations",
+      "https://www.keengamer.com/articles/guides/destiny-2-all-crotas-end-secret-bonus-chest-locations-spoils-of-conquest-triumph-guide"
+    ],
+    [
+      "Kyber's Corner: Crota's End raid",
+      "https://kyberscorner.com/destiny2/crotas-end-raid/"
+    ],
+    [
+      "Destinypedia: Crota's End",
+      "https://www.destinypedia.com/Crota%27s_End"
+    ],
+    [
+      "BlueberriesGG: Crota's End challenges (Master notes)",
+      "https://www.blueberries.gg/leveling/crotas-end-challenges/"
+    ],
+    [
+      "Shattered Vault: Destiny 2 Update 9.7.0.2",
+      "https://shatteredvault.com/destiny-2-update-9-7-0-2/"
+    ]
+  ],
+  "encounters": [
+    {
+      "name": "Abyss",
+      "title": "The Abyss",
+      "before": "The raid opens at a chasm with the Chalice of Light and a plate. Pass the Chalice as described below so Enlightened players can stand on the plate and build the bridge, killing adds between deposits. Cross and drop into the dark.",
+      "what": "A run through pitch-black caves, lighting Hive lanterns to survive the darkness. It runs on the Chalice of Light: when its meter fills, the holder has 10 seconds to hand it over or die, and the player who gave it up becomes Enlightened.",
+      "steps": [
+        "Take the Chalice and let its meter fill; killing enemies fills it faster.",
+        "When it is full, another player takes it. The previous holder becomes Enlightened. Spending that buff gives Drained of Light, which stops them taking the Chalice for about 45 seconds.",
+        "In the dark, Weight of Darkness stacks up to 10, slowing you until you can't sprint or jump. Standing by a lit lantern clears it.",
+        "A shared darkness timer of about 60 seconds kills everyone at zero. An Enlightened player lighting a lantern, or the Chalice being preserved at a station, buys more time.",
+        "Each set of lanterns ends at a preservation station. Preserve the Chalice there to wake the next lanterns, then someone takes it from the station and the run goes on.",
+        "Lit lanterns explode after a short time, so don't linger beside them. Watch for holes in the floor and swinging hazards.",
+        "At the end, Enlightened players stand on the plate to build the next bridge while the team holds off adds and Unstoppable Ogres. The encounter ends when the path is clear."
+      ],
+      "roles": [
+        [
+          "Chalice rotation (3 to 4)",
+          "Pass the Chalice each time the meter fills so a fresh Enlightened player is ready for the next lantern."
+        ],
+        [
+          "Lantern lighters",
+          "Enlightened players run ahead and light the next lantern, which clears Weight of Darkness and buys time."
+        ],
+        [
+          "Ad clear (rest)",
+          "Kill Thrall and Knights around the Chalice carrier and look for the next lantern or station in the dark."
+        ]
+      ],
+      "wipes": [
+        "The darkness timer reaches zero because no lantern was lit and no Chalice preserved in time.",
+        "The Chalice holder's countdown runs out with nobody close enough to take it.",
+        "A player falls into a hole in the floor, which kills instantly.",
+        "Everyone near the Chalice is Drained of Light when its meter fills."
+      ],
+      "chests": [
+        "After dropping into the Abyss, follow the left-hand wall past the side doors. The chest is behind the fifth door; one guide says its door can move between launches."
+      ]
+    },
+    {
+      "name": "Bridge",
+      "title": "Cross the Bridge",
+      "what": "Build a bridge over the chasm with Enlightened players while others hold the totems, then carry Hive swords across to kill Gatekeepers on the far side until the whole team is over.",
+      "steps": [
+        "Pass the Chalice to make Enlightened players. An Enlightened player standing on the middle plate builds the bridge.",
+        "While the plate is in use, the Annihilator Totems on the left and right are live. One player must stand under each, or the team wipes.",
+        "A Swordbearer spawns. Kill it and have an Enlightened player pick up its sword, which uses the buff.",
+        "Only a player holding the Chalice or a sword can cross. The sword carrier crosses and kills the Gatekeeper on the far side; Gatekeepers take damage only from swords.",
+        "After the kill, preserve the sword so it can be used again at the end. The next Swordbearer appears only once the Gatekeeper is dead.",
+        "Repeat until three players are across. Those three then run the plate and totems on the far side so the rest can cross the same way.",
+        "With everyone over, a last wave brings Wizards, Ogres and five Gatekeepers. Enlightened players take the stored swords and kill the Gatekeepers to finish."
+      ],
+      "roles": [
+        [
+          "Totem holders (2)",
+          "Stand under the left and right Annihilator Totems whenever someone is on the plate."
+        ],
+        [
+          "Sword runner (1 at a time)",
+          "Kills the Swordbearer, takes its sword while Enlightened, crosses and kills the Gatekeeper."
+        ],
+        [
+          "Plate and Chalice (rest)",
+          "Pass the Chalice to keep Enlightened players coming, build the bridge from the plate and clear adds."
+        ]
+      ],
+      "wipes": [
+        "A totem is left uncovered while someone is on the plate.",
+        "The Chalice holder's countdown runs out while they are on the plate or crossing.",
+        "A sword is dropped and left on the ground. It disappears, and no new Swordbearer comes until a Gatekeeper dies."
+      ]
+    },
+    {
+      "name": "Ir Yût",
+      "title": "Ir Yût, the Deathsinger",
+      "before": "Past the bridge is the Thrallway, a climb through Thrall and Shriekers. The Shriekers sit behind green barriers that only Enlightened players can pass, and killing one drops its barrier. Preserve the Chalice at the top to open the hole in the floor, then drop through to Ir Yût.",
+      "what": "A damage check. Enlightened players kill Wizards hidden behind green barriers to drop Ir Yût's shield, then the team must push her past a mark on her health bar before her Dark Liturgy song kills everyone.",
+      "steps": [
+        "Split into two teams of three, one for each side of the arena.",
+        "Kill the Blistered Knights on your side. This wakes Shriekers above the green barriers; kill them to open the central crystal room, where the Chalice can be preserved.",
+        "Pass the Chalice to make Enlightened players. Going through a green barrier uses up the buff.",
+        "In the first round, Wizards are in three of the seven barrier rooms and Shriekers in the others. Enlightened players go in and kill the Wizards close together.",
+        "The first Wizard kill starts Dark Liturgy, a countdown that wipes the team at zero. With every Wizard dead, Ir Yût's shield drops.",
+        "Damage Ir Yût past the notch on her health bar before Dark Liturgy ends. Enlightened players can Expunge on her for extra damage.",
+        "Each new round adds one Wizard: three, then four, then five. Repeat until she dies."
+      ],
+      "roles": [
+        [
+          "Two teams of three",
+          "Each side clears its Knights and Shriekers, then sends Enlightened players into its barrier rooms."
+        ],
+        [
+          "Wizard killers (3 to 5)",
+          "Enlightened players, one per Wizard. Go in, kill the Wizard and call it out."
+        ],
+        [
+          "Chalice rotation",
+          "Keep passing the Chalice so enough players are Enlightened before each Wizard round."
+        ]
+      ],
+      "wipes": [
+        "Dark Liturgy runs out because the damage phase didn't reach the notch.",
+        "Wizards are killed far apart, so Dark Liturgy starts long before the shield drops.",
+        "Too few Enlightened players for the number of Wizards that round.",
+        "The Chalice holder's countdown ends while every nearby player is Drained of Light and can't take it."
+      ],
+      "chests": [
+        "In the Thrallway: kill the Shriekers first, then have a fast player take the Chalice and run it to the preserve at the end of the hallway before the doors there close. If it is preserved in time, the chest appears."
+      ]
+    },
+    {
+      "name": "Crota",
+      "title": "Crota, Son of Oryx",
+      "what": "The final boss. Break Crota's shield with Hive swords carried by Enlightened players, then damage him until an Enlightened player shoots the Oversoul to end the phase.",
+      "steps": [
+        "Clear the adds and send a player up each of the left and right towers to kill the Boomer Knights. With all of them dead, a Swordbearer and an Ogre spawn.",
+        "The Chalice spawns low in the middle. Presence of Crota stops it changing hands except inside a moving pool of light, so pass it there.",
+        "Before the shield phase, have at least four Enlightened players: about three for swords and one kept back for the Oversoul.",
+        "Kill the Swordbearer. An Enlightened player takes its sword and hits Crota's shield; it usually takes two or three swords to break it.",
+        "When the shield breaks, Crota kneels and the Oversoul appears beyond the back of the arena with a 30-second timer. Everyone damages Crota; spare Enlightened players can Expunge on him.",
+        "Before the timer ends, the Enlightened player kept back shoots the Oversoul. That ends the damage phase, so leave it as late as is safe.",
+        "Repeat. At the last health mark Crota goes into a final stand: he is briefly immune, then a new Oversoul gives one more short window to finish him."
+      ],
+      "roles": [
+        [
+          "Tower players (2)",
+          "One per tower; kill the Boomer Knights each cycle so the Swordbearer spawns."
+        ],
+        [
+          "Sword users (2 to 3)",
+          "Enlightened players who take swords and break the shield."
+        ],
+        [
+          "Oversoul shooter (1)",
+          "Stays Enlightened, never takes a sword, and shoots the Oversoul near the end of each phase."
+        ],
+        [
+          "Chalice passers",
+          "Pass the Chalice inside the pools of light to keep Enlightened players ready."
+        ]
+      ],
+      "wipes": [
+        "Nobody Enlightened is left to shoot the Oversoul before its timer ends.",
+        "The Oversoul shooter picks up a sword or dies and loses the buff.",
+        "Crota's sword slam breaks a Well of Radiance and kills the players inside it.",
+        "The Chalice holder can't reach a pool of light in time to pass it."
+      ]
+    }
+  ]
+}

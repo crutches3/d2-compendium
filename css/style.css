@@ -419,8 +419,12 @@ h2.wikihead { font-size: 18px; letter-spacing: -.01em; margin: 28px 0 0; padding
 .wikitags { margin: 4px 0 4px; }
 .entry dt b a { color: var(--text); }
 .entry dt b a:hover { color: var(--accent); }
-.entry dd a, .refnote a { color: var(--accent); text-decoration: underline; text-decoration-color: rgba(108, 184, 255, .35); text-underline-offset: 3px; }
-.entry dd a:hover, .refnote a:hover { text-decoration-color: currentColor; }
+.entry dd a, .refnote a, #guide a { color: var(--accent); text-decoration: underline; text-decoration-color: rgba(108, 184, 255, .35); text-underline-offset: 3px; }
+.entry dd a:hover, .refnote a:hover, #guide a:hover { text-decoration-color: currentColor; }
+/* an activity's guide (its own tab): reading width for the text, numbered steps */
+#guide p, #guide ol, #guide .entries { max-width: 70ch; }
+#guide ol { padding-left: 22px; }
+#guide li + li { margin-top: 4px; }
 .lootname { display: inline-flex; align-items: center; gap: 8px; color: var(--text); font-weight: 600; }
 .lootname img { width: 28px; height: 28px; border-radius: 4px; flex: none; background: var(--panel2); }
 h3.mentionhead { font-size: 13px; color: var(--muted); font-weight: 600; margin: 18px 0 4px; }
@@ -514,6 +518,7 @@ section.panel.bare h2.acthead { font: 400 15px/1.4 Georgia, "Times New Roman", s
 /* the same spaced serif capitals as the Distortion planets */
 .act b, .globe b { font-family: Georgia, "Times New Roman", serif; font-weight: 400; text-transform: uppercase; letter-spacing: .3em; color: #f3ead8; }
 .act b { font-size: 14px; text-shadow: 0 0 8px rgba(0, 0, 0, .8); }
+.act b a { color: inherit; }
 .act small { color: var(--muted); font-size: 12px; }
 .actart { position: relative; display: block; }
 .actart > img { display: block; }

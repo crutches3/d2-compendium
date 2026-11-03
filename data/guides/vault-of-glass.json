@@ -1,0 +1,297 @@
+{
+  "name": "Vault of Glass",
+  "checked": "2026-11-03",
+  "about": "Six-player Vex raid, a 2021 reprise of the original Destiny raid with several mechanics changed. Since Monument of Triumph (June 2026) it launches from the Raids and Dungeons node, and its Master version is still in the game, but only in weeks when it is featured (see Rotation).",
+  "caveat": "Mechanics come from 2021 guides and no later rework was found; the Master enemy notes come from a single 2021 guide, so check the champion types in game.",
+  "master": [
+    "In 2021 guides, Master adds more Champions (Barrier Hobgoblins and Overload Minotaurs) and Match Game, so shielded enemies resist damage that doesn't match their shield; TheGamer lists Arc and Void shields.",
+    "Master still exists after Monument of Triumph: update 9.7.0.2 (June 2026) fixed Master Vault of Glass not showing in Fireteam Finder. It opens only in weeks when Vault of Glass is featured."
+  ],
+  "sources": [
+    [
+      "Shacknews: Vault of Glass raid guide",
+      "https://www.shacknews.com/article/124508/vault-of-glass-raid-guide-destiny-2"
+    ],
+    [
+      "TheGamer: A complete guide to the Vault of Glass raid (incl. Master)",
+      "https://www.thegamer.com/destiny-2-vault-of-glass-raid-guide/"
+    ],
+    [
+      "Windows Central: Vault of Glass raid guide",
+      "https://www.windowscentral.com/destiny-2-vault-glass-raid-guide"
+    ],
+    [
+      "Dexerto: Vault of Glass complete raid walkthrough",
+      "https://www.dexerto.com/destiny/ultimate-destiny-2-vault-of-glass-raid-guide-1578682/"
+    ],
+    [
+      "Prima Games: Vault of Glass Templar guide (Gorgons and jumping puzzle)",
+      "https://primagames.com/gaming/destiny-2-vault-of-glass-templar-guide/2"
+    ],
+    [
+      "PC Invasion: Vault of Glass raid guide (Trial of Kabr chest)",
+      "https://pcinvasion.com/destiny-2-vault-of-glass-raid-guide/3"
+    ],
+    [
+      "Destinypedia: Vault of Glass (raid)",
+      "https://destinypedia.com/The_Vault_of_Glass"
+    ],
+    [
+      "Kyber's Corner: Vault of Glass",
+      "https://kyberscorner.com/destiny2/vaultofglass/"
+    ],
+    [
+      "Sportskeeda: Vault of Glass Master difficulty",
+      "https://www.sportskeeda.com/esports/best-loadouts-vault-glass-master-difficulty-destiny-2"
+    ],
+    [
+      "Shattered Vault: Destiny 2 Update 9.7.0.2",
+      "https://shatteredvault.com/destiny-2-update-9-7-0-2/"
+    ]
+  ],
+  "encounters": [
+    {
+      "name": "Opening",
+      "title": "Waking Ruins: raise the Spire",
+      "what": "Hold three Vex plates until a Spire forms and opens the door into the Vault. There is no boss; the danger is Vex taking the plates and Cyclops firing from range.",
+      "steps": [
+        "Split into three pairs and take the left, middle and right plates.",
+        "Keep at least one player standing on each plate so the Spire keeps building.",
+        "Kill Goblins and Hobgoblins as they come, but treat Minotaurs as the priority: they are the enemies that can take a plate.",
+        "Kill each Cyclops as soon as it appears on its far platform; its shots can kill a plate holder outright.",
+        "If a plate turns red, the Spire loses its progress. Retake the plate and keep holding.",
+        "When the Spire is complete, the enemies despawn and the Vault door opens."
+      ],
+      "roles": [
+        [
+          "Plate pairs (3 x 2)",
+          "One player holds the plate while the partner clears adds around it; both turn on any Minotaur heading their way."
+        ],
+        [
+          "Whole team",
+          "Use heavy ammo and Supers on Minotaurs and Cyclops; primaries are enough for the rest."
+        ]
+      ],
+      "wipes": [
+        "A Minotaur reaches a plate and turns it red, which sets the Spire back.",
+        "A Cyclops is left alive and keeps killing the plate holders.",
+        "A plate is left empty while both players of its pair chase kills, and the Vex take it."
+      ]
+    },
+    {
+      "name": "Confluxes",
+      "before": "Go through the opened door and down into the Trial of Kabr, the cavern route that leads to the Templar's Well, where the Confluxes, Oracles and Templar are all fought.",
+      "what": "Stop Vex from sacrificing themselves into up to three Confluxes, while cleansing the negation marks that the Templar's ritual punishes.",
+      "steps": [
+        "Split into three pairs for the left, middle and right Confluxes.",
+        "The middle Conflux is active first, then the left and right ones, then all three at once. Defend whichever are active.",
+        "Kill Vex walking toward a Conflux before they reach it. Too many completed sacrifices fail the encounter.",
+        "A Wyvern spawns and heads for an active Conflux; in later waves an Overload Minotaur can come too. Kill it on the way: a major that sacrifices wipes the team.",
+        "Fanatics (exploding Goblins) leave pools that give Marked for Negation. Avoid them where you can.",
+        "Marked players step into the central cleansing pool together, because it goes on cooldown after use. Anyone still marked when the Templar's Ritual of Negation goes off dies.",
+        "Between waves a group of Vex attacks; clear it and get ready for the next Confluxes. Survive every wave to finish."
+      ],
+      "roles": [
+        [
+          "Conflux pairs (3 x 2)",
+          "Each pair owns one Conflux. While only one or two are active, the spare pairs help the active ones."
+        ],
+        [
+          "Whole team",
+          "Save heavy and Supers for Wyverns and Minotaurs, and call out when you are marked so the marked players cleanse at the same time."
+        ]
+      ],
+      "wipes": [
+        "A Wyvern or Minotaur reaches a Conflux and sacrifices.",
+        "Players are still Marked for Negation when the ritual goes off.",
+        "Marked players cleanse one by one and the pool is on cooldown when the last ones arrive.",
+        "A pair drifts away from its Conflux and ordinary Vex walk in and sacrifice."
+      ],
+      "chests": [
+        "In the Trial of Kabr, skip the left-hand cavern with the floating blocks and go right to a chasm. Drop backwards off the edge, facing away from the chasm, into a hidden opening and follow the passage to the chest."
+      ],
+      "master": [
+        "In 2021 guides, Barrier Hobgoblins spawn at the left and right Confluxes and Overload Minotaurs still come in."
+      ]
+    },
+    {
+      "name": "Oracles",
+      "what": "Destroy Oracles in the order they ring. They appear at seven spots, in five rounds that grow from three Oracles to seven.",
+      "steps": [
+        "Agree on names for the seven spawn spots before starting: three on the left, three on the right and one in the middle (for example L1 to L3, R1 to R3 and Mid).",
+        "Each round the Oracles appear one at a time with a chime, and the whole sequence plays twice. Call each spot as it appears.",
+        "After the preview, destroy them in the same order, without delay. Each shooter takes the spots they own.",
+        "The first round has three Oracles and each later round adds one, up to seven in the fifth.",
+        "A wrong or late Oracle gives the team Marked for Negation. Everyone marked jumps into the cleansing pool at the same time.",
+        "Between rounds, kill the Hobgoblin snipers on far perches and clear Goblins and Minotaurs. Finishing the fifth round ends the encounter."
+      ],
+      "roles": [
+        [
+          "Oracle shooters (4 to 6)",
+          "Each owns one or two spawn spots and calls them during the preview. Some teams give all six players spots; others keep two on adds."
+        ],
+        [
+          "Add clear (0 to 2)",
+          "Kills Hobgoblin snipers, Goblins and Minotaurs so the shooters can stay on their spots."
+        ]
+      ],
+      "wipes": [
+        "An Oracle is destroyed out of order or too late.",
+        "Marked players cleanse separately and some are still marked when the ritual goes off.",
+        "Hobgoblin snipers kill a shooter in the middle of a sequence.",
+        "Callouts are unclear, so the order is lost between the preview and the shooting."
+      ],
+      "master": [
+        "In 2021 guides, Overload Minotaurs spawn during the Oracle rounds."
+      ]
+    },
+    {
+      "name": "Templar",
+      "title": "The Templar",
+      "what": "The first boss, in the same arena. A Relic holder breaks the Templar's shield and blocks its teleports while the team damages it and keeps up with its Oracles.",
+      "steps": [
+        "Pick up the Relic (the Aegis) to start the fight. Three Oracles spawn straight away: destroy them in the order they appear.",
+        "The Relic holder uses the Relic's Super on the Templar to break its shield.",
+        "When the shield breaks, one player gets Imminent Detain and is locked in a Vex bubble a few seconds later. The others shoot the bubble to free them.",
+        "Damage the Templar's weak point while the shield is down.",
+        "The Templar marks a circle where it will teleport. If the Relic holder stands in it, the teleport is blocked and the damage phase goes on, but more enemies spawn.",
+        "When it does teleport, its shield returns. More Oracles appear during the fight: destroy them in order every time.",
+        "Repeat shield break and damage until the Templar dies."
+      ],
+      "roles": [
+        [
+          "Relic holder (1)",
+          "Breaks the shield with the Relic's Super and stands in the teleport circle. Never leaves the Relic on the ground."
+        ],
+        [
+          "Oracle players (2 or more)",
+          "Destroy each Oracle set in order, starting with the three at the start."
+        ],
+        [
+          "Damage dealers (rest)",
+          "Damage the Templar when the shield is down and free detained players."
+        ]
+      ],
+      "wipes": [
+        "Oracles are missed or shot out of order and the marked team doesn't cleanse in the central pool. In this version the Relic does not remove the mark, so use the pool.",
+        "The Relic is dropped and nobody picks it up within about 10 seconds.",
+        "A detained player is left in the bubble.",
+        "Nobody is in the teleport circle, so the Templar teleports early and the damage phase is lost."
+      ],
+      "master": [
+        "In 2021 guides, Overload Minotaurs spawn during the fight."
+      ]
+    },
+    {
+      "name": "Gorgons' Labyrinth",
+      "title": "The Gorgons' Labyrinth",
+      "before": "After the Templar, follow the chasm down into the caves of the maze.",
+      "what": "A stealth section in a dark maze patrolled by Gorgons, glowing Harpies. If one spots any player, the whole team dies a few seconds later.",
+      "steps": [
+        "Pick one player who knows the route and have everyone follow them as a single group.",
+        "Move slowly: crouch-walk, use single jumps and don't shoot.",
+        "Stay on the left side of the maze and use the large rocks and high ground to pass above the Gorgons' paths.",
+        "The Gorgons walk fixed patrols. Wait for one to turn away before crossing its line of sight.",
+        "Leave through the cave on the left side of the maze. Once everyone is through, the section is done."
+      ],
+      "roles": [
+        [
+          "Route leader (1)",
+          "Knows the path, sets the pace and calls when to move and when to wait."
+        ],
+        [
+          "Everyone else",
+          "Stay close behind the leader and hold fire. A Hunter can hide the team with invisibility if a Gorgon is about to turn."
+        ]
+      ],
+      "wipes": [
+        "One player strays from the group or sprints into a Gorgon's view.",
+        "Someone shoots a Gorgon. They take a huge amount of damage, so fighting one usually ends in a wipe.",
+        "The team tries to kill the Gorgon that spotted them; there are only seconds before the wipe."
+      ],
+      "chests": [
+        "Three floating Vex cubes are hidden around the maze; shooting all three opens a hidden door to the chest. One guide says this must be done in one run without being seen, another says the door stays open after a wipe."
+      ]
+    },
+    {
+      "name": "Gatekeeper",
+      "title": "Gatekeeper: awaken the Glass Throne",
+      "before": "Past the maze is a jumping puzzle of platforms that appear and vanish after a few seconds. Jump onto each one as it appears, hug the wall on the thin ledges and wait for the next. When the whole team reaches the end, the door to the Glass Throne opens.",
+      "what": "Kill the Gatekeepers and ferry the Relic through two time portals to break the shields of Praetorian Minotaurs, then defend a final Conflux in the throne room.",
+      "steps": [
+        "Kill the Vex in the throne room and the Gatekeeper Hydra in the middle. It drops the Relic.",
+        "Stand on the left and right plates to open the two portals: Mars on the left, Venus on the right. One player goes through each portal to defend the Conflux inside.",
+        "A Praetorian with an immune shield appears in one of the portals. The player inside calls which side.",
+        "The Relic holder goes through that portal and breaks the Praetorian's shield with the Relic so it can be killed.",
+        "Carrying the Relic through a portal gives Teleport Destabilized (about 45 seconds), so that player can't use a portal again yet. Pass the Relic to someone else for the next run.",
+        "New Gatekeepers spawn in the middle and close both portals while they live. Kill them fast with heavy and Supers.",
+        "After six Praetorians, a Conflux appears in the throne room. Everyone defends it from Wyverns and shielded Minotaurs, using the Relic on the shields. One sacrifice wipes the team."
+      ],
+      "roles": [
+        [
+          "Plate defenders (2)",
+          "One per plate. Keep the portal open and stop Goblins and Overload Minotaurs; a Minotaur that reaches a plate shuts that portal."
+        ],
+        [
+          "Portal players (2)",
+          "One inside Mars and one inside Venus. Defend the Conflux there and call out the Praetorian."
+        ],
+        [
+          "Relic runners (2)",
+          "Kill Gatekeepers in the middle and take turns carrying the Relic through the portals."
+        ]
+      ],
+      "wipes": [
+        "A respawned Gatekeeper isn't killed quickly; with the portals closed, the team often wipes.",
+        "The only player near the Relic still has Teleport Destabilized and can't take it through.",
+        "An Overload Minotaur takes a plate and shuts a portal.",
+        "A Wyvern or Minotaur sacrifices into the final Conflux."
+      ],
+      "chests": [
+        "At the end of the jumping puzzle, before the door to the Glass Throne, the chest sits up above the door. Guides differ on whether you climb to it from the left or the right, so check both sides."
+      ],
+      "master": [
+        "In 2021 guides, a wave of Barrier Hobgoblins spawns when the throne-room Conflux appears, and Overload Minotaurs still go for the plates."
+      ]
+    },
+    {
+      "name": "Atheon",
+      "title": "Atheon, Time's Conflux",
+      "before": "Atheon is fought in the same throne room. Shoot the floating Vex cube to start the fight.",
+      "what": "The final boss. Atheon sends three players into a portal to destroy Oracles in an order called by the three left behind, then everyone gets a short window to damage him.",
+      "steps": [
+        "Kill the Harpies Atheon brings in. After about a minute he teleports three random players to Mars or Venus.",
+        "The teleported players say which planet they are on. The throne team stands on that side's plate to open the portal: Mars on the left, Venus on the right.",
+        "The Oracles preview near Atheon in the throne room. The throne team calls their positions in order and the portal team destroys them in that order.",
+        "This happens three times, three Oracles each, nine in all. A wrong or late Oracle wipes the team.",
+        "Inside the portal one player takes the Relic. Teleported players get Marked by the Void, which slowly blinds them; the Relic holder's shield clears it.",
+        "When the last Oracle dies, the portal team comes back out and everyone gets Time's Vengeance: about 30 seconds in which Atheon can be damaged.",
+        "During damage one player gets Imminent Detain. They move away from the group before it triggers, and the others shoot them free.",
+        "When the buff ends, clear the Harpies and Supplicants and repeat until Atheon dies."
+      ],
+      "roles": [
+        [
+          "Throne team (the 3 left behind)",
+          "Open the right portal, kill Supplicants and Harpies, and call the Oracle order."
+        ],
+        [
+          "Portal team (3 picked by Atheon)",
+          "One takes the Relic and keeps the others cleansed; the rest destroy the Oracles in the called order."
+        ],
+        [
+          "Relic holder during damage",
+          "Shields the group with the Relic and never leaves it on the ground for long."
+        ]
+      ],
+      "wipes": [
+        "Oracles are destroyed out of order or too slowly.",
+        "Supplicants (Harpies that explode) reach throne-team players; kill them at range.",
+        "A detained player stays in the group, so others get trapped and damage stops.",
+        "The Relic is left on the ground too long, which wipes the team."
+      ],
+      "master": [
+        "In 2021 guides, Barrier Hobgoblins spawn on Mars and Venus and Atheon hits harder; a Well of Radiance does not keep you safe from his attacks."
+      ]
+    }
+  ]
+}

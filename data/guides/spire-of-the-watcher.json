@@ -1,0 +1,116 @@
+{
+  "name": "Spire of the Watcher",
+  "checked": "2026-11-03",
+  "about": "A Vex dungeon on Mars for up to three players, released in December 2022 with Season of the Seraph. Every fight runs on the Arctrician buff: kill a Conduit Minotaur, stand in the pool it leaves, then shoot arc nodes along a cable to power a circuit.",
+  "caveat": "Guides word the Persys door circuit differently; the order here (red nodes, two yellow circuits, red nodes again to seal the reactor) is the part they all share.",
+  "master": [
+    "In 2022 guides, the Conduit Minotaurs that drop Arctrician are Overload champions on Master, so every buff costs a champion kill.",
+    "Master enemies outlevel the team. The 2022 guides list no change to the encounter mechanics themselves, only the champions and tougher enemies."
+  ],
+  "sources": [
+    ["Shacknews: Spire of the Watcher dungeon guide", "https://www.shacknews.com/article/133423/spire-of-the-watcher-guide"],
+    ["GameSpot: Destiny 2 Spire of the Watcher dungeon guide", "https://www.gamespot.com/articles/destiny-2-spire-of-the-watcher-dungeon-guide/1100-6509966/"],
+    ["TheGamer: Spire of the Watcher encounters walkthrough", "https://www.thegamer.com/destiny-2-spire-of-the-watcher-dungeon-encounters-walkthrough/"],
+    ["KeenGamer: Spire of the Watcher dungeon guide", "https://www.keengamer.com/articles/guides/destiny-2-spire-of-the-watcher-dungeon-guide/"],
+    ["Destinypedia: Spire of the Watcher", "https://www.destinypedia.com/Spire_of_the_Watcher"],
+    ["Sportskeeda: Persys, Primordial Ruin and Descend guide", "https://sportskeeda.com/esports/destiny-2-spire-watcher-guide-persys-primordial-ruin-boss-descend-encounter"],
+    ["KeenGamer: Spire of the Watcher secret chest locations", "https://keengamer.com/articles/guides/destiny-2-spire-of-the-watcher-secret-bonus-chest-locations/"],
+    ["Prima Games: All secret chest locations in Spire of the Watcher", "https://primagames.com/tips/all-secret-chest-locations-in-destiny-2s-spire-of-the-watcher"],
+    ["Dot Esports: All hidden chest locations in Spire of the Watcher", "https://dotesports.com/destiny/news/all-hidden-chest-locations-in-destiny-2s-spire-of-the-watcher-dungeon"]
+  ],
+  "encounters": [
+    {
+      "name": "Reestablish Power",
+      "what": "The opening on the Martian surface. Power four arc circuits around the outpost to open the floor into the bunker below.",
+      "steps": [
+        "Kill a Conduit Minotaur and stand in the pool it drops to gain Arctrician. The buff lasts about 30 seconds and is what lets your shots power arc nodes.",
+        "Find a circuit's starting node (it shows flashing arrows), shoot it, then follow the yellow cable and shoot each node along it in order.",
+        "A node shot out of order lights briefly and powers down again; go back to the last lit node and follow the cable.",
+        "Each finished circuit locks one of four nodes at the central hatch and brings in Supplicants, so leave a circuit one node short until the team is ready to finish it.",
+        "Power all four circuits to open the hatch and drop into the bunker."
+      ],
+      "roles": [
+        ["Whole team", "The guides give no fixed split. Whoever holds Arctrician shoots nodes; the others kill the Cyclops on the ridges, the Goblin and Harpy swarms, and the next Conduit Minotaur."]
+      ],
+      "wipes": [
+        "Cyclops on the ridgelines catch players running cables in the open; kill them first.",
+        "Finishing circuits while the area is still full of adds stacks Supplicants on top of the swarm; clear up before you complete one."
+      ]
+    },
+    {
+      "name": "Spire",
+      "title": "Ascend the Spire",
+      "what": "The first loot encounter. Climb the inside of the spire over three floors; on each floor, two arc circuits power a gravity lift to the next one.",
+      "before": "Begin the Ascent is a jumping section through the Reactor Firewall with Harpies, Hobgoblins and Incarcerator Hydras. Hop along the hanging platforms and scaffolding around the pillars, kill the Hydras from range before moving on, and take the gravity lift at the end up into the spire.",
+      "steps": [
+        "Kill the Conduit Minotaur on the floor and take Arctrician.",
+        "Shoot the first circuit's starting node and follow its cable to the far side of the floor, one node at a time.",
+        "Run the second circuit the same way. With both powered, the gravity lift switches on: ride it up together.",
+        "Floor two routes the cables through a corridor of electric barriers and pulses. Wait for gaps and never walk through a live barrier; some end nodes are reached by jumping onto the solar panels.",
+        "Floor three has cables that cross and loop back. Trace one cable all the way before shooting it, and finish one side before starting the other.",
+        "The reward chest appears at the top. Climb the platforms behind it to reach Akelous."
+      ],
+      "roles": [
+        ["Whole team", "No fixed split in the guides. Players with Arctrician run the cables; the rest clear adds and line up the next Minotaur. Hydra kills spawn Supplicants, so watch for them."]
+      ],
+      "wipes": [
+        "Losing Arctrician brings in extra Conduit Minotaurs and the floor fills up fast; take a fresh buff before a long cable.",
+        "Walking into the electric barriers on floor two.",
+        "Shooting the wrong node where cables cross on floor three; it powers down and the cable has to be traced again."
+      ],
+      "chests": [
+        "Secret chest 1 is in the Begin the Ascent jumping room. Instead of taking the walkway toward the spire, keep going around the pillars past the walkway with a Devilish Recording and a stack of screens, into the unlit part: the chest is on a ledge on the side of the last pillar, over a long drop and further out than it looks."
+      ]
+    },
+    {
+      "name": "Akelous",
+      "title": "Akelous, the Siren's Current",
+      "what": "A giant Vex Harpy at the top of the spire, fought from a central platform with four bridges. It can only be hurt after all four fuel rods are powered.",
+      "steps": [
+        "Kill the Conduit Minotaur that Akelous is feeding on to start the fight, and take Arctrician.",
+        "Shoot the four starting nodes on the central platform; each one begins a circuit.",
+        "Run each circuit out along its bridge to the fuel rod at the end. Adds and flying Harpies keep coming on the bridges, so clear as you go.",
+        "When all four fuel rods are lit, Akelous moves to the last one powered. Gather there.",
+        "It opens up and shows red eyes. Break all of them quickly to strip its shell and expose the glowing core.",
+        "Damage the core while Akelous drifts back toward the middle, staying near the centre of the bridge as it moves.",
+        "When the phase ends it blasts the area. Drop down into the walkway or stay mid-bridge so the knockback does not throw you off, then power the four rods again and repeat."
+      ],
+      "roles": [
+        ["Whole team", "No fixed split. Run the bridges in turn with Arctrician while the others clear Harpies and Goblins; everyone shoots the eyes, then the core."]
+      ],
+      "wipes": [
+        "The red eyes are not broken in time and Akelous hits the team with a heavy blast that can kill or knock players off.",
+        "The end-of-phase knockback throws players off the spire; get low or central before it goes off.",
+        "Harpies flying between the bridges pick off players who are busy on nodes."
+      ]
+    },
+    {
+      "name": "Persys",
+      "title": "Persys, Primordial Ruin",
+      "what": "A Vex Wyvern that chases the team between two rooms: the isolation room you start in and the reactor room behind a large door. It is immune until a reactor purge strips its shield.",
+      "before": "Descend through the spire's inner machinery. These rooms use red cables: their nodes can be shot in any order, but all five must be hit within a few seconds of each other or they reset, so find every node before you fire. Keep clear of the fans on the way down.",
+      "steps": [
+        "Kill the two Incarcerator Hydras. This spawns Conduit Minotaurs: kill one for Arctrician.",
+        "Shoot the five red nodes, four on the pillars and one above the big door, inside the time limit. This unlocks the yellow circuits on the sides of the room.",
+        "Run two yellow circuits from the isolation room through to their end nodes in the reactor room.",
+        "When the purge warning appears, get Persys into the reactor room and every player out of it.",
+        "Shoot the five red nodes again to seal the door. The purge removes the shield and the game announces that Persys is vulnerable.",
+        "Damage it for the short window while it walks toward the team firing Void bolts.",
+        "When its shield returns, clear the adds and run the whole cycle again."
+      ],
+      "roles": [
+        ["Bait (one player)", "Draws Persys into the reactor room before the door is sealed, then gets out."],
+        ["Everyone else", "Take Arctrician, hit the red nodes fast and run the yellow circuits; then everyone damages together."]
+      ],
+      "wipes": [
+        "Persys is not inside the reactor room when the door seals, so its shield stays up and the cycle starts over.",
+        "The red nodes are not all hit inside the time limit and reset.",
+        "Persys stomps after the team in small rooms and its Void fire adds up; keep your distance, most of all during damage.",
+        "Exploding Harpies and Goblins crowd the isolation room while players are on nodes."
+      ],
+      "chests": [
+        "Secret chest 2 is in Descend, in the room with a Hydra and an electrified floor reached after Akelous. Clear it, then shoot the grates under the staircases: one breaks open into a vent that leads down to the chest."
+      ]
+    }
+  ]
+}

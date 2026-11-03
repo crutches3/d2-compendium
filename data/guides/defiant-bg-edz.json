@@ -1,0 +1,75 @@
+{
+  "name": "Defiant BG: EDZ",
+  "checked": "2026-11-03",
+  "about": "Defiant Battleground: EDZ is a three-player strike, first a Season of Defiance (2023) Battleground: break into a Shadow Legion prison in a Pyramid in the EDZ, cross the Ascendant Plane and free the captives. As the weekly Grandmaster Vanguard Alert it is a harder, longer run that Bungie likens to the old Grandmaster Nightfalls; champions and modifiers change every week.",
+  "caveat": "Mechanics come from 2023 guides to the seasonal Battleground; 2026 sources confirm it as a Grandmaster Vanguard Alert but give no revive, champion or modifier details, so check the launch screen each week.",
+  "sources": [
+    ["Destinypedia: Defiant Battleground: EDZ", "https://www.destinypedia.com/Defiant_Battleground:_EDZ"],
+    ["ProGameTalk: Defiant Battleground EDZ walkthrough", "https://progametalk.com/destiny-2/defiant-battleground-edz/"],
+    ["TheGamer: Defiant Battlegrounds guide", "https://www.thegamer.com/destiny-2-lightfall-defiant-battlegrounds-guide/"],
+    ["AMK Station: Defiant Battlegrounds EDZ guide", "https://amkstation.com/edz-guide-for-destiny-2-defiant-battlegrounds/"],
+    ["Shattered Vault: Renegades Vanguard Alerts", "https://shatteredvault.com/renegades-vanguard-alerts/"],
+    ["Blueberries: Grandmaster Vanguard Alerts (January 2026)", "https://blueberries.gg/leveling/grandmaster-nightfalls"],
+    ["Kyber's Corner: Weekly reset overview, 27 October 2026", "https://kyberscorner.com/weekly-reset-overview-oct-27-2026/"]
+  ],
+  "encounters": [
+    {
+      "name": "Bracus Viguln",
+      "title": "Scout the Perimeter and Break Their Lines",
+      "what": "The opening push toward the Pyramid through Shadow Legion forces, including the mini-boss Bracus Viguln, ending at the portal into the Ascendant Plane.",
+      "steps": [
+        "Sparrow to the first waypoint near the Pyramid, then go on foot through the Shadow Legion.",
+        "Break their lines: clear the area and kill the Shadow Legion mini-boss Bracus Viguln.",
+        "At the lake platform Cabal keep arriving in waves. Clear each wave before pushing on.",
+        "Cross the water to the portal and activate it to enter the Ascendant Plane."
+      ],
+      "roles": [
+        ["Whole team", "Move together, thin the adds before focusing the mini-boss, and deal with each week's champions as they show up."]
+      ],
+      "wipes": [
+        "Pushing on while the lake waves are still spawning and getting surrounded.",
+        "Fighting Bracus Viguln with his escorts still up."
+      ]
+    },
+    {
+      "name": "Exomida",
+      "title": "Exomida, Taken of the Witness",
+      "what": "A Taken boss guarding the way into the Pyramid. It is immune until the team destroys a Taken Blight and ignites a Balefire, and the cycle runs three times.",
+      "before": "In the Ascendant Plane, floating traps and energy pulses deal explosive damage and can knock you off the broken bridge and the tunnel. At the first blight, destroy its core and ignite the Balefire to open the blocked entrance.",
+      "steps": [
+        "Exomida starts immune and attacks from range. Find the Taken Blight that appears beside the courtyard.",
+        "Clear its Taken, go inside and destroy its core, then ignite the Balefire in the corruption it leaves. Exomida becomes vulnerable.",
+        "Damage it, aiming at the eye, until a health bar is gone and it turns immune again.",
+        "Repeat with the next blight. The third cycle adds Taken Vandal snipers on high pillars; kill them before damage.",
+        "Exomida's death opens the way into the Pyramid and on to the final hall."
+      ],
+      "roles": [
+        ["Whole team", "Break each blight together, then focus the eye; one player watches the pillars for snipers on the last cycle."]
+      ],
+      "wipes": [
+        "Knocked off the map by the traps and pulses on the way in.",
+        "Snipers on the pillars in the third cycle picking players off."
+      ]
+    },
+    {
+      "name": "Warden Vincu'us",
+      "title": "Warden Vincu'us, Shadow Legion",
+      "what": "The final boss. After each health bar he is shielded, and the shield breaks only to Taken Essence consecrated at a Balefire and thrown at him.",
+      "steps": [
+        "Damage the Warden until his first health bar is gone. He turns immune and pulls back as more enemies arrive, Taken among them.",
+        "A Taken Blight appears: step in and destroy it to ignite a Balefire. Its dome shelters the team from the Darkness covering the arena, so stay close.",
+        "Kill the Taken Anomalies on both sides of the room and take the Taken Essence each drops. In one 2023 guide a champion's death starts these spawns.",
+        "Consecrate the Essence at the Balefire and throw it at the Warden. Each throw breaks part of his shield; once it is gone he can be damaged.",
+        "When the shield returns, move deeper into the room, ignite the next Balefire and repeat until he dies.",
+        "Free the captives at the holding cell at the back to finish."
+      ],
+      "roles": [
+        ["Whole team", "Kill Anomalies fast, ferry Essence and throw it; one player keeps champions and adds off the carriers."]
+      ],
+      "wipes": [
+        "Staying out in the Darkness, away from the Balefire's dome, too long.",
+        "Essence carriers caught by the Warden's attacks on the way back."
+      ]
+    }
+  ]
+}

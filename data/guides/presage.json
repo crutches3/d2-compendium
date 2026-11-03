@@ -1,0 +1,73 @@
+{
+  "name": "Presage",
+  "checked": "2026-11-03",
+  "about": "An exotic mission for one to three players from Season of the Chosen (2021) aboard the Glykon, a derelict Cabal ship overrun by Scorn. It ends with the Dead Man's Tale scout rifle. Since Monument of Triumph (June 2026) exotic missions launch from Pinnacle Ops, and the mission is untimed.",
+  "sources": [
+    ["Destinypedia: Presage", "https://destinypedia.com/Presage"],
+    ["GameSpot: Presage guide and secrets", "https://gamespot.com/articles/destiny-2-presage-guide-how-to-start-dead-mans-tale-exotic-quest/1100-6487623/"],
+    ["Pro Game Guides: How to complete Presage", "https://progameguides.com/destiny/how-to-complete-presage-in-destiny-2/"],
+    ["Prima Games: Presage Master mode guide", "https://primagames.com/?p=314860"],
+    ["Bungie Help: Monument of Triumph and Update 9.7.0 support guide", "https://help.bungie.net/hc/articles/49848696022548"]
+  ],
+  "encounters": [
+    {
+      "name": "Glykon",
+      "title": "Explore the Glykon",
+      "before": "The landing bay doors are sealed. Jump along the pipes and ledges outside the ship to an opening, crawl through the vents, and pull the lever that opens the door for the team.",
+      "what": "A dark puzzle and platforming route through the ship. Spore barriers, electric fields and locked doors block the way, while Scorn and Screebs ambush the team.",
+      "steps": [
+        "Glowing white barriers burn on contact. Shoot a spore while standing next to it to get Egregore Link, which lets you pass; it wears off fast, so go straight through.",
+        "Electric fields switch off when you shoot their blue power cells. Some recharge, so cross straight away.",
+        "Pull levers and switches to open doors and hatches, and shoot vent covers to find hidden routes.",
+        "In the trash compactor the lever starts the walls closing. Shoot open the floor panels, destroy the three power cells beneath, and drop through the hatch."
+      ],
+      "roles": [
+        ["Whole team", "Clear the Scorn first, then work each puzzle together."]
+      ],
+      "wipes": [
+        "Touching a white barrier without Egregore Link.",
+        "Being crushed in the trash compactor.",
+        "Getting knocked off platforms by Scorn Raiders during the jumps."
+      ],
+      "chests": [
+        "Twelve smuggling compartments are hidden around the ship. Each opens only once its Captain's Log entry has been found and its datapad used; each holds a small chest and adds Dead Man's Tale catalyst progress. Destinypedia lists every location."
+      ]
+    },
+    {
+      "name": "Hangar",
+      "title": "The Hangar",
+      "what": "Below the compactor, through a Darkness Zone, the route opens into a large hangar packed with Scorn and two Darkmind Abominations.",
+      "steps": [
+        "Drop into the hangar and clear the Scorn waves from a defensible spot, keeping your distance.",
+        "Two Darkmind Abominations join the fight. Save heavy ammo and Supers for them.",
+        "When the hangar is clear, leave through the bay door to continue."
+      ],
+      "roles": [
+        ["Whole team", "Hold one position, thin the Scorn, and focus heavy weapons on the Abominations."]
+      ],
+      "wipes": ["Fighting the Abominations up close.", "Dying in the Darkness Zone, where there is no respawn, only revives."]
+    },
+    {
+      "name": "Locus of Communion",
+      "title": "Locus of Communion",
+      "before": "From the hangar bay door, turn right into the next hangar, climb onto the Cabal ship and take the vent in the far corner to the boiler room.",
+      "what": "The final boss, a mutated Scorn fought over the two floors of the boiler room. Each round the team shuts the boiler down, drops below to damage him, and is driven back up by the heat.",
+      "steps": [
+        "Shoot the Scorn faces on the Locus and his adds to make them back off for a moment.",
+        "Damage him until he drops to the floor below, which is burning from the boiler.",
+        "Upstairs, activate the three coolant switches. Guides advise the two at the ends of the room first and the one in the burning middle room last.",
+        "Drop through the holes in the floor and damage him below. Jump back up if his flaming maul swings close.",
+        "After about a third of his health, the boiler fires up and the heat drives you upstairs. Clear the adds and repeat.",
+        "After the last round he dies, and a door opens on the top floor to the mission's end."
+      ],
+      "roles": [
+        ["Whole team", "Cover whoever runs the switches, then drop down together for damage."]
+      ],
+      "wipes": [
+        "Staying below after the boiler restarts.",
+        "Taking burn damage in the middle room.",
+        "Getting caught by the maul at close range."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "name": "Warden of Nothing",
+  "checked": "2026-11-03",
+  "sources": [
+    ["Destinypedia: Warden of Nothing", "https://www.destinypedia.com/Warden_of_Nothing"],
+    ["ProGameTalk: Warden of Nothing strike", "https://progametalk.com/destiny-2/warden-of-nothing-strike/"],
+    ["KeenGamer: Season 19 Grandmaster Nightfall guide", "https://keengamer.com/articles/guides/destiny-2-season-19-grandmaster-nightfall-guide/"],
+    ["eXputer: All Grandmaster Nightfalls", "https://exputer.com/guides/destiny-2-all-grandmaster-nightfalls/"],
+    ["Destiny Tracker: How to complete Warden of Nothing GM", "https://destinytracker.com/destiny-2/guides/how-to-complete-warden-of-nothing-gm-by-suttledge-adc5c0b8"]
+  ],
+  "about": "A three-player Forsaken strike in the Prison of Elders on the Reef: the Drifter sends the team in to shut down the prison's malfunctioning Servitor warden. Escaped Vex and Cabal fill the cell blocks. In Grandmaster the champions, shields and modifiers change from week to week, so check them before launching.",
+  "caveat": "Sources are 2021-2023 strike and Nightfall guides; they disagree on the boss's name and the number of Splinter Mines, so this page uses Destinypedia's names and gives no mine count.",
+  "encounters": [
+    {
+      "name": "Tunnels",
+      "title": "Prison tunnels and Apaktos",
+      "what": "The run into the prison: an entrance fight, transport tunnels where moving trains kill on contact, and a cell block guarded by Apaktos, Oxidizing Mind.",
+      "steps": [
+        "Clear the escaped inmates at the entrance; killing the enemies that come through the portals opens the sealed door.",
+        "Use the console by the parked transport so Ghost can move it.",
+        "In the tunnels, transports charge down the tracks. Keep to the side platforms and cross between trains.",
+        "Kill the Vex Hydra first, then the Cabal it is fighting. Drop through the broken panels into the second tunnel.",
+        "At the exit, clear the enemies to lower the barriers, then kill Apaktos, a large Vex Minotaur that teleports."
+      ],
+      "roles": [
+        ["Whole team", "Move together, and kill Hobgoblin snipers and champions before pushing into each room."]
+      ],
+      "wipes": [
+        "Getting hit by a transport in the tunnels.",
+        "Exploding barrels along the tracks; one GM guide warns a single blast can also kill nearby teammates.",
+        "Rushing rooms of Goblins and Hobgoblins; in Grandmaster they can kill in one hit, so clear them from cover first."
+      ]
+    },
+    {
+      "name": "Arena",
+      "title": "Challenge of the Elders",
+      "before": "Ride the grav lift up; Cabal wait at the top on the way to the old Prison of Elders arena.",
+      "what": "The prison's AI runs three rounds in the arena: kill every enemy, defuse the Splinter Mines, then defeat a Cabal Colossus.",
+      "steps": [
+        "Round 1: kill every hostile in the arena.",
+        "Round 2: stand in the circle under a Splinter Mine to defuse it. Enemies interrupt the defuse, so clear them as you go.",
+        "Split up when more than one mine is active: one player holds a mine with a defensive Super while the others take the next one.",
+        "A mine that finishes its countdown kills the whole team.",
+        "Round 3: kill Ta'aul, Disgraced Colossus. A door opens when it falls."
+      ],
+      "roles": [
+        ["Mine holder (1)", "Stays in a mine's circle, using a defensive Super if needed."],
+        ["Others (2)", "Clear enemies off the circles and take the other mine."]
+      ],
+      "wipes": [
+        "A Splinter Mine's timer runs out.",
+        "Enemies push the defuser out of the circle and the mine stalls."
+      ]
+    },
+    {
+      "name": "Mad Warden",
+      "title": "The Mad Warden",
+      "before": "Follow the Servitor's offer of treasure through the airlock to a stripped treasure room. Opening the chest is a trap: the floor vanishes and drops the team into the Correction Labs. In Grandmaster, don't bunch up in the airlock tunnel; a Destiny Tracker guide warns that a trap there can kill the whole team at once.",
+      "what": "The prison's malfunctioning High Servitor. It uses a room-wide fire attack and, late in the fight, calls in Vex and Cabal reinforcements led by named minibosses.",
+      "steps": [
+        "Clear the room; the Warden appears once its enemies are down.",
+        "Burst it with heavy weapons and Supers as early as you can. Saved abilities pay off here.",
+        "When it uses its room-wide fire attack, get behind cover at once. Anyone caught in the open dies.",
+        "In its last health phase, Vex and Cabal reinforcements arrive, including Edyx, Exothermic Mind and Zhagal, Disgraced Colossus. Kill the ones that threaten the team, then return to the Warden.",
+        "Keep chipping from cover until it dies."
+      ],
+      "roles": [
+        ["Whole team", "Focus fire on the Warden together and break off only for reinforcements that threaten the team."]
+      ],
+      "wipes": [
+        "Being caught out of cover during the fire attack.",
+        "Low damage lets the reinforcements build up; the GM guides say to burst the Warden early.",
+        "Spending Supers on earlier rooms and arriving with nothing for the boss."
+      ]
+    }
+  ]
+}

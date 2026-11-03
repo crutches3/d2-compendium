@@ -1,0 +1,97 @@
+{
+  "name": "Sundered Doctrine",
+  "checked": "2026-11-03",
+  "about": "A Dread and Hive dungeon for up to three players in the Sunken Pyramid on Savathûn's Throne World, released in February 2025 with Episode: Heresy. It is a puzzle dungeon built on Pyramid symbols: sentences written in symbols, Darkness beams routed through lenses, and wheels that lock symbols in.",
+  "caveat": "Guides give one Lockset symbol different names, so it is described rather than named, and Master champion changes could not be confirmed from two guides.",
+  "master": [
+    "Master enemies outlevel the team. Check the modifiers on the activity before launching, since this guide could not confirm which champions or shields appear in each encounter."
+  ],
+  "sources": [
+    ["Destinypedia: Sundered Doctrine", "https://www.destinypedia.com/Sundered_Doctrine"],
+    ["Dot Esports: Sundered Doctrine first encounter guide", "https://dotesports.com/destiny/news/sundered-doctrine-first-encounter-guide-destiny-2-riddle"],
+    ["Dot Esports: How to defeat Zoetic Lockset", "https://dotesports.com/destiny/news/how-to-defeat-zoetic-lockset-and-beat-the-second-encounter-in-sundered-doctrine-in-destiny-2"],
+    ["Dot Esports: How to defeat Kerrev, the Erased", "https://dotesports.com/destiny/news/how-to-defeat-kerrev-the-erased-and-beat-the-third-encounter-in-sundered-doctrine-in-destiny-2"],
+    ["The Game Post: Sundered Doctrine dungeon guide", "https://thegamepost.com/destiny-2-sundered-doctrine-dungeon-guide/"],
+    ["Sportskeeda: Sundered Doctrine first encounter guide", "https://sportskeeda.com/mmo/destiny-2-sundered-doctrine-dungeon-first-encounter-guide"],
+    ["Sportskeeda: Kerrev, the Erased boss guide", "https://sportskeeda.com/mmo/destiny-2-sundered-doctrine-boss-encounter-guide-kerrev-the-erased"],
+    ["The Game Post: Sundered Doctrine secret chest locations", "https://thegamepost.com/destiny-2-sundered-doctrine-dungeon-all-secret-chest-locations/"],
+    ["r/raidsecrets: Sundered Doctrine mechanics (launch thread)", "https://www.reddit.com/r/raidsecrets/comments/1ik0rc0/sundered_doctrine_mechanics/"]
+  ],
+  "encounters": [
+    {
+      "name": "Flooded Inspection",
+      "title": "Solve the Riddle",
+      "what": "The first encounter. A wheel on the wall writes a short sentence in Pyramid symbols with blanks; fill each blank by routing a Darkness beam from the centre to the side room that shows the missing symbol.",
+      "before": "Find the Path: cross the bridge, go behind the waterfall and through the tunnels, killing Subjugators on the way. Ride the lowering platform down and get past the damaging light beam to the rally flag.",
+      "steps": [
+        "Turn the glowing lens in the middle of the room to start. The wheel shows a sentence of symbols with a blank, such as Guardian, Kill, Witness with one word missing.",
+        "Work out the missing symbol from the sentence, or kill the Truthspeaker, a Grim that spawns in one of the side rooms, and read the symbol it drops.",
+        "Four side rooms, set in an X around the centre, each end in a plate with one symbol. Find the room that matches.",
+        "Kill the Subjugators in the side rooms for lenses. Rooms on the same side are linked by a hidden passage, which saves time.",
+        "Place lenses on the pedestals to carry the beam from the centre to that room's plate. Plan the route backward from the plate, and turn each holder to the right angle before you set the lens.",
+        "Round two has two blanks and round three has three. Light them in the order the sentence reads, or the beams get tangled. A finished round lights the wheel and a new Truthspeaker spawns."
+      ],
+      "roles": [
+        ["Whole team", "No fixed split in the guides. Stay together, collect lenses from the Subjugators, agree the beam route, and focus the Tormentor at once if one spawns."]
+      ],
+      "wipes": [
+        "Sending the beam to the wrong plate breaks the outer lenses and spawns a Tormentor in the centre.",
+        "The Subjugators are the toughest enemies here; fighting several at once in a side room goes badly.",
+        "Lighting the blanks out of order tangles the beam paths and wastes the round."
+      ]
+    },
+    {
+      "name": "Zoetic Lockset",
+      "what": "A boss made of four Shriekers that share one health pool. Turn four symbol wheels so that, as each locks in from right to left, three lock on Stop and the last on Kill.",
+      "before": "Navigate the Maze: past the first chest is a dark maze, then a slide down and a tunnel where spiked boulders roll through; jump into the safe alcoves. The next room's door uses the same wheel mechanic as the boss: kill the enemies that drop Knowledge and turn the wheel to match the door's symbols.",
+      "steps": [
+        "Four wheels face the Shriekers. Each shows a highlighted symbol and the way it will turn next; shoot the crux above a wheel to reverse that direction.",
+        "Kill Hive Wizards for Knowledge: Heightened Knowledge turns a wheel one place, Brimming Knowledge two, Overflowing Knowledge three. Dunk it at the wheel you want to move.",
+        "The Lockset's gaze sweeps the wheels, and whatever symbol a wheel shows when it is looked at goes off: Hive spawns Ogres, Commune fires seeker projectiles you can shoot down, Stop halts add spawns, and another symbol brings Knights or Wizards.",
+        "The Lockset Progression bar fills in quarters. At each mark a wheel locks its symbol into the panel behind it, starting with the rightmost wheel.",
+        "Set the three right-hand wheels to Stop as they come up, and turn Hive away from any wheel about to be looked at.",
+        "Set the leftmost wheel to Kill. When it locks the Lockset is cracked: group up and damage the Shriekers, which close their shells at times. Kill locked in earlier gives a shorter damage phase.",
+        "Repeat the cycle until the Shriekers die."
+      ],
+      "roles": [
+        ["Whole team", "No fixed split in the guides. Whoever has Knowledge sets the next wheel to lock; the others clear adds, shoot down seekers and watch for Ogres."]
+      ],
+      "wipes": [
+        "Hive goes off and Ogres pile up on both sides of the room.",
+        "Standing in the Lockset's gaze draws its projectiles onto you.",
+        "Kill locks in on an early wheel and the damage phase is too short to matter."
+      ],
+      "chests": [
+        "Secret chest 1 is in the maze. Destroy its three Darkness Cruxes and a locked door in the middle of the maze opens to the chest. From the entrance, go left twice and down the stairs (first crux on the left), then back up and straight to the end (second on the right); the third is deeper in, after you drop down and crawl through to an open area."
+      ]
+    },
+    {
+      "name": "Kerrev",
+      "title": "Kerrev, the Erased",
+      "what": "The final boss, fought across a middle room and two side rooms. The dial behind him holds two three-symbol sentences, one true and one a lie; light the lie, then burn away his shield.",
+      "before": "Locate the Vault: after the Lockset, push one of the fallen Shriekers' cores across the middle bridge into the round hole in front of the loot chest to open the door. In the lens room after it, route both beams to open the door. In the next room, keep shooting the glowing wall to hold it open while you pass; it crushes anyone caught.",
+      "steps": [
+        "Read the dial behind Kerrev as a left sentence and a right sentence of three symbols each. One is true and one is a lie.",
+        "If the lore doesn't settle it, kill a Truthspeaker in a side room: the symbol it drops belongs to the true sentence.",
+        "Use the lenses in all three rooms to light the three symbols of the lie and keep the true sentence's symbols dark.",
+        "Some lenses are bound by Strand. Kill an Unwritten Attendant for the short Unwritten Empowerment buff, then shoot the Darkness Crux on the tether to free the lens. Damaged tethers release Threadlings.",
+        "Enter the left room by shooting its door and running through before it shuts. The right room's way in is at the front right of the arena, through a small gap in the wall.",
+        "With the lie lit, press the panel in front of the dial. The room burns: get behind a pillar out of sight until the fire strips Kerrev's shield.",
+        "Damage Kerrev. When the room burns again, take cover, then reset the dial and repeat."
+      ],
+      "roles": [
+        ["Side-room players (2)", "One in the left room and one in the right: set the lenses there and hunt the Truthspeaker."],
+        ["Middle player (1)", "Reads the dial, sets the middle-room symbols and presses the panel once the lie is lit."]
+      ],
+      "wipes": [
+        "Being caught in the open when the room burns.",
+        "Kerrev's Strand pulls and Suspend catch players going for revives, and one bad revive can snowball into a wipe; heal up and revive from cover.",
+        "Getting shut in the left room's door as it closes.",
+        "Lighting the true sentence instead of the lie; check the Truthspeaker's symbol against the dial before pressing the panel."
+      ],
+      "chests": [
+        "Secret chest 2 is in the lens room just before Kerrev: high on the right-hand wall as you come in, a worm juts out with the chest inside its mouth. Get there from the middle platform by way of the small ledge just under the worm."
+      ]
+    }
+  ]
+}

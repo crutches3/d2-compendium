@@ -1,0 +1,110 @@
+{
+  "name": "Duality",
+  "checked": "2026-11-03",
+  "sources": [
+    ["Shacknews: Duality dungeon guide", "https://shacknews.com/article/130585/destiny-2-duality-dungeon-guide"],
+    ["GamesRadar: How to beat the Destiny 2 Duality dungeon", "https://gamesradar.com/destiny-2-duality-dungeon-guide"],
+    ["Dot Esports: Duality dungeon guide and walkthrough", "https://dotesports.com/destiny/news/duality-dungeon-guide-walkthrough-destiny-2"],
+    ["High Ground Gaming: Duality dungeon guide", "https://www.highgroundgaming.com/destiny-2-duality-dungeon-guide/"],
+    ["Dexerto: Duality dungeon guide (Master)", "https://www.dexerto.com/destiny/destiny-2-duality-dungeon-guide-1828969/"],
+    ["MP1st: Destiny 2 Update 9.7.0.3 (Master Duality availability)", "https://mp1st.com/title-updates-and-patches/destiny-2-update-9-7-0-3-out-for-raid-combat-changes-on-july-7-via-patch-4-00-1-195"],
+    ["Bungie Help: Monument of Triumph and Update 9.7.0 support guide", "https://help.bungie.net/hc/articles/49848696022548"]
+  ],
+  "about": "A three-player dungeon set inside Calus's mind aboard the Derelict Leviathan; since June 2026 it launches from the Raids and Dungeons node. Shooting a Bell of Conquest moves the team between the normal world and a nightmare copy of the same room, and nearly every mechanic is built on that swap. Master is still offered, in featured weeks only; Update 9.7.0.3 fixed it not being available.",
+  "caveat": "The Master notes come from 2022 guides; champion and shield types may have changed since Edge of Fate, so check the modifiers on the launch screen.",
+  "master": [
+    "In 2022 guides, Master adds Barrier and Unstoppable champions and the Match Game modifier, so shielded enemies need a matching damage type.",
+    "Shacknews (2022) lists Void shields on every Bellkeeper in Master, so at least two players should carry a Void weapon to keep the bells moving."
+  ],
+  "encounters": [
+    {
+      "name": "Gahlran",
+      "title": "Nightmare of Gahlran, Sorrow Bearer",
+      "before": "Drop through the hole under the Calus statue. The path to the first boss teaches the bell: shoot one to enter the nightmare, then gather beside a bell and shoot it to return. A bell wrapped in nightmare energy can't be rung until its Bellkeepers die.",
+      "what": "Gahlran can only be hurt in the nightmare, after two standards open the side rooms and the Visions of Gahlran inside are dead. The nightmare has a collapse timer of about a minute; at zero everyone dies.",
+      "steps": [
+        "Kill the Bellkeepers and shoot the bell to enter the nightmare. The collapse timer starts.",
+        "Two of the four corner rooms hold a Psion Standard Bearer. Kill both (each kill adds time) and pick up the standards they leave.",
+        "Clear the Bellkeepers, gather inside the bell's ring and shoot it to return to the normal world, which has no timer.",
+        "Put each standard on the door plate with its symbol (Chalice, Sun, War Beast, Axes). The door opens and a Colossus with adds comes out; kill them and take the heavy ammo.",
+        "With a player in every opened side room, shoot the bell. Each lands in a nightmare hallway and kills all the Visions of Gahlran there.",
+        "Gahlran is now vulnerable. Damage him, stopping with enough time to kill the Bellkeepers and ring out.",
+        "Repeat until he dies. Damage windows are short, so expect several."
+      ],
+      "roles": [
+        ["Standard runners (2)", "One per side: kill that side's Standard Bearer, carry the standard to its plate, then hold a side room for the hallway phase."],
+        ["Bell player (1)", "Keeps the exit bell clear of Bellkeepers and adds and calls the ring-out during damage."]
+      ],
+      "wipes": [
+        "The nightmare timer runs out because damage went on too long.",
+        "A player is away from the bell when it is shot. Guides disagree on which side this kills you on, so stand inside the ring every time.",
+        "The bell is rung for the hallways before every opened side room has a player in it.",
+        "Bellkeepers are still alive at the exit bell when the clock is nearly out."
+      ],
+      "master": [
+        "In 2022 guides, Unstoppable Incendior champions spawn in the normal-world side rooms when their doors open."
+      ]
+    },
+    {
+      "name": "Vault",
+      "before": "Drop into the Crypt after Gahlran's chest. Pull the lower lever to raise the tombs, cross and flip the second switch, then climb the tombs to a hole in the wall. In the statue room, ring the bell and press the buttons by the statues in the nightmare: each press turns the real statue a quarter turn counterclockwise. When every statue faces the middle, the floor opens.",
+      "what": "Three Nightmare minibosses guard the vault door, one after another. Each stays shielded until the team deposits two standards brought back from the nightmare, and there is no damage timer.",
+      "steps": [
+        "Read the two symbols lit on the plates around the vault door. The same symbols on the corner blocks mark where the Standard Bearers will appear in the nightmare.",
+        "Kill the Bellkeepers and shoot a bell to enter the nightmare. Don't stand over the vault door when you swap: on the nightmare side that spot is a pit.",
+        "Each runner clears the stairwell under one lit symbol, including a Colossus, until a Standard Bearer Centurion spawns. Kill it and take the standard.",
+        "Regroup inside the bell's ring, return and put both standards on their plates. The current Nightmare loses its shield.",
+        "Kill it; with no timer, staying alive matters more than speed. The next Nightmare and a new pair of symbols then appear. Repeat for all three.",
+        "If the nightmare clock is too tight for both standards, fetch one per trip."
+      ],
+      "roles": [
+        ["Standard runners (2)", "Each goes to one lit symbol in the nightmare, clears its area and brings back the standard."],
+        ["Bell player (1)", "Kills the Bellkeepers and adds around the exit bell on both sides so the team can leave on time."]
+      ],
+      "wipes": [
+        "The nightmare timer runs out while the runners are still fighting toward their Standard Bearers.",
+        "A player stands over the vault door when the team swaps worlds and falls into the pit.",
+        "A runner goes to the wrong symbol, so only one standard comes back.",
+        "Adds overrun the team during a miniboss; clear them first, since there is no clock."
+      ],
+      "chests": [
+        "Statue room, before you solve the puzzle: on one of the raised platforms around the statues the doors stand slightly open, and the small room behind them holds the chest."
+      ],
+      "master": [
+        "In 2022 guides, Barrier Colossus champions appear in the nightmare during this encounter."
+      ]
+    },
+    {
+      "name": "Caiatl",
+      "title": "Nightmare of Caiatl, Princess-Imperial",
+      "before": "Past the Vault, keep shooting bells through bars and across gaps, switching worlds to open each path, then cross the wide chasm to the Dark Shrine and go through the red doorway. The large room called The Depths is on this route.",
+      "what": "Four standards break the chains on the giant Bell of Conquest, and ringing it starts the damage phase in the nightmare. There Caiatl runs from bell to bell and takes real damage only while stunned at one.",
+      "steps": [
+        "Note the two symbols lit at the plates in front of the bell's chains. The balconies with the same symbols are where the Psion Standard Bearers spawn.",
+        "Kill a pair of Bellkeepers, send the runners to the matching balconies and shoot a bell to enter the nightmare.",
+        "Runners kill their Psion (each kill adds time) and take the standard. The third player clears the nightmare Bellkeepers so the team can ring out.",
+        "Back in the normal world, deposit the standards on the matching plates and kill the Colossi at the arena's ends. Repeat for a second pair of symbols.",
+        "With four standards in, shoot the gem on the golden chains to ring the Bell of Conquest. Everyone is pulled into the nightmare for damage.",
+        "Caiatl barely takes damage at first. Watch which of the three small bells she heads for, kill its Bellkeepers and gather there.",
+        "Shoot that bell as she arrives. She is stunned for about 10 seconds and everyone by the bell gains Waking Resonance, which raises damage against her. Then move to her next bell.",
+        "After three bells she sends the team back. Repeat; most teams need two or three damage phases."
+      ],
+      "roles": [
+        ["Standard runners (2)", "Take the balconies that match the lit symbols, kill the Psion in the nightmare and deposit the standards."],
+        ["Bell player (1)", "Clears Bellkeepers so the team can leave the nightmare. In damage, all three kill the Bellkeepers at Caiatl's next bell."]
+      ],
+      "wipes": [
+        "The bell is shot too early, so Caiatl turns toward another bell, or too late, so she reaches it and the damage phase ends.",
+        "Falling through the gaps in the nightmare floor; the crystal floor of the normal world isn't there.",
+        "The nightmare timer runs out on a standard trip. Kill the Psions quickly, since they add time.",
+        "Colossi from the ends of the arena overwhelm the player left on the ground."
+      ],
+      "chests": [
+        "The Depths, on the way to Caiatl: in the large room with a covered object on its middle platform, crouch into the crawlspace beneath that platform from the walkway nearest the room's entrance."
+      ],
+      "master": [
+        "In 2022 guides, Barrier Colossus champions appear in the nightmare during this fight."
+      ]
+    }
+  ]
+}

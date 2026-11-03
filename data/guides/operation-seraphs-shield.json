@@ -1,0 +1,81 @@
+{
+  "name": "Operation: Seraph's Shield",
+  "checked": "2026-11-03",
+  "about": "An exotic mission for one to three players from Season of the Seraph (2022): board Seraph Station and plant a virus in the Warsat network, using the Scanner, Operator and Suppressor augments from Deep Stone Crypt. It is untimed and ends with Revision Zero; its hidden chests were removed in 2023. Since June 2026 it launches from Pinnacle Ops; Update 9.7.0.3 fixed its elevators killing players.",
+  "sources": [
+    ["TheGamer: Operation Seraph's Shield walkthrough and rewards", "https://www.thegamer.com/destiny-2-operation-seraphs-shield-exotic-mission-walkthrough-rewards/"],
+    ["KeenGamer: Operation Seraph's Shield exotic mission guide", "https://www.keengamer.com/articles/guides/destiny-2-operation-seraphs-shield-exotic-mission-guide/"],
+    ["Destinypedia: Seraph's Shield", "https://destinypedia.com/Seraph's_Shield"],
+    ["Shattered Vault: Destiny 2 Update 9.7.0.2", "https://shatteredvault.com/destiny-2-update-9-7-0-2/"],
+    ["Shattered Vault: Destiny 2 Update 9.7.0.3", "https://shatteredvault.com/destiny-2-update-9-7-0-3/"],
+    ["Bungie Help: Monument of Triumph and Update 9.7.0 support guide", "https://help.bungie.net/hc/articles/49848696022548"]
+  ],
+  "encounters": [
+    {
+      "name": "Launch Facility",
+      "title": "The launch facility",
+      "what": "The ground approach. Stay out of sight of the Seraph Towers, get past the laser traps, and use the Scanner augment to call the orbital pods up to the station.",
+      "steps": [
+        "Cross the field using rocks and trees as cover from the Seraph Towers, and kill the Ogre at the facility entrance.",
+        "Lasers kill instantly. Slide under or jump through the gap in each one.",
+        "Kill the Fallen at the launch controls to get the Scanner augment, which highlights the terminals you can use.",
+        "Hack the three highlighted terminals to call the pods, deposit the Scanner at the Augmentation Terminal, and ride up to the station."
+      ],
+      "roles": [
+        ["Scanner holder", "Finds and hacks the highlighted terminals."],
+        ["Everyone else", "Clear the Fallen and Hive around the holder."]
+      ],
+      "wipes": ["Walking into a laser.", "Getting marked by a Seraph Tower out in the open."]
+    },
+    {
+      "name": "Seraph Station",
+      "title": "Seraph Station puzzles",
+      "what": "A run of augment puzzle rooms. The Scanner shows which terminals to use and which floor tiles are safe; the Operator makes red panels shootable.",
+      "steps": [
+        "Take the Scanner again from the Fallen and hack the three terminals it shows to open the way on.",
+        "Decontamination room: activate the three terminals the Scanner highlights (one is reached through a vent), deposit it, and use the matching console next door. A wrong console turns on lasers.",
+        "Radiation room: from the upper floor the Scanner shows three glowing consoles and the safe path of floor plates. Walk only on safe plates while hacking them; a wrong plate kills you and resets the room.",
+        "Officer's lounge: take the Operator and shoot the three red panels hidden around the level (behind glass, through a vent, behind a pillar), then deposit it to move on."
+      ],
+      "roles": [
+        ["Augment holder", "Carries the Scanner or Operator and does the puzzle; only they can see or hit the targets."],
+        ["Everyone else", "Clear the Fallen, Shanks and turrets and keep the holder alive."]
+      ],
+      "wipes": ["Stepping on a wrong plate in the radiation room.", "Using the wrong console after the decontamination room, which turns on lasers."]
+    },
+    {
+      "name": "Capture and Escape",
+      "title": "Get captured, escape the ketch",
+      "what": "A hard fight with the Hive Knight Haroktha ends in a planned surrender. The team breaks out of the Fallen ketch it is taken to and fights its way back onto the station.",
+      "steps": [
+        "Shoot the explosive Ether tanks to start the fight. Haroktha, Scourge of the Helium Drinkers, arrives with reinforcements.",
+        "Damage Haroktha until he turns invincible and retreats, then hold off the Fallen wave of Brigs, Shanks and Dregs. This is a Darkness Zone, so a full wipe restarts the fight.",
+        "Surrender when the Fallen close in; a Servitor teleports the team onto their ketch.",
+        "Reclaim your weapons, kill the Fallen Captain, free the Exo frames at the terminal, then fight to the bow and jump back to the station.",
+        "Use the Operator on three panels to bridge the gap with platforms. At the top Haroktha is back, now unshielded, and seals the room until he dies."
+      ],
+      "roles": [
+        ["Whole team", "Stay together and play for survival in the capture fight; damage matters less than staying alive."]
+      ],
+      "wipes": ["The whole team dying in the Darkness Zone during the capture fight.", "Tracer Shanks and Brigs catching players in the open."]
+    },
+    {
+      "name": "Praksis",
+      "title": "Praksis, the Defiled",
+      "before": "Warsat Command Nexus: use the Operator on the two centre pillar panels to open the side rooms, then the Scanner on three terminals. Keep swapping augments at the terminals until the last Scanner terminal lights a teleporter.",
+      "what": "The final boss. Praksis turns immune at about each third of its health; the Suppressor stuns it to open side rooms, and the team destroys the Fallen drones inside to make it vulnerable again.",
+      "steps": [
+        "The bridge before the boss teaches the Suppressor (a blue eye): stand under each floating drone in turn and shoot the target, and after three a room opens with a Fallen drone to destroy.",
+        "Damage Praksis until it turns immune, at about two thirds of its health.",
+        "Take the Suppressor from the Splicer on the upper catwalks. Stand under each of the three drones in turn and shoot Praksis to stun it.",
+        "Each stun opens a room with a Fallen drone. Destroy the drones (three in all) while fighting off Scorn, and Praksis can be damaged again.",
+        "Repeat once more, kill it, and upload the virus at the console in the next room."
+      ],
+      "roles": [
+        ["Suppressor", "Stuns Praksis from under the three drones."],
+        ["Everyone else", "Clear Scorn, destroy the drones in the side rooms, then damage."]
+      ],
+      "wipes": ["Getting frozen by Praksis's Stasis attacks while out in the open."]
+    }
+  ]
+}

@@ -12,7 +12,7 @@ const errs = []; p.on('pageerror', e => errs.push(e.message));
 // topics, with landing pages and tabs the site already covers left out; infographic sheets link to the original
 await p.goto('http://localhost:8765/#/ref'); await p.waitForSelector('#q');
 assert.deepEqual(await p.$$eval('#app h3', hs => hs.map(h => h.textContent)),
-  ['Raids', 'Dungeons', 'Exotic missions', 'Portal', 'Destinations', 'Vendors', 'Champions', 'Weapons', 'Armor', 'Subclasses', 'Damage', 'Mechanics']);
+  ['Raids', 'Dungeons', 'Exotic missions', 'Grandmaster strikes', 'Portal', 'Destinations', 'Vendors', 'Champions', 'Weapons', 'Armor', 'Subclasses', 'Damage', 'Mechanics']);
 const chips = await p.$$eval('#app .tabs a', as => as.map(a => a.textContent));
 for (const gone of ['Landing', 'Orbit', 'Weekly Reset', 'Raid Loot', 'Vendors', 'Graphing (S29)', 'CATALYSTS']) assert.ok(!chips.includes(gone), gone);
 assert.match(await p.getAttribute('a[title="Opens the original sheet"] >> text=Champion counters', 'href'), /^https:\/\/docs\.google\.com\//);
