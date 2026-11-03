@@ -1,0 +1,175 @@
+{
+  "name": "Salvation's Edge",
+  "checked": "2026-11-03",
+  "about": "Six-player raid from The Final Shape (June 2024) that climbs the Witness's Monolith to a fight with the Witness. Most encounters share one system: bounce a charge between paired plates to spawn Resonance shapes, then use the right shape to lock Conductors before the wipe timer ends.",
+  "master": [
+    "In 2024 guides, Master adds no new mechanics: enemies are tougher and better shielded, and some encounters gain champions.",
+    "Master Salvation's Edge is still offered in 2026; Update 9.7.0.2 (June 2026) fixed a Master vendor bug."
+  ],
+  "sources": [
+    ["Shacknews: Salvation's Edge raid guide", "https://www.shacknews.com/article/140025/salvations-edge-raid-guide-destiny-2"],
+    ["Destinypedia: Salvation's Edge", "https://www.destinypedia.com/Salvation's_Edge"],
+    ["PCGamesN: Salvation's Edge raid guide", "https://www.pcgamesn.com/destiny-2/salvations-edge-guide"],
+    ["Mobalytics: Salvation's Edge raid guide", "https://mobalytics.gg/?p=78441"],
+    ["Prima Games: Salvation's Edge raid walkthrough", "https://primagames.com/gaming/destiny-2-salvations-edge-raid-walkthrough-all-bosses-encounters-and-rewards"],
+    ["Sportskeeda: All secret chest locations in Salvation's Edge", "https://www.sportskeeda.com/mmo/all-secret-chest-locations-guide-destiny-2-salvation-s-edge"],
+    ["KeenGamer: All Salvation's Edge secret chest locations", "https://www.keengamer.com/articles/guides/destiny-2-the-final-shape-all-salvations-edge-secret-chest-locations/"],
+    ["Blueberries: Salvation's Edge red border chest", "https://www.blueberries.gg/leveling/salvations-edge-red-border-chest/"],
+    ["Sportskeeda: Master Salvation's Edge enemy guide", "https://sportskeeda.com/mmo/destiny-2-master-salvation-s-edge-enemy-guide-all-changes-normal-version"],
+    ["Blueberries: Salvation's Edge challenges and Master changes", "https://blueberries.gg/leveling/salvations-edge-challenges"],
+    ["Shattered Vault: Destiny 2 Update 9.7.0.2", "https://shatteredvault.com/destiny-2-update-9-7-0-2/"]
+  ],
+  "encounters": [
+    {
+      "name": "Substratum",
+      "what": "The first encounter, in a grid of rooms around a central chamber. Two teams clear side rooms, then bounce charges between plates to collect Pyramidal Resonance and lock Conductors, three times over, before Final Shape Looming runs out.",
+      "before": "Climb from the start into the Monolith. The first large enclosed room shows columns of shapes; the third column from the left is the code for the bonus chest (see The Witness tab).",
+      "steps": [
+        "Pick up the Pyramidal Resonance in the center and deposit it in the box. Final Shape Looming starts; at zero the team wipes.",
+        "Two doors open. Split into two teams of three and clear the rooms behind them. Kills in one team's rooms open doors for the other team, so call them.",
+        "Killing a room's Overload champion spawns a Tormentor, a Threshold Sentinel, in the center. Regroup fast, since it closes doors, and kill it. This happens twice.",
+        "Each team now has a glowing start plate and a Conductor plate in another room. One player stands at each: step on the start plate to send the charge, and step on the far plate when it arrives. Every bounce spawns a Pyramidal Resonance.",
+        "Everyone collects three. A fourth kills you, and each pickup starts a countdown that kills you if it ends before your next pickup.",
+        "To lock a Conductor, shoot it while holding Resonance, then complete one more bounce onto its plate. A missed step stops the plates and spawns a Subjugator; kill it to try again.",
+        "With both Conductors locked, kill the Subjugator in the center, then deposit Resonance in the box that appears to add time.",
+        "Repeat the whole cycle three times, six Conductors in all."
+      ],
+      "roles": [
+        ["Plate players (2 per team)", "One at the start plate, one at the Conductor plate; call every step so the timing holds."],
+        ["Floater (1 per team)", "Clears near the plates, kills Weavers first because they disrupt charges, and helps collect Resonance."]
+      ],
+      "wipes": [
+        "The timer runs out. Bank Resonance at every box.",
+        "Someone picks up a fourth Resonance or lets the Resonance countdown expire.",
+        "Standing in a Witness hand's triangle when it lands; it can kill outright.",
+        "Slow regrouping for the Tormentor, which shuts doors and strands players.",
+        "Weavers left alive break charges, so Subjugators eat the timer."
+      ],
+      "master": [
+        "2024 guides: more enemy shields and slightly more health here, with no extra champions."
+      ]
+    },
+    {
+      "name": "Herald of Finality",
+      "what": "A Taken boss in the middle of three lanes. Three pairs work the left, middle and right plates while three called players open the Herald's head to learn which shape each Conductor needs.",
+      "before": "After Substratum, ride the large red lift and cross the jumping section up to the Herald's arena.",
+      "steps": [
+        "Shoot the Taken blight in the middle to start. Final Shape Looming returns.",
+        "Each pair clears its lane. Killing the Taken Knights brings a miniboss, a Trammel, on each side. Kill it before it reaches a plate; two guides say that wipes the team.",
+        "Three players are pulled to the center with Called to Reckoning. Destroy the Taken blights around the arena so the Herald's head can be hurt, then the called players shoot it to earn Stolen Favor.",
+        "Stolen Favor holders read the shape on each Conductor, Pyramid or Sphere, and call it to the pairs.",
+        "Pairs bounce the charge between their plates to spawn Pyramidal and Spherical Resonance and collect the type needed. The whole stack turns into the type picked up last, so don't grab the other shape.",
+        "Lock each Conductor with the matching type, as in Substratum. A wrong shape wipes the team; a broken chain spawns an enemy that must die before a retry.",
+        "With all three locked, deposit Resonance in the box that appears to add time. When the box goes, damage the Herald until he turns immune, then repeat.",
+        "At final stand the timer is cut short and more Taken arrive, the Trammels among them. Only start the last phase with time in hand."
+      ],
+      "roles": [
+        ["Lane pairs (3 pairs)", "Left, middle and right. Clear the lane, kill the Trammel, run the two plates and lock the lane's Conductor."],
+        ["Called players (3)", "Pulled in with Called to Reckoning. Break the blights, shoot the head for Stolen Favor and read the Conductor shapes."]
+      ],
+      "wipes": [
+        "A Trammel reaches a plate.",
+        "A Conductor is locked with the wrong shape.",
+        "Picking up the other shape converts a whole stack.",
+        "All the called players die, which Destinypedia lists as a wipe.",
+        "Final stand started with too little time left."
+      ],
+      "master": [
+        "2024 guides: Overload champions join the lanes during the Resonance part of each phase."
+      ]
+    },
+    {
+      "name": "Repository",
+      "title": "Repository: Carve a Path",
+      "what": "Three rooms climbing the Monolith, each with three lanes of plates and three Conductors. Hexahedron Resonance joins the Pyramid and Sphere, and lanes stop lining up with the Conductors they feed.",
+      "before": "After the Herald, take the red lift and work through a long climb with Dread enemies and death portals. A Tormentor holds a barrier on the way; kill it, and keep clear of the Resonant Cylinder, which kills on contact.",
+      "steps": [
+        "Deposit Resonance in the room's box to start. Each lane has a Threshold Sentinel Tormentor; whoever lands its final blow gets Stolen Favor and can read the Conductor shapes.",
+        "Kill the Scorpius turrets that appear once the Tormentors die.",
+        "Each pair runs its lane's plates to spawn Resonance. A lane's shape may not be the one its Conductor needs, so trade players between lanes until the right shape reaches each Conductor.",
+        "Lock each Conductor with its matching shape. A failed chain spawns a Subjugator; kill it to reset the plates.",
+        "With all three locked, deposit Resonance at the altar in the middle to refill the timer.",
+        "Kill the wave that follows, including an Unstoppable Incendior, to open the door to the next room.",
+        "Rooms two and three cross the wiring: in room two the left and middle plates feed each other, and in room three all three lanes rotate. Trace each lane before bouncing.",
+        "Killing the Incendior in the third room ends the encounter."
+      ],
+      "roles": [
+        ["Lane pairs (3 pairs)", "Each pair owns a lane: kill its Tormentor, run its plates, and swap players with other lanes when shapes don't match."],
+        ["Stolen Favor holders", "The Tormentor killers read each Conductor's shape and call it for the room."]
+      ],
+      "wipes": [
+        "The timer runs out; deposit at every altar.",
+        "Scorpius turrets left up cut down plate players.",
+        "Bouncing to the wrong partner plate in rooms two and three because the wiring changed.",
+        "A Witness hand's beam from the walls catches the team.",
+        "A fourth Resonance or an expired Resonance countdown, as in Substratum."
+      ],
+      "chests": [
+        "On the climb from the Herald: you reach a tall room with orange-glowing stones and two Subjugators. Kill them and go to the back, where small chambers are walled with yellow cube crystals. A Guardian-sized gap at the base of the crystals leads to the chest; one guide says the right-most chamber, another says turn left, so check both. Climb the crystals to get out."
+      ],
+      "master": [
+        "2024 guides list no notable enemy changes here."
+      ]
+    },
+    {
+      "name": "Verity",
+      "what": "The puzzle encounter. Three players are sent alone into inside rooms while the three outside reshape statues so each inside player's key fits and they can walk out. It must be done three times before Imminent End runs out.",
+      "steps": [
+        "Where players stand when it starts decides who goes inside, so agree on the three first. Start at the statue with the glowing base.",
+        "Inside, every room has the same three statues, one per inside player, each holding a 2D shape (circle, square or triangle). Call the order left to right; note your own shape and the two shapes on the wall.",
+        "First hand-off: kill a Splintered Curator Knight, take its shape if it isn't yours, and deposit it at the statue holding the same shape. Carry one at a time; two make a 3D shape. Two Knight kills bring an Ogre, whose death brings more Knights. Stop when your wall shows two of your own shape.",
+        "Second hand-off: deposit your own shape once on each of the other two statues. Your wall now shows the two shapes that are not yours.",
+        "Outside, the three statues at the back hold 3D shapes built from two 2D shapes (circle plus square is a cylinder, circle plus triangle a cone, two circles a sphere, two squares a cube). Each must end up built from the two shapes its inside partner lacks.",
+        "To change them, take a Knight's 2D shape and dissect a statue whose 3D shape contains it, then dissect a second statue: the two trade those shapes. Knight kills bring Unstoppable Ogres, whose deaths bring more Knights.",
+        "The Witness kills players during the run. A dead player's Ghost appears at the back; carry it to that player's own statue near the entrance, Ghosts left to right. A wrong statue or order costs a death.",
+        "When the outside statues are right, inside players kill two Knights, pick up both shapes to form the key and walk through the glass wall. Kill the two Unstoppable Ogres; the Witness kills five players and the survivor revives them the same way. Three new players go inside. Do three cycles."
+      ],
+      "roles": [
+        ["Inside (3)", "Solo. Call shapes, run both hand-offs, then build your key and walk out."],
+        ["Outside (3)", "Dissect the back statues, kill Knights and Ogres, and confirm each statue to its inside player."],
+        ["Ghost carrier (1 of the outside)", "Handles every revive; distinct Ghost shells on every player make this easier."]
+      ],
+      "wipes": [
+        "Imminent End runs out, usually from slow dissections or revives.",
+        "A Ghost goes to the wrong statue or out of order.",
+        "An inside player carries two shapes at once or hands off their own shape too early.",
+        "An uncalled dissection scrambles the outside statues.",
+        "Unstoppable Ogres left alive hold up the next Knights."
+      ],
+      "master": [
+        "2024 guides: the Ogres in the inside rooms are Unstoppable champions."
+      ]
+    },
+    {
+      "name": "The Witness",
+      "title": "The Witness (Zenith)",
+      "what": "The final boss. Runners earn Glyphbreaker by matching Resonance from the Witness's hand attacks to the color on each wrist, then break six glyphs on its chest to start damage on the raised platform.",
+      "before": "Ride Verity's central lift, climb the tangled roots and floating platforms toward the arena, and jump the pillars over the broken door.",
+      "steps": [
+        "Standing in a hand attack's telegraph just before it lands gives Resonance: triangle zones give Pyramidal, the seeker swarm Spherical, the horizontal beam Hexahedron. Step in, take it, step out.",
+        "With a hand's Resonance, shoot that hand's wrist. Its band shows the Resonance it needs, never its own: green for Pyramidal, yellow for Spherical, red for Hexahedron.",
+        "Get the called Resonance from another hand's attack, go back into the first hand's telegraph and shoot the band again to earn Glyphbreaker.",
+        "Glyphbreakers go to the small island with the well of Light in front of the Witness and shoot one glyph each on its chest. That also clears their Resonance.",
+        "Each broken glyph spawns Subjugators, so break glyphs together to limit them, and kill them quickly.",
+        "When the Witness tests you, crystals appear in front of it. Shoot every crystal outside the shape of the last hand that gave Glyphbreaker: a triangle for Pyramidal, a diamond (some guides say circle) for Spherical, a square for Hexahedron. Then jump the pulse.",
+        "With all six glyphs broken, the platform rises and a weak spot opens on its chest. It sweeps one part of the platform, then the opposite part, then all of it (jump that one). Damage from the safe side.",
+        "When it starts lowering the platform, jump back to the arena at once, then repeat. At final stand it turns briefly immune, then attacks almost nonstop; finish it in time or the team wipes."
+      ],
+      "roles": [
+        ["Glyph runners (2-3)", "Collect Resonance, call wrist colors, earn Glyphbreaker and break glyphs together."],
+        ["Add clear (3-4)", "Kill Screebs, Weavers and Attendants, then the Subjugators each glyph brings, and call the test shape."]
+      ],
+      "wipes": [
+        "Failing the test: wrong crystals left standing, or the shape's own crystals shot.",
+        "Missing the jump after the test or the whole-platform attack.",
+        "Staying on the platform as it lowers.",
+        "Lingering in a hand's telegraph after taking its Resonance.",
+        "Subjugators left alive when damage starts."
+      ],
+      "chests": [
+        "Before the arena: on the root climb, stop short of the large doorway, drop down on the right and follow the ledges and platforms to an opening in the lower right wall beside the door. It leads through the gaps under the arena to the chest.",
+        "Bonus chest after the Witness: the code is the third column of shapes in the first enclosed room. Guides describe five hidden Conductor rooms on the route, three active each run (Destinypedia lists three hidden Conductors); feed each active plate its matching Resonance."
+      ]
+    }
+  ]
+}
