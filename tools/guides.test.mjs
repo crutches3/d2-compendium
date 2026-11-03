@@ -41,8 +41,8 @@ const shown = (sel, m = p) => m.$$eval(sel, l => l.filter(x => x.checkVisibility
 const sp = t => t.replace(/\s+/g, ' ');
 const visibleDrops = () => p.$$eval('.drop[data-h]', cs => cs.filter(c => !c.hidden).map(c => c.querySelector('b').textContent));
 // open the guide and check every encounter against its file: one shown at a time, in file order, with all its parts
-const checkGuide = async (name, m = p) => {
-  const g = G.get(name); assert.ok(g, `no guide for ${name}`);
+const checkGuide = async (name, m = p, g = G.get(name)) => {
+  assert.ok(g, `no guide for ${name}`);
   if (await m.$(S.tab('guide'))) await m.click(S.tab('guide'));  // a strike page is all guide, so it has no Drops | Guide row
   await m.waitForSelector('#guide');
   const n = g.encounters.length;
@@ -154,6 +154,13 @@ assert.ok(body.includes('Plain <b>bold</b> text') && body.includes('<img src="x-
 assert.deepEqual([await p.$eval(`${S.pills} >> nth=1`, x => x.textContent), await p.textContent('#guide .gstep[data-step="1"] h3')], ['2<u>W</u>', '2. <img src="x-xss-t" onerror="window.__xss=4">']);
 assert.deepEqual([await p.evaluate(() => window.__xss), hits, await p.$$eval('#guide b:text-is("bold"), #guide img, #guide u, #guide script, #guide a[href^="javascript"]', l => l.length)], [undefined, [], 0]);
 assert.equal(await p.textContent(`${S.src} >> nth=0`), '<i>Source</i> ↗');
+await p.unroute('**/data/guides/**');
+// Epic notes (only Desert Perpetual has them, and its guide is held) draw like Master's: for every encounter, and per encounter
+const epic = { ...G.get("King's Fall"), epic: ['Fake Epic line for every encounter.'],
+  encounters: G.get("King's Fall").encounters.map((e, i) => i === 1 ? { ...e, epic: ['Fake Epic line for this encounter.'] } : e) };
+await serve(g => g.name === "King's Fall" ? epic : undefined);
+await openWiki("King's Fall"); await checkGuide("King's Fall", p, epic);
+assert.ok((await p.innerText('#guide')).includes('Epic, every encounter'));
 await p.unroute('**/data/guides/**');
 
 // each Grandmaster strike has a page: its banner (not an icon), a strike tag, its guide, when it is next the Grandmaster, and no loot.
