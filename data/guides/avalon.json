@@ -1,0 +1,82 @@
+{
+  "name": "AVALON",
+  "checked": "2026-11-03",
+  "about": "A three-player exotic mission from Season of Defiance (2023) inside the Vex network, called //NODE.OVRD.AVALON// in game. It is not timed and ends with the Vexcalibur glaive. Since Monument of Triumph (June 2026) exotic missions launch from Pinnacle Ops. Most of its seven hidden Data Retrieval chests need Vexcalibur equipped.",
+  "sources": [
+    ["Destinypedia: NODE.OVRD.AVALON walkthrough", "https://www.destinypedia.com/NODE.OVRD.AVALON/Walkthrough"],
+    ["TheGamer: Vexcalibur quest guide and hidden chest locations", "https://www.thegamer.com/destiny-2-vexcalibur-exotic-quest-guide-hidden-chest-locations/"],
+    ["Dot Esports: How to complete the NODE.OVRD.AVALON mission", "https://dotesports.com/destiny/news/how-to-complete-the-node-ovrd-avalon-mission-in-destiny-2"],
+    ["Shacknews: Node.ovrd.AVALON Data Retrieval secret chests", "https://shacknews.com/article/134607/node-ovrd-avalon-chests-destiny-2"],
+    ["Bungie Help: Monument of Triumph and Update 9.7.0 support guide", "https://help.bungie.net/hc/articles/49848696022548"]
+  ],
+  "encounters": [
+    {
+      "name": "Access Codes",
+      "title": "Vex access codes",
+      "before": "Drop down the gravity lift into the opening jumping section: slide through the low gap in the barrier room, follow the Vex fluid stream past the Harpies, and slip through the crack in the wall to reach the first arena.",
+      "what": "The first encounter. A Vex pillar shows a code of shapes, and the team breaks the matching shapes around the arena in that order while Vex keep spawning.",
+      "steps": [
+        "Plant a Rally Banner and clear the first wave.",
+        "Read the code shown beside the pillar from top to bottom, then shoot the matching Vex shapes in that order.",
+        "A wrong shot resets the code and shuffles it, so call each shape before anyone shoots.",
+        "The codes get longer: three, four, then five shapes. A second set in a new part of the arena repeats the three lengths.",
+        "Kill the last Vex wave that comes down the ramp to finish (Destinypedia names its leaders the Digital Variant Tracker and Neutralizer)."
+      ],
+      "roles": [
+        ["Caller (1)", "Reads the code and calls each shape in order."],
+        ["Shooters (2)", "Break the called shapes and keep Goblins and the Hobgoblins on the floating platforms off the caller."]
+      ],
+      "wipes": ["Shooting the wrong shape, which resets the code.", "Ignoring the Hobgoblins on the floating platforms while everyone reads the code."],
+      "chests": ["Substrate: in the opening jumping section, above the Vex fluid stream. Climb the left barrier to a switch, then use Vexcalibur's block to get through the barrier into the rectangular room over the stream and use the switch inside. TheGamer lists Authorization Override as needed.", "Aberrant: just after the stream. Drop into the wall crack and stop at the switch halfway down, find the damaged Hobgoblin in a cage, then hit the second switch on the nearby ledge. The chest appears where the Hobgoblin was."]
+    },
+    {
+      "name": "Data Nullifier",
+      "title": "Data Nullifier",
+      "before": "Jump around the Vex barrier, time the moving pistons, and plant a Rally Banner before taking the gravity lift down to the arena.",
+      "what": "Collect data motes from Vex to survive a repeating deletion wipe, then kill the Data Nullifier, which arrives after the second round.",
+      "steps": [
+        "Clear the first Vex to start. Wounded Goblins called Dataholders drop purple data motes when killed.",
+        "Carry motes to the central spire before the short timer ends: eight in the first round.",
+        "With enough deposited, the floor opens. Drop into the pit to survive the deletion, and keep fighting, since Vex can still hit you there.",
+        "The second round needs ten motes. After it the Data Nullifier spawns.",
+        "Use Supers and heavy on it until it retreats, then run two more mote rounds (ten and twelve motes in two guides) and finish it."
+      ],
+      "roles": [
+        ["Whole team", "Kill Dataholders, run motes to the spire, and drop into the pit together when the deletion lands."]
+      ],
+      "wipes": [
+        "Too few motes deposited when the timer ends: everyone in the arena is deleted.",
+        "Staying on the platform instead of dropping into the pit.",
+        "Getting picked off by Wyverns while waiting in the pit."
+      ],
+      "chests": ["Disposal: after the first encounter, before the corridor of sliding doors. Breach the barrier with Vexcalibur, climb up and hit the switch to start the laser chamber, climb the slanted wall and launch from the triangular hole to spot a code above a platform, then enter it at the data pillar. Needs Expert Authorization Override.", "Hard Data Deposit: after the sliding-door corridor, before the Data Nullifier. In the Vex fluid go right instead of left, breach the Vex cell with Vexcalibur, and carry its orb to the deposit station. Needs Authorization Override."]
+    },
+    {
+      "name": "Brakion",
+      "title": "Brakion, Repurposed Mind",
+      "before": "The last jumping section: avoid the pistons, take the gravity cannon, and jump around the barrier to reach the boss.",
+      "what": "A Vex Variant Stalker fought across three arenas; it teleports to the next one each time it loses enough health.",
+      "steps": [
+        "Arena one: Brakion fires a Line Rifle, leaves Void fire on the ground and teleports between corners. Damage it until it leaves, then take the portal.",
+        "Arena two: Brakion sits behind a shield. Kill the Encryption Daemon, a Hydra, and its adds to bring up a code.",
+        "Read the five-shape code at one side of Brakion's platform and shoot the matching shapes at the central pillar. The shield drops for a short damage window; the next code is on the other side. Repeat until Brakion teleports, then take the portal.",
+        "Arena three has little cover. When its head breaks off it enrages, sprints at players and stomps; use the small cover blocks to slow it and finish it.",
+        "Pick up Vexcalibur in front of the waterfall to end the mission."
+      ],
+      "roles": [
+        ["Caller (1)", "Reads Brakion's code in arena two and calls each shape."],
+        ["Whole team", "Clears adds, breaks the shapes, and saves damage for the shield window."]
+      ],
+      "wipes": [
+        "Standing in the Void fire Brakion leaves on the ground.",
+        "Being caught in the open in arena three when it charges.",
+        "Dying in the last arena restarts the Brakion fight."
+      ],
+      "chests": [
+        "Quarantine Subject: on the way to Brakion. In the piston corridor turn right instead of taking the man cannon and use the terminal, go back through the pistons, cross the gap, pass the barrier with Vexcalibur and break the Vex shape.",
+        "Cannonball: past the man cannon, on the ramp with Harpies. Break three Vex shapes with Vexcalibur (one high up, one over a ledge, one in a gap partway down the ramp); the chest appears at the top of the ramp.",
+        "Accurate Prediction: after Brakion dies, before opening the reward chest. Go under each corner of the arena, pass the barrier with Vexcalibur and break the shape there. A portal opens on the main platform: take it for the chest, then jump on the back pedestal to return."
+      ]
+    }
+  ]
+}
