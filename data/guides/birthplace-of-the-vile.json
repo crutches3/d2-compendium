@@ -1,0 +1,58 @@
+{
+  "name": "Birthplace of the Vile",
+  "checked": "2026-11-03",
+  "sources": [
+    ["Destinypedia: Birthplace of the Vile", "https://www.destinypedia.com/Birthplace_of_the_Vile"],
+    ["ProGameTalk: Birthplace of the Vile walkthrough", "https://progametalk.com/destiny-2/birthplace-of-the-vile/"],
+    ["KeenGamer: Season 19 Grandmaster Nightfall guide", "https://keengamer.com/articles/guides/destiny-2-season-19-grandmaster-nightfall-guide/"],
+    ["eXputer: All Grandmaster Nightfalls", "https://exputer.com/guides/destiny-2-all-grandmaster-nightfalls/"]
+  ],
+  "about": "A three-player strike from The Witch Queen, set in the Harvest, the Dark City inside Savathûn's Throne World. Scorn hold the route, Resonance Slabs and Portal Wardens gate the way forward, and the final arena is a no-respawn zone. In Grandmaster the champions, shields and modifiers change from week to week, so check them before launching.",
+  "caveat": "Sources are 2022-2023 strike and Nightfall guides; no 2026 Grandmaster guide was found, and the guides list the middle sections in slightly different orders.",
+  "encounters": [
+    {
+      "name": "Dark City",
+      "title": "Witch's Echo and the Dark City",
+      "what": "The route through the Harvest to the Incubation Chamber. Progress is gated by Resonance Slabs you must stand on while Scorn waves attack, and by Portal Wardens whose deaths open the next portal.",
+      "steps": [
+        "Clear the Scorn at the entrance, including Lillix, Lightscourge.",
+        "In Witch's Echo, stand on the Resonance Slab and hold it while waves attack; progress stops when you step off. Move on when the barrier drops.",
+        "Fight to the far end of the next room and kill the Lacerated Abomination and the enemies with it to open the blocked doorway.",
+        "Clear the enemies at the bridge barrier, cleanse the Resonance that opens a portal and watch for Screebs in the long hall beyond.",
+        "Kill the Portal Warden to open the next portal.",
+        "In the large area, activate the Resonance Slabs on both sides while defending them. Platforms appear: take the Cryptoglyph and go through the portal."
+      ],
+      "roles": [
+        ["Slab holder (1)", "Stays on the Resonance Slab, ideally with a survivability tool, so progress never stops."],
+        ["Add clear (2)", "Kill the Scorn waves, crossbow users and Chieftains first."]
+      ],
+      "wipes": [
+        "Scorn Void grenades: leave their area within a second or two or they kill you.",
+        "Scorn crossbows in the tight corridors hit hard from range.",
+        "Screebs reach the team in a narrow space and explode.",
+        "Everyone steps off the slab to fight, so the waves keep coming with no progress."
+      ]
+    },
+    {
+      "name": "Heimiks",
+      "title": "Heimiks, Warden of the Harvest",
+      "before": "Through the portal, fight across a large room to a Portal Warden; its death opens the way to a long hall. Cross the bridge past Nakoix, Lightscourge and its Scorn, clear the barriers on the two entrances and go into the boss room.",
+      "what": "A Scorn boss with a crossbow, backed by melee Scorn, fought in a no-respawn zone. Twice he sends the team to other halls, and a Portal Warden must die each time to get back.",
+      "steps": [
+        "Cleanse the corrupted Resonance in the boss room to start the fight. Enemies spawn as you do.",
+        "Damage Heimiks while clearing the melee Scorn that rush the team. He snipes around cover, so keep moving.",
+        "At the first health threshold he teleports the team into halls full of Screebs. Go straight for the Portal Warden and kill it to return.",
+        "At the second threshold he sends the team to an area like the path to the Incubation Chamber. Kill that Portal Warden to get back.",
+        "Finish his remaining health."
+      ],
+      "roles": [
+        ["Whole team", "Stay together, kill Screebs before they arrive and focus the Portal Warden after each teleport."]
+      ],
+      "wipes": [
+        "The whole team dies in the no-respawn arena, which restarts the fight.",
+        "Screebs explode on the team in the narrow halls after a teleport.",
+        "Standing still behind weak cover while Heimiks snipes."
+      ]
+    }
+  ]
+}
