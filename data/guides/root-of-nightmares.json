@@ -1,0 +1,139 @@
+{
+  "name": "Root of Nightmares",
+  "checked": "2026-11-03",
+  "about": "Six-player raid from Lightfall (March 2023) inside Nezarec's Pyramid. Almost every encounter uses chains of Light and Darkness nodes: stand in a lit node's aura to take its buff, then shoot the next node of the same color before the buff runs out.",
+  "master": [
+    "In 2023 guides, Master changes champions and shields only; the mechanics stay the same, and enemies always outlevel you."
+  ],
+  "sources": [
+    ["Shacknews: Root of Nightmares raid guide", "https://www.shacknews.com/article/134475/root-of-nightmare-raid-guide-destiny-2"],
+    ["Destinypedia: Root of Nightmares", "https://www.destinypedia.com/Root_of_Nightmares"],
+    ["GGRecon: Root of Nightmares encounters and mechanics", "https://www.ggrecon.com/guides/destiny-2-root-of-nightmares/"],
+    ["eXputer: Root of Nightmares raid guide", "https://exputer.com/guides/root-of-nightmares-raid-guide/"],
+    ["KeenGamer: Root of Nightmares secret chest locations", "https://www.keengamer.com/articles/guides/destiny-2-lightfall-root-of-nightmares-secret-chest-locations/"],
+    ["Shacknews: Nezarec extra chest node locations", "https://shacknews.com/article/134580/destiny-2-nezarec-extra-chest-nodes"],
+    ["Shacknews: Master Root of Nightmares changes", "https://shacknews.com/article/135058/master-root-of-nightmares-changes-destiny-2?amphtml=1"],
+    ["Sportskeeda: Master Root of Nightmares enemy guide", "https://www.sportskeeda.com/esports/destiny-2-master-root-nightmares-enemy-guide-all-enemy-changes-additions-normal-version"]
+  ],
+  "encounters": [
+    {
+      "name": "Cataclysm",
+      "what": "The opening fight. One player grows a chain of Light nodes across the arena while the rest kill the Psions and the Tormentor that keep the wipe timer alive. Four finished chains end it.",
+      "steps": [
+        "The runner stands in the active node's aura to get Field of Light, then shoots the next unlit node before the buff runs out. A lit node points its beam toward the next one.",
+        "The runner returns to the newest lit node to refresh the buff, finds the next node and repeats. Only runners shoot nodes: a stray shot can strip the buff and stall the chain.",
+        "Sweeping Terror counts down the whole time. At zero the team wipes.",
+        "Two shielded Psions spawn. Kill both and a Tormentor appears, along with a Barrier Colossus.",
+        "Killing the Tormentor adds time to Sweeping Terror, so it comes before everything else. Finishing a chain also halts the timer.",
+        "Keep the Psion and Tormentor cycle going while the chain grows, and complete four chains to finish."
+      ],
+      "roles": [
+        ["Runner (1, or 2 taking turns)", "Carries Field of Light, lights the next node and calls where the chain goes."],
+        ["Psion and Tormentor team (4-5)", "Find and kill the shielded Psions, then burn the Tormentor and handle the Barrier Colossi."]
+      ],
+      "wipes": [
+        "Sweeping Terror runs out because the Tormentor lived too long.",
+        "The runner's buff expires between nodes; go back to a lit node before it does.",
+        "Other players shoot nodes and disrupt the runner's buff."
+      ],
+      "master": [
+        "2023 guides: extra Barrier champions, and each Tormentor spawn also brings an extra Barrier Colossus. Cabal keep their Solar shields."
+      ]
+    },
+    {
+      "name": "Scission",
+      "what": "Three floors split by a chasm. Each side builds its own chain, one with Field of Light and one with Flux of Darkness, and the chains zig-zag across the gap, so runners launch back and forth.",
+      "before": "From Cataclysm, follow the golden path through broken buildings and vines and climb the jumping section up to Scission.",
+      "steps": [
+        "Split three per side. One side works with Field of Light, the other with Flux of Darkness; a buff can't light a node of the other color.",
+        "To cross, stand on a launcher and shoot the small shard in front of it. Runners take the buff, launch across, light the next node, then come back to refresh.",
+        "Redolence of Splendor can only be hurt with Field of Light, and Redolence of Decay only with Flux of Darkness, so add clearers take buffs too.",
+        "Imminent Expulsion runs throughout. If the chains aren't done in time, the team is thrown into the chasm; it clears once both chains are finished.",
+        "With the chains done, a Major Redolence and Barrier Colossi spawn. Kill them to power the launcher at the far end.",
+        "Launch up to the next floor and repeat. There are three floors."
+      ],
+      "roles": [
+        ["Gap runner (1 per side)", "Carries the side's buff across the chasm and lights the next node."],
+        ["Buff holder (1 per side)", "Stays at the active node so the runner can refresh without waiting."],
+        ["Add clear (1 per side)", "Takes the buff to kill Redolences and handles the Barrier Colossi."]
+      ],
+      "wipes": [
+        "Imminent Expulsion runs out.",
+        "A runner launches with no buff or the wrong one, so the node can't be lit.",
+        "An aura node is shot while a runner is on the way, which strips the buffs.",
+        "Too many players use one launcher at once and get thrown the wrong way."
+      ],
+      "chests": [
+        "Between Cataclysm and Scission: near the end of the jumping section, skip the long run of vines up to the encounter and look across the gorge for doorways in the cliff face. Jump or grapple over, kill the Tormentor and adds guarding it, and loot the chest by the statue."
+      ],
+      "master": [
+        "2023 guides: Unstoppable Cabal champions join the floors, and Barrier Colossi still spawn near the end of each floor."
+      ]
+    },
+    {
+      "name": "Zo'Aurc",
+      "title": "Macrocosm: Zo'aurc, Explicator of Planets",
+      "what": "A planet puzzle on four triangular platforms, two Light on the left and two Dark on the right. Swap the misplaced planets, fill the three center planets with the right colors, then damage Zo'aurc on plates that match his shield.",
+      "before": "After Scission, a Light and Darkness chain opens a root, then the team climbs while Nezarec's pulses kill anyone without Darkness's Refuge. Stay near the seeds to keep the Refuge up; the pulses stop once all six players reach the door to Macrocosm.",
+      "steps": [
+        "Clear adds and kill the Centurions. That brings Terrestrial Lieutenants, Colossi on the triangle platforms.",
+        "Whoever lands the final blow on a Lieutenant gets Planetary Insight, which shows the color of the planets on that side.",
+        "Each side has two planets of the wrong color. A swapper stands under one to attune it, crosses, and places it on the wrong planet in the same corner opposite. Both planets of a pair must move for the swap to count.",
+        "When all four are swapped, a message says the indexed planets reveal themselves.",
+        "Kill the next Centurions and Lieutenants for fresh Insight and read the three center planets. Bring a side planet of the matching color to each; a wrong color causes a collision that wipes the team.",
+        "Shoot the floating shard to start damage. Zo'aurc's shield is Light or Dark: stand on a plate of that color to hurt him, and switch when it flips after his wave of flame.",
+        "Reach each plate's damage notch before moving on. After about three plates he turns immune and the cycle repeats until final stand."
+      ],
+      "roles": [
+        ["Planet swappers (4)", "One per triangle platform. Kill your Lieutenant, read and call your planets, and carry the swaps."],
+        ["Add clear (2)", "Hold the center, kill the Centurions on time and keep adds off the swappers."]
+      ],
+      "wipes": [
+        "A wrong color goes into a center planet.",
+        "The charging wall of flame catches players during damage.",
+        "A swap is made from one side only, so it doesn't take and the phase runs long.",
+        "A plate's damage notch is missed, leaving too few plates to finish the phase."
+      ],
+      "chests": [
+        "Just before Macrocosm: after the Refuge climb, the door the whole team must reach opens onto a wide building with many stairs. Climb to the top, go to the right side and look over the ledge for a Darkness splinter on a platform below. Shoot it to open a locked door at the top of the stairs, above where you came in; the chest is through it."
+      ],
+      "master": [
+        "2023 guides: Barrier champions replace the Terrestrial Lieutenant Colossi on the platforms."
+      ]
+    },
+    {
+      "name": "Nezarec",
+      "title": "Nezarec, Final God of Pain",
+      "what": "The final boss. Two runners build a Light chain on the left and a Darkness chain on the right while the rest handle Nezarec's aggro and his wipe blast. When both chains connect he opens up for damage.",
+      "before": "After Macrocosm another Light and Darkness chain opens a root to the final arena, with the seed ends swapped compared with the earlier crossing.",
+      "steps": [
+        "Runners take Field of Light on the left and Flux of Darkness on the right and build their chains as in Scission.",
+        "Nezarec waits on his platform. Break both shoulder weak spots; the second break shows Light or Dark, the Refuge the team will need.",
+        "Shooting his chest stuns him and gives the shooter Nezarec's Hatred, making them his target. Keep Hatred on one player, away from the runners.",
+        "When he glows to charge Overwhelming Energy, build the matching Refuge by carrying a buff into a node of the other color: Field of Light into a Dark node gives Darkness's Refuge, and the reverse gives Light's Refuge. Everyone stands in it until the blast passes.",
+        "Surviving the blast sends him back to his platform, and the shoulders must be broken again.",
+        "Once both chains connect he becomes vulnerable. Group on one platform near the edge and damage him until he turns immune.",
+        "Reset and repeat; each round's window is shorter. At final stand, kill him or the team is wiped."
+      ],
+      "roles": [
+        ["Light runner (1)", "Builds the left chain and makes Light's Refuge when called."],
+        ["Dark runner (1)", "Builds the right chain and makes Darkness's Refuge when called."],
+        ["Hatred holder (1)", "Shoots the chest, keeps Nezarec's attention and leads him away from the runners."],
+        ["Shoulders and adds (3)", "Break both shoulders, call the color and clear adds, the Colossi above all."]
+      ],
+      "wipes": [
+        "Overwhelming Energy lands on players outside the right Refuge. Confirm the shoulder color before building it.",
+        "Hatred slips to a runner and Nezarec chases them off the chain.",
+        "The chains take too long, so the blast comes before the damage phase.",
+        "Final stand not finished in time."
+      ],
+      "chests": [
+        "Bonus chest: before Cataclysm, past the stairs, a flower behind the two buildings on the left shows three nodes in a Light and Dark order. Copy that order in three hidden node rooms in one sitting; leaving the raid resets it, and a wrong order spoils the chest until a full reset.",
+        "Room one: before Cataclysm, skip the bright doorway, bear right past the branch and go down the large staircase. Room two: on the Refuge climb after Scission, to the left in a lower building. Room three: before Nezarec, in a floating cube-shaped structure pierced by branches, entered from above. The chest appears by Nezarec after the kill, once per week."
+      ],
+      "master": [
+        "2023 guides: Barrier champions replace the Colossi around the arena."
+      ]
+    }
+  ]
+}
