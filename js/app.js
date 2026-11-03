@@ -1723,10 +1723,11 @@ function lootPage(act, d, a, rot, place) {
       return { x, epic, slot: slotOf(x.ty), encs: row?.encs || [], notes: row ? [...row.how, row.note] : [] }; })
     .sort((p, q) => p.epic - q.epic || setOf(p.x) - setOf(q.x) || order.indexOf(p.slot) - order.indexOf(q.slot));
   const strike = act.kind === 'Strike', list = { Raid: 'raids', Dungeon: 'dungeons' }[act.kind], { weeks, cur } = rotationWeeks(rot);
-  const on = w => strike ? w.gm === act.name : list && w[list].find(n => fold(act.name).startsWith(fold(n)));
+  // Pantheon is scheduled by its reprise and encore bosses, never as a featured raid
+  const pantheon = act.name === 'Pantheon', on = w => strike ? w.gm === act.name : pantheon ? w.pantheon.length > 0 : list && w[list].find(n => fold(act.name).startsWith(fold(n)));
   const next = weeks.find(w => w.start > cur.start && on(w));
   const fmt = s => new Date(s + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  const rotation = list || strike ? `<section class="panel"><h2>Rotation</h2><p>${on(cur) ? `Featured this week${cur.master.some(n => fold(act.name).startsWith(fold(n))) ? ', with Master' : ''}.` : `Not featured this week.${next ? ` Next featured the week of ${fmt(next.start)}.` : ''}`}</p></section>` : '';
+  const rotation = list || strike ? `<section class="panel"><h2>Rotation</h2><p>${on(cur) && pantheon ? `Featured this week: ${esc(cur.pantheon.join(' and '))}.` : on(cur) ? `Featured this week${cur.master.some(n => fold(act.name).startsWith(fold(n))) ? ', with Master' : ''}.` : `Not featured this week.${next ? ` Next featured the week of ${fmt(next.start)}.` : ''}`}</p></section>` : '';
   // a strike has no loot sheet: its page is its guide, and when it is next the Grandmaster
   if (strike) return { main: '', side: rotation, wire() {}, flavor: '', badge: on(cur) ? '<span class="badge good">Featured this week</span>' : '' };
   const chips = l => l.length ? `<p class="encs">${l.map(e => `<span class="enc">${esc(e)}</span>`).join('')}</p>` : '';

@@ -166,6 +166,11 @@ assert.ok(await p.isVisible('.drops'));
 await p.goto('about:blank'); await p.goto(href('Desert Perpetual')); await p.waitForSelector(`#app :is(.hero h1, .empty)`);
 assert.ok(await p.isVisible('.drops') && await p.textContent('#app h1') === 'Desert Perpetual & Epic DP');
 
+// Pantheon is in the schedule by its bosses, not as a featured raid: its page says this week's (read from rotation.json, week 20)
+await openWiki('Pantheon');
+assert.ok(cur.pantheon.length && await p.$('.wikitags .badge.good:text-is("Featured this week")'), 'Pantheon badge');
+assert.equal(await p.textContent('section.panel:has(h2:text-is("Rotation")) p'), `Featured this week: ${cur.pantheon.join(' and ')}.`);
+
 // the home page's Grandmaster card names its strike with a link to its page, and stays a plain box, since its weapons are links too
 // (week 21: "Defiant BG: EDZ", a name with a colon). The name is read off the card, so a refresh that moves the schedule still checks
 // whichever strike it shows.
