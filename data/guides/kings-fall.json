@@ -24,8 +24,8 @@
   "encounters": [
     {
       "name": "Opening relics",
-      "title": "Hall of Souls: the Court of Oryx relics",
-      "what": "The opening puzzle: carry pairs of relics to six Thrall statues in the Court of Oryx to open the portal into the Dreadnaught. There is no boss.",
+      "title": "Hall of Souls: the portal relics",
+      "what": "The opening puzzle: carry pairs of relics to the six statues in the Hall of Souls to open the portal deeper into the Dreadnaught. There is no boss.",
       "steps": [
         "Split into three pairs: one for the left wing, one for the right wing and one holding the middle hall.",
         "In each wing one player picks up a relic and the partner escorts them. A relic carrier can't shoot or use abilities, and the relic only lasts a short time.",
@@ -181,7 +181,7 @@
         "The Vessel of Oryx, a Knight with an aura, walks to the middle. The runner with the third piece uses Brand Claimer on it to take the Aura of Immortality, then the team kills the Vessel.",
         "When Oryx calls upon the Darkness, the four plate players stand in their blights until their names show in the lower left, then everyone runs into the aura.",
         "The blasts stun Oryx and open his chest. Damage it from inside the aura.",
-        "Next he either pulls the team into a dark dome where a Shade of Oryx must die before time runs out, or drops bombs on every player: keep moving or kill the Knights on the plates until it ends.",
+        "Next he either opens a dark bubble at the back of the arena and pulls players into it one at a time, where the Shade of Oryx must die before time runs out (if it lives long enough, the whole team ends up inside), or drops bombs on every player: keep moving or kill the Knights on the plates until it ends.",
         "Repeat. At his final stand two Light-Eater Ogres appear; detonate their blights when he calls the Darkness and kill him before his last attack."
       ],
       "roles": [

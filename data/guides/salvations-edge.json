@@ -42,7 +42,7 @@
         "The timer runs out. Bank Resonance at every box.",
         "Someone picks up a fourth Resonance or lets the Resonance countdown expire.",
         "Standing in a Witness hand's triangle when it lands; it can kill outright.",
-        "Slow regrouping for the Tormentor, which shuts doors and strands players.",
+        "Regrouping too slowly for the Tormentor, which shuts doors and strands players.",
         "Weavers left alive break charges, so Subjugators eat the timer."
       ],
       "master": [
@@ -168,7 +168,7 @@
       ],
       "chests": [
         "Before the arena: on the root climb, stop short of the large doorway, drop down on the right and follow the ledges and platforms to an opening in the lower right wall beside the door. It leads through the gaps under the arena to the chest.",
-        "Bonus chest after the Witness: the code is the third column of shapes in the first enclosed room. Guides describe five hidden Conductor rooms on the route, three active each run (Destinypedia lists three hidden Conductors); feed each active plate its matching Resonance."
+        "Bonus chest after the Witness: in the first enclosed room, read the third column of wall shapes from the bottom up. Each shape is the Resonance a hidden Conductor on the route needs. Destinypedia ties this chest to the 1st, 3rd and 5th shapes (the other two are for a raid mod), while another guide says the active rooms change each run, so feed any glowing Conductor plate its Resonance."
       ]
     }
   ]

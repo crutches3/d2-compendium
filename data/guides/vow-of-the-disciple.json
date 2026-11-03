@@ -3,7 +3,7 @@
   "checked": "2026-11-03",
   "about": "Six-player raid from The Witch Queen (March 2022), set in a sunken Pyramid in Savathûn's Throne World and ending at Rhulk, Disciple of the Witness. Every encounter is solved by reading glyphs (symbols), so agree on one set of names for them before you start.",
   "master": [
-    "In 2022 guides, Master adds no new mechanics. Enemies outlevel you, radar is disabled, and more enemies carry elemental shields.",
+    "In 2022 guides, Master adds no new mechanics: enemies outlevel you, and more of them are champions or carry elemental shields.",
     "Destinypedia lists the extra threats: every Glyphkeeper and Resonant Glyphkeeper becomes a champion, the Taken Knights and the Wraiths carry Solar shields, and Taken Hobgoblins that are not champions carry Void shields."
   ],
   "sources": [
@@ -24,7 +24,7 @@
         "One player shoots the floating Darkness switch in the middle to start. The switch also opens and closes the doors around the edge, so every shot is called first.",
         "Readers watch the totem beside their obelisk. The top glyph says which side the Disciple's Compass, a Taken Knight, appears on (Pyramid left, Traveler right). The middle glyph names the edge room to enter. The bottom glyph, Light or Dark, says which of its two Glyphkeepers to kill.",
         "The runner kills the Knight, enters the called room, kills the right Glyphkeeper and notes the glyph it reveals, until they hold three glyphs.",
-        "Find the one obelisk that shows all three of your glyphs and shoot them within a few seconds. A rejected offering is not a wipe: fix the timing and retry.",
+        "Find the one obelisk that shows all three of your glyphs and shoot them within a few seconds. A rejected offering is not a wipe, but it fills the obelisk and reshuffles its symbols, so find your three glyphs again and shoot them closer together.",
         "A cleansed obelisk is not picked again, but readers keep calling from their totems. Cycle until all three are clean."
       ],
       "roles": [
@@ -94,7 +94,7 @@
         "Nobody can carry the next relic because everyone nearby has Curbed Resonance."
       ],
       "chests": [
-        "In the platforming after the Caretaker, past the second large room of enemies, turn right and follow the platforms along the right side of the windows; a Darkness shard switches them, so one player times the shots. Cross the hexagonal pillars to an apparent dead end and find the small gap in the left wall."
+        "In the platforming after the Caretaker, past the second large room of enemies, keep to the platforms on the window side to your right; a Darkness shard switches them, so one player times the shots. Cross the hexagonal pillars to what looks like a dead end and look for a small gap in the left wall."
       ]
     },
     {

@@ -19,7 +19,7 @@
       "name": "Crypt Security",
       "title": "Disable Crypt Security",
       "before": "Desolation: ride Sparrows or Pikes across the ice from one heat bubble to the next. Outside a bubble the storm adds Frostbite stacks and ten stacks kill you; standing in a bubble clears them. Fallen, including Dark Council Guards, hold the bubbles and Brigs guard the last one. A cleared bubble becomes a checkpoint, and every player has to reach the door into the Crypt.",
-      "what": "Two rooms, Light and Dark, sit above a basement full of keypads. The team uses the Operator and Scanner augments to shut down four keypads, then destroys the six fuses above the central augment terminal.",
+      "what": "Two rooms, Light and Dark, sit above a basement full of keypads. The team uses the Operator and Scanner augments to shut down four keypads, then destroys six fuses, one at a time as the Scanner calls them.",
       "steps": [
         "Split into two teams of three, one in the Light room and one in the Dark room. One player picks up the Operator augment.",
         "Kill adds until a glowing Vandal drops the Scanner augment. Through the glass floor, the Scanner sees which two of their side's five basement keypads are correct.",
@@ -41,7 +41,7 @@
         "Exploder Shanks catching players in the open during the fuse phase."
       ],
       "chests": [
-        "Near the end of Desolation, before the door into the Crypt: climb the ledges into the icebergs behind you and to the left until you reach a small alcove with the chest. Frostbite keeps building while you climb, so watch your stacks."
+        "Near the end of Desolation, before the Crypt door: turn back and climb the ice ledges up and to the left; the chest is tucked into an alcove near the top. Frostbite keeps building while you climb, so watch your stacks."
       ]
     },
     {
@@ -96,7 +96,7 @@
         "Everyone is caught by Taniks in the final run before reaching the end of the corridor."
       ],
       "chests": [
-        "On the space walk after Atraks-1: at a fork near some large blades, take the left path instead of the right and climb the platforms to the one with red lights. The chest is easy to miss."
+        "On the space walk after Atraks-1: where the hull path splits beside the large blades, go left and climb to the red-lit platform for the chest. It is easy to miss."
       ]
     },
     {
