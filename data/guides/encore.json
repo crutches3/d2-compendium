@@ -1,0 +1,123 @@
+{
+  "name": "Encore",
+  "checked": "2026-11-03",
+  "about": "An exotic mission inside the Vex-built core of Nessus for one to three players, added in Episode: Echoes (2024), that rewards Choir of One. It is a run of Vex Module puzzles and two boss fights, in three variants with the same layout: Overture, Concerto and Coda, where the later two add enemies and each has its own final boss.",
+  "caveat": "Steps come from 2024 guides written mostly for Overture; whether all three variants still rotate after June 2026 is unconfirmed, and the Concerto and Coda extras come from Destinypedia alone.",
+  "sources": [
+    [
+      "Destinypedia: Encore",
+      "https://www.destinypedia.com/Encore"
+    ],
+    [
+      "Shacknews: Encore Exotic mission guide",
+      "https://shacknews.com/article/141186/encore-exotic-mission-destiny-2"
+    ],
+    [
+      "BlueberriesGG: Encore Exotic mission",
+      "https://www.blueberries.gg/leveling/encore-exotic-mission/"
+    ],
+    [
+      "Sportskeeda: Encore Overture mechanics, jumping puzzle and softlock fixes",
+      "https://sportskeeda.com/mmo/destiny-2-encore-overture-exotic-mission-guide-basic-mechanics-jumping-puzzle-softlock-fixes"
+    ],
+    [
+      "Prima Games: Encore Exotic quest guide",
+      "https://primagames.com/gaming/destiny-2-encore-exotic-quest-guide"
+    ],
+    [
+      "The Game Post: Encore all secret chest locations",
+      "https://thegamepost.com/destiny-2-encore-exotic-mission-all-secret-chest-locations/"
+    ],
+    [
+      "The Backdash: All Encore secret chest locations",
+      "https://www.thebackdash.com/destiny/all-destiny-2-encore-exotic-mission-secret-chest-locations"
+    ],
+    [
+      "ProGameTalk: Specimen ID NES008 quest",
+      "https://progametalk.com/destiny-2/specimen-id-nes008-quest/"
+    ]
+  ],
+  "encounters": [
+    {
+      "name": "Module puzzles",
+      "title": "Nessus core: Vex Module puzzles",
+      "what": "The first half of the mission is a route through the core solved with Vex Modules: Connection builds platforms, Partition removes walls and Access switches portals on.",
+      "before": "From the landing area, climb the wall on the right, drop into the hole in the big sphere and follow the moving platforms to a purple-lit room.",
+      "steps": [
+        "Each player can carry one module at a time; terminals light up in the matching colour.",
+        "Put Connection modules in the dishes to raise platforms and power the three pillars in the first room.",
+        "Partition modules drop only from a special Minotaur. Deposit one to clear a nearby wall.",
+        "Grabbing the Connection module at the end of the side hallway sends an energy wall after you. Run it straight back to the exit dish.",
+        "Access modules turn portals on. Near the end you leapfrog two of them through portals to reach the first boss room."
+      ],
+      "roles": [
+        [
+          "Module carrier",
+          "Takes the current module to the right terminal."
+        ],
+        [
+          "Rest of team",
+          "Clear the Vex and kill the Minotaurs that drop modules."
+        ]
+      ],
+      "wipes": [
+        "Getting caught by the energy wall after the Connection pickup. Run, don't fight.",
+        "Missing jumps in the platforming sections."
+      ],
+      "chests": [
+        "Off the purple room after the opening jumps, go left to the round room of dormant Vex portals (the Ancillary Transit Nexus) and scan the conflux. Shoot the ceiling cube with a small cube under it, then each next marked cube; after two waves the chest appears. Encore's chests need a previous clear and the Specimen ID: NES007 quest.",
+        "Concerto: a portal from the Nexus leads to the Hexahedric Mind, an immune Minotaur. Destroy the marked cubes through the portals to drop its shield, damage it and repeat until it dies."
+      ]
+    },
+    {
+      "name": "Pyramid Remnants",
+      "title": "Eexonios and Iziira, Pledged to Yirix",
+      "what": "A two-boss chase against Eexonios, an Omen Subjugator, and Iziira, a Tormentor. Each retreats through Vex portals as it loses health, and the fight ends with both together.",
+      "steps": [
+        "Damage the boss in front of you until it loses about a third of its health and retreats.",
+        "Pick up the Access module that appears in the middle of the arena and put it in a portal to follow.",
+        "Push through the next rooms, killing Tormentors and adds, and use the Access modules they drop to open each new portal.",
+        "Back in the first room both bosses fight at once. Kill both to finish; a chest appears."
+      ],
+      "roles": [
+        [
+          "Whole team",
+          "Damage the bosses, keep adds down and make sure someone picks up each Access module."
+        ]
+      ],
+      "wipes": [
+        "Fighting the bosses up close, especially at low health. Keep your distance."
+      ]
+    },
+    {
+      "name": "Choral Mind",
+      "title": "Choral Mind: Parodos, Stasimon or Exodos",
+      "what": "The final boss, a Vex Hydra in the Ishtar lab: Parodos in Overture, Stasimon in Concerto, Exodos in Coda.",
+      "before": "Crouch through the gap into a cavern of Vex, climb the cliffs and use the planetary piston (in Coda, kill the Colossus to open the lab portal). In the lab, scan the degaussed Exomind to open the boss door.",
+      "steps": [
+        "Kill the Minotaur carrying Connection, deposit it in the centre dish and use the pillar to summon the boss. In Concerto and Coda, kill two Cyclops first.",
+        "When the boss moves to the back left or right, put Connection in the floating-platform terminal on its side, not the one by a portal, to reach a plate.",
+        "Stand on the plate until it fills, then shoot the weak point that appears to drop its shield, and damage it.",
+        "From half health, deletion walls split the room. Open portals into the boss's section with Access modules from Minotaurs, and capture plates there.",
+        "Near a quarter health it moves to the centre behind a barrier. Shoot the weak point from the middle and finish it."
+      ],
+      "roles": [
+        [
+          "Module carrier",
+          "Takes modules to the terminals on the boss's side."
+        ],
+        [
+          "Rest of team",
+          "Kill Minotaurs and adds, hold the plate and damage the boss."
+        ]
+      ],
+      "wipes": [
+        "Capturing a plate or shooting a weak point from a different section than the boss.",
+        "The weak point never appears, a known soft-lock; the only fix is to wipe and restart."
+      ],
+      "chests": [
+        "In the Ishtar lab, scan the conflux and return to the Nexus; a new portal on the left leads to a maze. Collect four eye-shaped Vex specimens, opening barriers with Minotaur modules and avoiding deletion walls; the chest appears after the fourth."
+      ]
+    }
+  ]
+}
