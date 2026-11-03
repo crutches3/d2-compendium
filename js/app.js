@@ -1594,7 +1594,9 @@ async function wikiData() {
 async function wikiPage(raw, pane, n) {
   const name = decodeURIComponent(raw), key = name.toLowerCase();
   const [W, d, a, rot, places] = await live(Promise.all([wikiData(), data(), armorData(), load('rotation'), load('destinations')]));
-  const act = W.acts.get(key), defs = W.terms.get(key) || [], champ = CHAMPIONS.find(c => c.toLowerCase() === key);
+  // an activity also answers to its name without the " & Epic DP" or " | Gunsmith" part, as the schedule spells it ("Desert Perpetual")
+  const act = W.acts.get(key) || [...W.acts.values()].find(x => fold(x.name.replace(/ [|&] .*$/, '')) === fold(name));
+  const defs = W.terms.get(key) || [], champ = CHAMPIONS.find(c => c.toLowerCase() === key);
   // hand-written, one file per activity and only for activities (perk and weapon names would all 404); a missing or broken file means no guide
   const guide = act && /Raid|Dungeon|mission|Strike/.test(act.kind) ? await load('guides/' + guideFile(act.name)).catch(() => null) : null;
   const step = /^\d+$/.test(n) && n >= 1 && n <= (guide?.encounters.length || 0) ? n - 1 : 0;

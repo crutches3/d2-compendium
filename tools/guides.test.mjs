@@ -159,6 +159,13 @@ for (const n of ['Trials of Osiris', 'Ada-1']) {
   assert.ok(!(await p.innerText('#app')).includes('Something went wrong') && await p.isVisible('table.data'), `${n}: ${(await p.innerText('#app')).slice(0, 80)}`);
 }
 
+// the home page's featured-raid card for the newest raid ("Desert Perpetual" in the schedule) opens its page, as does that name typed in
+await p.goto('http://localhost:8765/#/'); await p.click(`.act[href="#/wiki/${encodeURIComponent(rot.always.raids[0])}"]`);
+await p.waitForSelector(`#app :is(.hero h1, .empty)`); assert.equal(await p.textContent('#app h1'), 'Desert Perpetual & Epic DP');
+assert.ok(await p.isVisible('.drops'));
+await p.goto('about:blank'); await p.goto(href('Desert Perpetual')); await p.waitForSelector(`#app :is(.hero h1, .empty)`);
+assert.ok(await p.isVisible('.drops') && await p.textContent('#app h1') === 'Desert Perpetual & Epic DP');
+
 // the home page's Grandmaster card names its strike with a link to its page, and stays a plain box, since its weapons are links too
 // (week 21: "Defiant BG: EDZ", a name with a colon). The name is read off the card, so a refresh that moves the schedule still checks
 // whichever strike it shows.
