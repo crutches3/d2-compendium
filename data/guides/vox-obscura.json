@@ -1,7 +1,7 @@
 {
   "name": "Vox Obscura",
   "checked": "2026-11-03",
-  "about": "A three-player exotic mission from Season of the Risen (2022) against the Cabal on Mars, ending with the Dead Messenger grenade launcher. The airfield and the control room each run on a timer, and running out fails the run. Since Monument of Triumph (June 2026) exotic missions launch from Pinnacle Ops; in 2023 guides the Legend version added Barrier Champions and a locked loadout.",
+  "about": "An exotic mission for one to three players from Season of the Risen (2022) against the Cabal on Mars, ending with the Dead Messenger grenade launcher. The airfield and the control room each run on a timer, and running out fails the run. Since Monument of Triumph (June 2026) exotic missions launch from Pinnacle Ops.",
   "sources": [
     ["Destinypedia: Vox Obscura", "https://www.destinypedia.com/Vox_Obscura"],
     ["TheGamer: Vox Obscura exotic mission guide", "https://www.thegamer.com/destiny-2-vox-obscura-exotic-mission-guide/"],
@@ -57,7 +57,7 @@
         "Damage Qabix until he turns immune and calls in support.",
         "Kill the three Psion Commanders around the room (left, right and back). Their fields block damage from outside, so go in close.",
         "With all three dead, Qabix can be damaged again. The fight has three damage phases.",
-        "If you are caught in a purple dome, shoot the glowing orbs to break out.",
+        "If Qabix's purple dome traps you, destroy the bright orbs on its surface and it lets you go.",
         "When he dies the timer stops. Follow the marker to the console to shut off the broadcast."
       ],
       "roles": [

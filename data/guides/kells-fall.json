@@ -1,7 +1,7 @@
 {
   "name": "Kell's Fall",
   "checked": "2026-11-03",
-  "about": "An exotic mission for one to three players against Fikrul's Scorn, added in Episode: Revenant (January 2025), that rewards Slayer's Fang. Most fights switch between the material world and the Revenant Plane, which you enter by shooting cracked mirrors and archways. The organ in the Bailey plays melodies found around the mission; several open rooms that hold Slayer's Fang upgrades.",
+  "about": "An exotic mission for one to three players, added in Episode: Revenant (January 2025), that rewards Slayer's Fang; since June 2026 it launches from Pinnacle Ops. Most fights switch between the material world and the Revenant Plane, entered through cracked mirrors and archways. The organ in the Bailey plays melodies found around the mission; several open rooms with Slayer's Fang upgrades.",
   "caveat": "Whether all three variants (Reflection, Distortion, Diffraction) still rotate after June 2026 is unconfirmed, and Diffraction's final-fight details come from Destinypedia alone.",
   "sources": [
     [
@@ -31,6 +31,10 @@
     [
       "Shattered Vault: Destiny 2 Update 9.7.0.1",
       "https://shatteredvault.com/destiny-2-update-9-7-0-1/"
+    ],
+    [
+      "Bungie Help: Monument of Triumph and Update 9.7.0 support guide",
+      "https://help.bungie.net/hc/articles/49848696022548"
     ]
   ],
   "encounters": [
@@ -63,7 +67,7 @@
       "before": "In the Bailey, leave the organ and light the brazier by the stairs to open the Mirror Gallery. Shoot cracked mirrors to switch planes and light braziers in both to open doors; their spots can change between runs. Shoot glowing rocks to open hidden paths.",
       "steps": [
         "Go through the mirror in the arena into the Revenant Plane.",
-        "Kill the Revenant Essentia there and pick up the motes they drop. Ten stacks of Revenant Essence become Revenant Empowerment; the stacks expire, so collect them quickly.",
+        "Kill the Pit Boss, a Lurker, to spawn two Revenant Essentia. Kill them and pick up the motes they drop: ten stacks of Revenant Essence become Revenant Empowerment. The stacks expire, so collect them quickly.",
         "Return to the material world and kill both Pit Enforcers while empowered.",
         "Kaniks, the Mad Bomber, spawns next. He has little health, so burst him while the buff lasts. Araskes may show up as a distraction; focus Kaniks.",
         "When Fikrul appears, leave through the doorway on the right side of the arena."

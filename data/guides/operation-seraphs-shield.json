@@ -1,13 +1,14 @@
 {
   "name": "Operation: Seraph's Shield",
   "checked": "2026-11-03",
-  "about": "A three-player exotic mission from Season of the Seraph (2022): board Seraph Station in orbit and plant a virus in the Warsat network, using the Scanner, Operator and Suppressor augments from Deep Stone Crypt. It is untimed and ends with Revision Zero; its hidden chests were removed in 2023. It still runs after Monument of Triumph, and 2026 updates fixed elevators killing players.",
+  "about": "An exotic mission for one to three players from Season of the Seraph (2022): board Seraph Station and plant a virus in the Warsat network, using the Scanner, Operator and Suppressor augments from Deep Stone Crypt. It is untimed and ends with Revision Zero; its hidden chests were removed in 2023. Since June 2026 it launches from Pinnacle Ops; Update 9.7.0.3 fixed its elevators killing players.",
   "sources": [
     ["TheGamer: Operation Seraph's Shield walkthrough and rewards", "https://www.thegamer.com/destiny-2-operation-seraphs-shield-exotic-mission-walkthrough-rewards/"],
     ["KeenGamer: Operation Seraph's Shield exotic mission guide", "https://www.keengamer.com/articles/guides/destiny-2-operation-seraphs-shield-exotic-mission-guide/"],
     ["Destinypedia: Seraph's Shield", "https://destinypedia.com/Seraph's_Shield"],
     ["Shattered Vault: Destiny 2 Update 9.7.0.2", "https://shatteredvault.com/destiny-2-update-9-7-0-2/"],
-    ["Shattered Vault: Destiny 2 Update 9.7.0.3", "https://shatteredvault.com/destiny-2-update-9-7-0-3/"]
+    ["Shattered Vault: Destiny 2 Update 9.7.0.3", "https://shatteredvault.com/destiny-2-update-9-7-0-3/"],
+    ["Bungie Help: Monument of Triumph and Update 9.7.0 support guide", "https://help.bungie.net/hc/articles/49848696022548"]
   ],
   "encounters": [
     {
@@ -51,7 +52,7 @@
         "Damage Haroktha until he turns invincible and retreats, then hold off the Fallen wave of Brigs, Shanks and Dregs. This is a Darkness Zone, so a full wipe restarts the fight.",
         "Surrender when the Fallen close in; a Servitor teleports the team onto their ketch.",
         "Reclaim your weapons, kill the Fallen Captain, free the Exo frames at the terminal, then fight to the bow and jump back to the station.",
-        "Use the Operator to shoot three panels that extend platforms across the gap. Haroktha returns at the top, without his shield, and locks the room; kill him to lift the lockdown."
+        "Use the Operator on three panels to bridge the gap with platforms. At the top Haroktha is back, now unshielded, and seals the room until he dies."
       ],
       "roles": [
         ["Whole team", "Stay together and play for survival in the capture fight; damage matters less than staying alive."]
@@ -74,7 +75,7 @@
         ["Suppressor", "Stuns Praksis from under the three drones."],
         ["Everyone else", "Clear Scorn, destroy the drones in the side rooms, then damage."]
       ],
-      "wipes": ["Getting frozen by Praksis's Stasis attacks while out in the open.", "Losing the Suppressor holder, so the stun stalls."]
+      "wipes": ["Getting frozen by Praksis's Stasis attacks while out in the open."]
     }
   ]
 }

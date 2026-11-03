@@ -1,7 +1,7 @@
 {
   "name": "Encore",
   "checked": "2026-11-03",
-  "about": "An exotic mission inside the Vex-built core of Nessus for one to three players, added in Episode: Echoes (2024), that rewards Choir of One. It is a run of Vex Module puzzles and two boss fights, in three variants with the same layout: Overture, Concerto and Coda, where the later two add enemies and each has its own final boss.",
+  "about": "An exotic mission inside the Vex-built core of Nessus for one to three players, added in Episode: Echoes (2024), that rewards Choir of One. Since June 2026 it launches from Pinnacle Ops. It is a run of Vex Module puzzles and two boss fights, in three variants with the same layout: Overture, Concerto and Coda, where the later two add enemies and each has its own final boss.",
   "caveat": "Steps come from 2024 guides written mostly for Overture; whether all three variants still rotate after June 2026 is unconfirmed, and the Concerto and Coda extras come from Destinypedia alone.",
   "sources": [
     [
@@ -35,6 +35,10 @@
     [
       "ProGameTalk: Specimen ID NES008 quest",
       "https://progametalk.com/destiny-2/specimen-id-nes008-quest/"
+    ],
+    [
+      "Bungie Help: Monument of Triumph and Update 9.7.0 support guide",
+      "https://help.bungie.net/hc/articles/49848696022548"
     ]
   ],
   "encounters": [
@@ -66,7 +70,7 @@
       ],
       "chests": [
         "Off the purple room after the opening jumps, go left to the round room of dormant Vex portals (the Ancillary Transit Nexus) and scan the conflux. Shoot the ceiling cube with a small cube under it, then each next marked cube; after two waves the chest appears. Encore's chests need a previous clear and the Specimen ID: NES007 quest.",
-        "Concerto: a portal from the Nexus leads to the Hexahedric Mind, an immune Minotaur. Destroy the marked cubes through the portals to drop its shield, damage it and repeat until it dies."
+        "Concerto only, a secret boss rather than a chest: a portal from the Nexus leads to the Hexahedric Mind. Destroy the marked cubes through the portals to drop its shield, damage it and repeat until it dies."
       ]
     },
     {
