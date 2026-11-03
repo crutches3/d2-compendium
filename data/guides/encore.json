@@ -70,6 +70,7 @@
       ],
       "chests": [
         "Off the purple room after the opening jumps, go left to the round room of dormant Vex portals (the Ancillary Transit Nexus) and scan the conflux. Shoot the ceiling cube with a small cube under it, then each next marked cube; after two waves the chest appears. Encore's chests need a previous clear and the Specimen ID: NES007 quest.",
+        "In Overture, a second chest is in the room with the first planetary piston, after the Partition puzzle. Scan the conflux there, then follow the light lines to five Vex targets and destroy all five; The Game Post says this runs on a timer.",
         "Concerto only, a secret boss rather than a chest: a portal from the Nexus leads to the Hexahedric Mind. Destroy the marked cubes through the portals to drop its shield, damage it and repeat until it dies."
       ]
     },
@@ -120,7 +121,9 @@
         "The weak point never appears, a known soft-lock; the only fix is to wipe and restart."
       ],
       "chests": [
-        "In the Ishtar lab, scan the conflux and return to the Nexus; a new portal on the left leads to a maze. Collect four eye-shaped Vex specimens, opening barriers with Minotaur modules and avoiding deletion walls; the chest appears after the fourth."
+        "In Overture, the lab has a chest of its own. Scan the lab conflux and go through the portal it opens; inside, light lines from the Vex cubes show which portal leads to each target, so follow them and destroy the targets on the upper level until the chest appears.",
+        "In Concerto (The Backdash says), scan the conflux in the Ishtar lab and return to the Nexus; a new portal on the left leads to a maze. Collect four eye-shaped Vex specimens, opening barriers with Minotaur modules and avoiding deletion walls; the chest appears after the fourth.",
+        "Coda has two more chests, described by The Backdash alone: one through the left portal to the Planetary Core, where the central pillar starts a timer to kill five Minotaurs around the edge, and one through the right portal in the lab, where you bounce an Arc Cranium's beam off glowing plates four times."
       ]
     }
   ]
