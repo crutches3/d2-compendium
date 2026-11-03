@@ -2,7 +2,7 @@
   "name": "Equilibrium",
   "checked": "2026-11-03",
   "about": "A dungeon for one to three players on Venus against Cabal and Taken, released with Renegades in December 2025. Every fight runs on Shadow: fill Gathering Shadow for Shadow Novice (your grenade becomes a Shadow grenade), then Apprentice and Master. The Way Between quest adds relic puzzles and an extra boss, the Shade of Sere, reached from the Praxic Temple once all four relics are placed.",
-  "caveat": "Launch-week guides differ on some of Dredgen Sere's finer details, so those steps stay general, and the second secret chest's exact spot comes from a single guide.",
+  "caveat": "Launch-week guides differ on some of Dredgen Sere's finer details, so those steps stay general. Both secret chest spots come from a single guide (Destructoid), and ProGameTalk places a hidden chest elsewhere, behind a vent in the first traversal puzzle.",
   "sources": [
     [
       "Destinypedia: Equilibrium",
@@ -60,7 +60,7 @@
         "Three Cabal array devices stand around the arena next to red barriers. Pull an Apprentice close to one.",
         "When the Apprentice starts charging its Darkness blast, use the device's console to open its core so the blast hits it. The device breaks and the nearby barrier drops.",
         "Take the vehicle behind the barrier around the tunnel circuit. Each Taken pool you cross adds Gathering Shadow and clears the Creeping Shadows debuff.",
-        "A full bar gives Shadow Novice for 45 seconds and swaps your grenade for a Shadow grenade. More pools refresh it.",
+        "A full bar gives Shadow Novice, a timed buff, and swaps your grenade for a Shadow grenade. More pools refresh it.",
         "Throw the Shadow grenade at an Apprentice while it charges its blast to strip its shield, then kill it.",
         "Each Apprentice kill brings in a Cabal drop pod with Behemoths and leaves a Shadow pool behind. Use the pool to keep your buff going.",
         "Keep cycling until three large Behemoths arrive. Kill them and the remaining Cabal to end the encounter and open the chest."
@@ -82,7 +82,7 @@
     },
     {
       "name": "Harrow",
-      "title": "Harrow, Dredgen Apprentice",
+      "title": "Harrow, Dredgen-Apprentice",
       "what": "A Cabal Gladiator with two Praxic Blades, fought in a ring of rooms on the Imperium carrier. He stays shielded until traps you power with Shadow break it.",
       "before": "Board the Harvester and cross the carrier: wait at doors until all three lights turn green, and shoot fuses to open paths. Over the big gap the ship's drive pushes you sideways, so jump from the far left. From the Rally Flag room, shoot the fuse to drop into the arena.",
       "steps": [
@@ -90,7 +90,7 @@
         "Cabal push in through the side doors, which stay open only while someone is on the hallway side. Get out to the outer rooms as they open.",
         "Kill Psion and Centurion Lackeys for Shadow. Two stacks give Shadow Novice, four give Shadow Apprentice.",
         "In each of the three outer rooms, hit all three switches with the Shadow grenade in quick succession; slow hits reset. The door light turns green when a room is done.",
-        "When Harrow's Decree appears he is charging a big blast. Interrupt it with a Shadow grenade or get out of range.",
+        "Harrow's Decree is the alert that he is in your room. When he charges his big blast, Spite of the Named, interrupt it with a Shadow grenade or get out of range.",
         "With all nine switches done, regroup in the middle. Break his shield by luring him over a trapdoor and shooting the fuse above it, or by drawing his swings into a charged Arc coil.",
         "Damage him up close while the shield is down, then repeat the switches and traps.",
         "At low health he breaks through a door and runs. Chase him, kill the turrets on the way, and use another hatch or coil if his shield returns."
@@ -107,10 +107,10 @@
       ],
       "wipes": [
         "Getting shut in the middle room with Harrow. Leave as soon as the doors open.",
-        "Taking the Harrow's Decree blast."
+        "Taking the Spite of the Named blast."
       ],
       "chests": [
-        "Between the first encounter and Harrow: after jumping a gap onto another part of the carrier, find the area walled off by red lasers. From the doorway facing open space, look up and right past a mounted turret; the chest sits high between two parked ships."
+        "Between the first encounter and Harrow: after jumping a gap onto another part of the carrier, find the area walled off by red lasers. From the doorway facing open space, look up and right past a mounted turret; the chest sits high between two parked ships. Only one guide (Destructoid) gives this spot."
       ]
     },
     {

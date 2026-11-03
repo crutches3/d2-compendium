@@ -29,7 +29,7 @@
         "When Imminent Wish ends, Naeem's Wish Empowerment lets the team hurt Rathil. Each cleansed totem adds time to the damage phase.",
         "Rathil stays on the ground with an easy crit spot. Repeat the cycle until he falls; there is no limit on rotations.",
         "After his death the team is locked in separate cells with six gears. One shot spins a gear counterclockwise, a second stops it, a third spins it clockwise.",
-        "Skeletons beside tally marks give the answer: the hand or the colour shows the direction and the marks show how many gears turn that way, always six in total. Set them, then shoot the lock to open the cells and reach Rathil's chest."
+        "Skeletons beside tally marks give the answer: the hand each one reaches with shows the direction and its marks show how many gears turn that way, always six in total. Set them, then shoot the lock to open the cells and reach Rathil's chest."
       ],
       "roles": [
         ["Whole team", "Each player takes a different totem during Imminent Wish, and anyone free shoots the Eyes around a caged teammate."],
@@ -41,7 +41,7 @@
         "Totems are still Taken when Imminent Wish ends, so the damage phase is very short."
       ],
       "chests": [
-        "Secret chest 1 appears at one of six spots each run, and the other five hold mimics. Spot 1 is on the climb before Rathil: a small alcove in the cliffside rock wall, before you reach the rope bridge."
+        "Secret chest 1 appears at one of six spots each run, and other chests along the route can be mimics. Spot 1 is on the climb before Rathil: a small alcove in the cliffside rock wall, before you reach the rope bridge."
       ]
     },
     {

@@ -88,7 +88,7 @@
       "name": "Persys",
       "title": "Persys, Primordial Ruin",
       "what": "A Vex Wyvern that chases the team between two rooms: the isolation room you start in and the reactor room behind a large door. It is immune until a reactor purge strips its shield.",
-      "before": "Descend through the spire's inner machinery. These rooms use red cables: their nodes can be shot in any order, but all five must be hit within about five seconds or they reset, so find every node before you fire. Keep clear of the fans on the way down.",
+      "before": "Descend through the spire's inner machinery. These rooms use red cables: their nodes can be shot in any order, but all five must be hit within a few seconds of each other or they reset, so find every node before you fire. Keep clear of the fans on the way down.",
       "steps": [
         "Kill the two Incarcerator Hydras. This spawns Conduit Minotaurs: kill one for Arctrician.",
         "Shoot the five red nodes, four on the pillars and one above the big door, inside the time limit. This unlocks the yellow circuits on the sides of the room.",

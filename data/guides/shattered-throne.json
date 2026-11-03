@@ -43,7 +43,7 @@
         "Have one player take every orb. Kill the next Wizard before picking up the waiting orb so the timer never runs low.",
         "At four stacks the debuff becomes Petitioner's Burden. Put out one of the flames around Vorgeth to drop his shield.",
         "Damage him. During the window he releases homing Taken orbs: shoot them down or move away from them.",
-        "If he survives, take cover, kill the Wizards again and use another flame. TheGamer says the encounter fails after the fourth attempt."
+        "If he survives, take cover, kill the Wizards again and use another flame. Guides disagree on whether the encounter fails after a set number of tries (TheGamer says four), so make each damage phase count."
       ],
       "roles": [
         ["Mark carrier (1)", "Collects every Wizard orb, keeps the timer alive and puts out a flame."],
@@ -71,7 +71,7 @@
         "Each dead Knight drops an orb. Take two or three stacks of Finite Thought; more stacks mean more damage.",
         "Damage Dûl Incaru while the buff lasts.",
         "Before the timer ends, stand in the central well to cleanse it.",
-        "If a Knight lives too long she summons a crystal that makes the Knights immune. Break it, then finish them.",
+        "From time to time she summons a crystal that makes the living Knights immune. Break it to end the immunity, then finish the Knights. Guides differ on what breaking it brings (Taken Psions in one, dead Knights back at full health in another), so be ready for more enemies.",
         "The Knights return after a while. Repeat until she dies; with three stacks she can fall in one phase."
       ],
       "roles": [
