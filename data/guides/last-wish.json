@@ -1,0 +1,182 @@
+{
+  "name": "Last Wish",
+  "checked": "2026-11-03",
+  "about": "A six-player raid in the Dreaming City, released with Forsaken in September 2018 and still played in 2026. It has no Master version and is one of the raids that rotate through the weekly featured slot.",
+  "caveat": "The encounter guides date from 2018; no later source reports mechanic changes, but timers and counts have not been rechecked in game since the June 2026 update.",
+  "sources": [
+    ["Shacknews: Last Wish raid guide", "https://www.shacknews.com/article/107313/destiny-2-last-wish-raid-guide"],
+    ["Mein-MMO: Last Wish raid guide", "https://mein-mmo.de/en/destiny-2-raid-guide-letzter-wunsch,269971"],
+    ["GosuNoob: Last Wish raid guide", "https://www.gosunoob.com/destiny-2/last-wish-raid-guide-puzzle-solutions-boss-strategy/"],
+    ["Prima Games: Last Wish raid guide, Shuro Chi", "https://primagames.com/featured/destiny-2-forsaken-last-wish-raid-guide/4"],
+    ["Prima Games: Last Wish raid guide, Morgeth", "https://primagames.com/featured/destiny-2-forsaken-last-wish-raid-guide/6"],
+    ["Prima Games: Last Wish raid guide, Riven", "https://primagames.com/featured/destiny-2-forsaken-last-wish-raid-guide/8"],
+    ["Destinypedia: Last Wish", "https://www.destinypedia.com/Last_Wish"],
+    ["Destiny Wiki: Last Wish", "https://destiny.fandom.com/wiki/Last_Wish"],
+    ["Destinypedia: Wall of Wishes", "https://www.destinypedia.com/Wall_of_Wishes"],
+    ["Shacknews: All wishes for the Wall of Wishes", "https://www.shacknews.com/article/107433/all-wishes-for-the-wall-of-wishes-in-the-last-wish-raid-in-destiny-2"],
+    ["Prima Games: What to do with the Glittering Key", "https://primagames.com/tips/what-to-do-with-the-glittering-key-in-destiny-2-2023"],
+    ["Game Rant: Last Wish hidden chests (June 2026)", "https://gamerant.com/destiny-2-last-wish-raid-chests-locations-tier-5-solo-loot/"],
+    ["Astrelion: Solo raid chests", "https://destiny.astrelion.com/guides/solo_chests/"],
+    ["Kyber's Corner: Last Wish (Legacy)", "https://kyberscorner.com/destiny2/lastwish/"]
+  ],
+  "encounters": [
+    {
+      "name": "Kalli",
+      "title": "Kalli, the Corrupted",
+      "what": "The first boss. Cleanse the six plates around the room whose symbols match the ones floating over the sunken centre, then damage Kalli and hide in the safe rooms when she casts her wipe.",
+      "before": "The Wall of Wishes, a panel of 21 buttons where wishes are entered, is in a hidden cave near the start: just before Kalli's door, follow the path to the left and climb the ledges past the water.",
+      "steps": [
+        "Agree on names for the symbols first. Six symbols float around the sunken centre; each player takes the plate around the room that matches one of them.",
+        "Stand on your plate. Taken bombs appear on parts of it; stay on the safe strip while they go off.",
+        "After a few bomb cycles a Taken Knight spawns at the plate. Kill it to cleanse the plate.",
+        "When all six plates are cleansed, damage Kalli as she teleports around the room.",
+        "When the on-screen message says Kalli is preparing her weapon, get into an open safe room on the side she is over, one player per room. The doors shield you from the blast.",
+        "She casts three times per damage phase. Then a new set of symbols appears; repeat until she dies."
+      ],
+      "roles": [
+        ["Plate players (6)", "One per matching plate. Hold the safe strip, kill the Knight, then take one safe room each."],
+        ["Symbol caller (1 of the 6)", "Reads the centre symbols at the start of each round and assigns the plates."]
+      ],
+      "wipes": [
+        "Cleansing a plate whose symbol isn't over the centre spawns Taken Ogres in the middle.",
+        "Being outside a safe room, or in one on the wrong side, when her weapon fires.",
+        "Standing on a bomb section of the plate when it goes off."
+      ]
+    },
+    {
+      "name": "Shuro Chi",
+      "title": "Shuro Chi, the Corrupted",
+      "what": "A climb through a three-floor tower. On each floor the team breaks Shuro Chi's shield and damages her, then solves a plate puzzle to reset her song before it wipes the team.",
+      "before": "After Kalli, the route climbs to the tower; between floors, rotating platforms carry the team up once each puzzle room is solved.",
+      "steps": [
+        "Entering the room starts Shuro Chi's Song, a four-minute timer that wipes the team if it runs out.",
+        "Clear the adds. Three players pick up crystals, stand on the three platforms and shoot each other in a triangle around her to break her shield.",
+        "Damage her. Before her wipe attack lands, the player holding the Eye of Riven, dropped by a special Taken enemy, uses its Super to interrupt it.",
+        "Each damage phase takes one of her six health segments. She then moves on, and the next interrupt must come from a different player.",
+        "After two damage phases, go to the puzzle room. A wall shows a symbol with pieces missing; four players jump at once onto the 3x3 floor plates that complete it while two clear adds.",
+        "Solve the left, middle and right walls in turn. No plate may be used twice, and the plates hurt to stand on. Solving all three resets the song and opens the way up.",
+        "Repeat on the next floors. On the top floor adds keep spawning during the final damage phase."
+      ],
+      "roles": [
+        ["Crystal players (3)", "Grab the crystals and form the triangle to break the shield."],
+        ["Eye of Riven holder", "Takes the Eye and interrupts her wipe with its Super; a different player each time."],
+        ["Puzzle team (4 plus 2)", "Four jump onto the plates together on the call; two keep adds off them."]
+      ],
+      "wipes": [
+        "The four-minute song runs out.",
+        "The Eye of Riven holder misses the interrupt.",
+        "Staying in Taken form too long: its stacks kill at 10.",
+        "Someone reuses a plate in the puzzle; it turns red and the wall has to be redone, which costs song time."
+      ],
+      "chests": [
+        "Hidden chest: from the doors at the Shuro Chi checkpoint, turn toward the encounter and climb the big rock by its mossy ledges to a bridge. Follow the bridge to its broken section, jump the gap, then drop to the rock ledge below, where the chest sits."
+      ]
+    },
+    {
+      "name": "Morgeth",
+      "title": "Morgeth, the Spirekeeper",
+      "what": "A huge Taken Ogre who grows stronger by absorbing Taken Strength. The team collects the Strength first, spread so nobody holds too much, then opens him up for damage.",
+      "steps": [
+        "Gather at the big door to start. Split into a left and a right team of three.",
+        "Taken Strength orbs appear around the arena. Pick them up before Morgeth absorbs them. Nobody may hold more than two; a third kills you.",
+        "Morgeth traps a player holding two Strength in Umbral Enervation. Kill an Eye of Riven, take its Taken Essence and use its grenade on the trapped player within about 20 seconds.",
+        "Freeing a player moves their Strength to you, so the freer should hold none.",
+        "When the last Strength appears in front of Morgeth, someone with room for it picks it up and his back opens for damage.",
+        "Shoot his back and shoot down the homing orbs he fires. His strength keeps rising; at about 90 percent, use the Taken Essence Super on him to reset it.",
+        "Repeat until he dies."
+      ],
+      "roles": [
+        ["Collectors (2 per side)", "Pick up the Strength orbs on their side and call their stacks."],
+        ["Freer (1 per side)", "Holds no Strength, kills the Eye of Riven and frees whoever is trapped."]
+      ],
+      "wipes": [
+        "Morgeth reaches 100 percent strength, from orbs left on the ground or a late Super during damage.",
+        "A trapped player isn't freed in time.",
+        "Picking up a third Strength, or freeing someone while already holding Strength."
+      ],
+      "chests": [
+        "Hidden chest: from Morgeth's arena, look across the large gap toward the bridge. Crossing it takes advanced class movement (guides describe sword and Super tricks). On the far side, go through the cave on the right, climb the tree and jump up at the top to the chest in the cliffs."
+      ]
+    },
+    {
+      "name": "The Vault",
+      "title": "The Vault",
+      "what": "No boss. Three plates around a central lock must each be cleansed with the right kind of Taken Essence while Might of Riven Knights try to slam them, three rounds in a row, before the security timer runs out.",
+      "steps": [
+        "Three players stand on the three plates around the centre to start the mechanism. The Vault Security Mechanism timer starts at three minutes.",
+        "Each plate player sees three symbols. The middle one counts: if its copy is on the left, that plate needs Penumbra; on the right, Antumbra.",
+        "Kill adds until an Eye of Riven appears in one of the outer rooms. Kill it, pick up its Taken Essence and say whether it is Penumbra or Antumbra.",
+        "The room seals when the essence is taken. Get back to the centre through the tunnels while the others call the way out.",
+        "Use the essence grenade on the plate that needs that type.",
+        "Kill each Might of Riven before it reaches a plate.",
+        "Three cleanses reset the timer. Clear three rounds and the vault opens."
+      ],
+      "roles": [
+        ["Plate players (3)", "Start the mechanism, read the symbols and call which essence each plate needs."],
+        ["Essence carriers", "Kill the Eye of Riven, call the essence type, cross the tunnels and cleanse the right plate."],
+        ["Whole team", "Drop every Might of Riven before it slams a plate."]
+      ],
+      "wipes": [
+        "A Might of Riven reaches a plate and slams it.",
+        "The security timer runs out.",
+        "Cleansing with the wrong essence: Shacknews says the blast kills the carrier and anyone near."
+      ],
+      "chests": [
+        "Wish chest: making the second wish on the Wall of Wishes spawns a chest between Morgeth and the Vault that opens only with a Glittering Key. After Morgeth, go through the next section, turn right once outside and head for the tall rock pillars; the chest is at the top. Glittering Keys are a rare drop from the raid's final chests."
+      ]
+    },
+    {
+      "name": "Riven",
+      "title": "Riven of a Thousand Voices",
+      "what": "The final boss, an Ahamkara. Two teams of three in two rooms stagger Riven, call the eyes that light up, cleanse symbols and shoot the eyes as she retreats; the damage phase ends in the Ascendant Realm and inside her mouth.",
+      "steps": [
+        "Split into two teams of three, one per room. Riven shows up in one room at a time.",
+        "When she faces your room, stagger her by shooting her mouth during the fire breath or her tentacle after it slams. Two of her eyes light up: call them to the other room.",
+        "When she is in the other room, kill the Eye of Riven for its essence. A teammate at the window reads the symbol and guides the carrier to the matching one to cleanse with the grenade.",
+        "When she then appears to the team that received the eye call, they shoot the orb in her mouth; as the mouth closes, they shoot the two called eyes within a few seconds. Then both teams take the lift up and repeat on the upper floor.",
+        "In the big chamber, stagger her three times with all six, noting two eyes each time so each player owns one eye. When she attacks after the third stagger, shoot the mouth, then all six eyes.",
+        "Creeping Darkness then starts stacking. Stand on the starting plate to clear it; the plate drops the team to the lower area.",
+        "Shoot her glowing weak points for big damage and shoot down the darts they release. Repeat the room phases until her last sliver of health.",
+        "In the Ascendant Realm, climb to the light at the top while health drains and Phalanxes push you. Back in the arena, shoot her mouth until she dies, then run inside it and destroy the Taken blight."
+      ],
+      "roles": [
+        ["Two teams of three", "One per room, each with an eye shooter, mouth shooters and a symbol carrier."],
+        ["Window caller", "Watches the symbol through the glass and steers the essence carrier."],
+        ["Every player", "In the big chamber, remembers one of the six eyes and shoots only that one."]
+      ],
+      "wipes": [
+        "Shooting the wrong eye, or not shooting the called eyes in time.",
+        "Not clearing Creeping Darkness on the starting plate.",
+        "Running out of health on the climb in the Ascendant Realm.",
+        "Getting caught in the open by her fire breath or tentacle slam."
+      ]
+    },
+    {
+      "name": "Queenswalk",
+      "title": "Queenswalk: the Heart of Riven",
+      "what": "The last stretch: carry Riven's Heart back through the raid to the Vault. The Heart moves between players, and the team has to stay inside the bubble around whoever holds it.",
+      "steps": [
+        "A random player picks up the Heart. Everyone else stays inside the bubble around the carrier; outside it Creeping Darkness stacks, and 10 stacks kill.",
+        "Clear the way ahead so the carrier can keep moving.",
+        "When the carrier's timer ends, they are sent to another realm and the Heart picks a new carrier. Stand back from the carrier as the timer runs out: anyone too close can be pulled away too.",
+        "Players in the other realm fight enemies, including Mights of Riven, and collect the Taken Strength orbs there to reset the current carrier's timer. Guides differ on how many orbs it takes and how often, so call each pickup.",
+        "Follow the route: back out of Riven's mouth, across the debris room without touching the poisonous floor, around the Vault and down through the hole.",
+        "Reach the end of the route at the Vault; the Heart is delivered and the raid is complete."
+      ],
+      "roles": [
+        ["Heart carrier (random)", "Follows the route and calls out when their timer is low."],
+        ["Escort", "Stays in the bubble and clears enemies ahead of the carrier."],
+        ["Other realm", "Players sent there fight and grab the orbs that buy the carrier time."]
+      ],
+      "wipes": [
+        "Leaving the bubble long enough for Creeping Darkness to reach 10.",
+        "Nobody grabs the orbs in the other realm, so the carrier's timer runs out early.",
+        "Standing next to the carrier when their timer ends and being pulled away too.",
+        "Touching the poisonous floor in the debris room."
+      ],
+      "chests": [
+        "End chests: after the Heart is delivered, extra chests open with an Ethereal Key. Keys drop from Riven, and the first wish on the Wall of Wishes also grants one."
+      ]
+    }
+  ]
+}
