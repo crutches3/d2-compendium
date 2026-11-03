@@ -1498,6 +1498,9 @@ const CHAMPIONS = ['Barrier', 'Overload', 'Unstoppable'];
 const wikiHref = n => '#/wiki/' + encodeURIComponent(n);
 // names as the sheets and Bungie spell them differently: case, accents, curly quotes, a leading "The"
 const fold = t => t.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[’‘]/g, "'").toLowerCase().replace(/^the /, '').trim();
+// a page's guide file (data/guides/<this>.json): its name folded, so a re-cased or re-accented Monument name still finds it ("Desert Perpetual &
+// Epic DP" is desert-perpetual); the file's own name field keeps the exact spelling
+const guideFile = n => fold(n.replace(/ [|&] .*$/, '')).replace(/'/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 // the same name give or take one letter ("Quillim's" in one sheet, "Qullim's" in the game)
 // a sheet's typo: one letter off, or two in a long name ("Dimensional Hypertrochoid" for Hypotrochoid)
 const near = (a, b) => { a = fold(a).replace(/[^a-z0-9]/g, ''); b = fold(b).replace(/[^a-z0-9]/g, '');
@@ -1588,6 +1591,8 @@ async function wikiPage(raw) {
   const name = decodeURIComponent(raw), key = name.toLowerCase();
   const [W, d, a, rot, places] = await live(Promise.all([wikiData(), data(), armorData(), load('rotation'), load('destinations')]));
   const act = W.acts.get(key), defs = W.terms.get(key) || [], champ = CHAMPIONS.find(c => c.toLowerCase() === key);
+  // hand-written, one file per activity and only for activities (perk and weapon names would all 404); a missing or broken file means no guide
+  const guide = act && /Raid|Dungeon|mission|Strike/.test(act.kind) ? await load('guides/' + guideFile(act.name)).catch(() => null) : null;
   const weapon = d.weapons.find(w => w.n.toLowerCase() === key), armor = a.armor.find(x => x.n.toLowerCase() === key);
   // weapons that can roll a perk or frame of this name, one per weapon name, best rated first
   const plugs = new Set(Object.keys(d.plugs).filter(h => d.plugs[h].n.toLowerCase() === key).map(Number)), rank = w => 'SABCDF'.indexOf(d.rolls[w.h]?.t) + 1 || 9;
