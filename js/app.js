@@ -1630,14 +1630,45 @@ async function wikiPage(raw) {
     <h3>How to get it</h3><div class="obtains">${srcHtml}</div></section>` : ''}
     ${plug?.s.length ? `<section class="panel"><h2>Stat changes</h2>${deltaList(plug.s)}</section>` : ''}
     ${champ ? `<section class="panel"><h2>Counters</h2><p>Everything here mentions ${esc(champ)} champions.${counters ? ` Court's full list of what stuns them is in the <a href="${esc(counters)}" target="_blank" rel="noopener">Champion counters sheet ↗</a>.` : ''}</p></section>` : ''}`.trim();
-  const found = main || side;
+  const found = main || side, grid = main && side ? `<div class="wtop wiki"><div>${main}</div><div class="wside">${side}</div></div>` : main || side;
+  // a guide gets its own tab beside Drops, above the whole layout (phones move the side panels up); Drops opens first and is drawn as before
+  const tabbed = guide && act.kind !== 'Strike', open = false;
   $app.innerHTML = `<p class="crumbs"><a href="#/wiki">Wiki</a></p>${found ? hero({ ...art, n: title }, `<span class="wikitags">${tags.map(t => `<span class="badge">${esc(t)}</span>`).join('')}${raid?.badge || ''}</span>`) : `<h1>${esc(title)}</h1>`}
-    ${main && side ? `<div class="wtop wiki"><div>${main}</div><div class="wside">${side}</div></div>` : main || side}
+    ${tabbed ? `<div class="tabs typetabs" role="group" aria-label="Page">${[['drops', 'Drops'], ['guide', 'Guide']].map(([k, t]) => `<button type="button" data-pane="${k}"${(k === 'guide') === open ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${t}</button>`).join('')}</div>
+      <div id="dropspane"${open ? ' hidden' : ''}>${grid}</div><div id="guidepane"${open ? '' : ' hidden'}>${guideHtml(W, act, guide, 0)}</div>` : grid}
     ${found ? '' : `<p class="empty">The wiki has nothing on “${esc(name)}” yet. <a href="#/wiki">Search the wiki</a></p>`}`;
   raid?.wire();
+  if (guide) wireGuide();
   const showRollers = n => { const box = $app.querySelector('#rollers'); if (box) box.innerHTML = rollers.slice(0, n).map(w => card(w, `<small>${tierBadge(d.rolls[w.h])}${esc(w.ty)}</small>`)).join(''); };
   showRollers(24);
   $app.querySelector('#morerollers')?.addEventListener('click', e => { showRollers(Infinity); e.target.remove(); });
+}
+
+// An activity's guide (data/guides, one hand-written file each): what it is, a pill per encounter (shaped like the drop filters, but showing
+// one encounter at a time), that encounter's mechanics, roles, common wipes, secret chests and Master or Epic changes, then the sources.
+// Prose links wiki names as sheet notes do; names, titles and source titles are only escaped. No whitespace between list tags, since
+// .entry dd keeps line breaks (pre-line).
+function guideHtml(W, act, g, step) {
+  const prose = t => linkify(W, esc(t), act.name), ul = l => `<ul>${l.map(t => `<li>${t}</li>`).join('')}</ul>`;
+  const rows = l => l.filter(([, x]) => x?.length).map(([k, x]) => `<div class="entry"><dt><b>${k}</b></dt><dd>${ul(x)}</dd></div>`).join('');
+  const all = rows([['Master, every encounter', g.master?.map(prose)], ['Epic, every encounter', g.epic?.map(prose)]]);
+  return `<section class="panel" id="guide"><h2>Guide</h2>${g.about ? `<p>${prose(g.about)}</p>` : ''}${g.caveat ? `<p class="muted">${prose(g.caveat)}</p>` : ''}
+    ${g.encounters.length > 1 ? `<div class="dropfilter" role="group" aria-label="Encounter">${g.encounters.map((e, i) => `<button type="button" data-step="${i}" aria-pressed="${i === step}"><small>${i + 1}</small>${esc(e.name)}</button>`).join('')}</div>` : ''}
+    ${g.encounters.map((e, i) => `<div class="gstep" data-step="${i}"${i === step ? '' : ' hidden'}><h3>${i + 1}. ${esc(e.title || e.name)}</h3><p>${prose(e.what)}</p>
+      ${e.before ? `<p><b>Getting there.</b> ${prose(e.before)}</p>` : ''}<h3 class="drophead">Mechanics</h3><ol>${e.steps.map(t => `<li>${prose(t)}</li>`).join('')}</ol>
+      <dl class="entries">${rows([['Roles', e.roles.map(([r, t]) => `<b>${esc(r)}</b> ${prose(t)}`)], ['Common wipes', e.wipes.map(prose)], ['Secret chests', e.chests?.map(prose)],
+        ['Master', e.master?.map(prose)], ['Epic', e.epic?.map(prose)]])}</dl></div>`).join('')}
+    ${all ? `<dl class="entries">${all}</dl>` : ''}
+    <p class="refsrc">Written from ${g.sources.map(([t, u]) => /^https:\/\//.test(u) ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} ↗</a>` : esc(t)).join(' · ')} · checked ${esc(g.checked)}</p></section>`;
+}
+// Drops | Guide and the encounter pills only show and hide what's drawn, so the drop filters, the vault and the scroll all survive
+function wireGuide() {
+  const press = (l, on) => l.forEach(x => x.setAttribute('aria-pressed', String(on(x))));
+  $app.querySelector('.typetabs[aria-label="Page"]')?.addEventListener('click', e => { const b = e.target.closest('button[data-pane]'); if (!b) return;
+    const tabs = $app.querySelectorAll('.typetabs [data-pane]'); press(tabs, x => x === b); tabs.forEach(x => x.classList.toggle('on', x === b));
+    $app.querySelector('#dropspane').hidden = b.dataset.pane !== 'drops'; $app.querySelector('#guidepane').hidden = b.dataset.pane !== 'guide'; });
+  $app.querySelector('#guide').addEventListener('click', e => { const b = e.target.closest('button[data-step]'); if (!b) return;
+    press($app.querySelectorAll('#guide button[data-step]'), x => x === b); $app.querySelectorAll('#guide .gstep').forEach(x => x.hidden = x.dataset.step !== b.dataset.step); });
 }
 
 // Llama's sheets list raid and dungeon armor by slot ("Helm", "Class Item")
