@@ -1,0 +1,79 @@
+{
+  "name": "Pit of Heresy",
+  "checked": "2026-11-03",
+  "sources": [
+    ["Shacknews: Pit of Heresy guide", "https://www.shacknews.com/article/114869/pit-of-heresy-guide-destiny-2"],
+    ["Destinypedia: Pit of Heresy", "https://www.destinypedia.com/Pit_of_Heresy"],
+    ["PC Gamer: How to conquer the Pit of Heresy dungeon", "https://www.pcgamer.com/au/destiny-2-pit-of-heresy-guide-dungeon-walkthrough"],
+    ["PC Invasion: Pit of Heresy dungeon guide (Chamber of Suffering, Harrow)", "https://www.pcinvasion.com/destiny-2-shadowkeep-guide-how-to-beat-the-pit-of-heresy-dungeon/4/"],
+    ["Prima Games: Pit of Heresy walkthrough", "https://primagames.com/tips/destiny-2-pit-of-heresy-walkthrough"]
+  ],
+  "about": "A three-player Hive dungeon on the Moon, from Shadowkeep. Most fights turn on Hive relic swords and Void orbs carried from Knights to a receptacle. It has checkpoints, and each encounter starts at a rally barricade.",
+  "caveat": "Guides disagree on how the curse in the Chamber of Suffering builds up, so that tab describes it only in general terms.",
+  "encounters": [
+    {
+      "name": "Necropolis",
+      "what": "Three Hive towers each hold a Disciple that only a Hive relic sword can hurt, and each Disciple needs a different sword move. Killing all three breaks the chains and opens the way down.",
+      "steps": [
+        "Drop into the first tower and kill the Accursed Swordbearer. It drops a relic sword, and three runes are shown. Note them quickly: the Swordbearer comes back if you wait.",
+        "Find the three towers carved with those runes. Each holds a Disciple with Thrall and Wizards or Ogres; bring heavy for the Ogres.",
+        "Kill each Disciple with the matching move: the Knight (Might) with the sword's light attack, the Wizard (Omen) with its heavy projectile, and the Shrieker (Oracle) by guarding to reflect its shots.",
+        "After the third tower, follow the beam of light to the exit; the encounter chest appears there."
+      ],
+      "roles": [
+        ["Sword carrier (1)", "Carries the relic and uses the right move on each Disciple."],
+        ["Add clear (2)", "Kill the Thrall, Wizards and Ogres in each tower so the sword carrier can work."]
+      ],
+      "wipes": [
+        "Trying the wrong sword move on a Disciple: only the matching move hurts it, and its room keeps filling with adds.",
+        "Ogres in the towers catch the team in the open; kill them with heavy first.",
+        "Lingering at the first tower until the Swordbearer returns."
+      ]
+    },
+    {
+      "name": "Chamber",
+      "title": "Chamber of Suffering",
+      "before": "Tunnels of Despair: skip the wall of doors and take the gap to the right of the broken bridge. Shoot the small Hive membranes to open hidden tunnels, kill Heretical Knights for Void orbs and dunk one at each of the three doors the Ogres guard. The Harrowing Pariah Ogres in the tunnels can't be killed: sneak past or lead them away.",
+      "what": "A wave-defence fight around a central Annihilator Totem. Six Void orbs from Heretical Knights burn away the six runes on the blocked door, while someone always holds the area under the totem.",
+      "steps": [
+        "Shoot one of the Acolytes praying at the totem to start.",
+        "One player stands on the plate under the totem and stays there. If the plate is empty the totem glows red, and if nobody steps back in it kills the team.",
+        "Thrall, cursed Thrall and Acolytes come from the left, middle and right. Heretical Knights appear too; kill the ones on the high ledges first, since they bombard the plate.",
+        "Pick up each Knight's Void orb and dunk it in the receptacle beside the blocked door. Each dunk removes one rune.",
+        "A curse builds up on the team during the fight and dunking keeps it in check; don't let it climb.",
+        "After six dunks the door opens."
+      ],
+      "roles": [
+        ["Totem holder (1)", "Never leaves the plate under the totem. A Well of Radiance or Ward of Dawn makes this easier."],
+        ["Orb runners (2)", "Kill the Heretical Knights and dunk their orbs, then help clear the adds pushing the plate."]
+      ],
+      "wipes": [
+        "Nobody is under the totem long enough for it to go off.",
+        "The curse stacks too high because orbs aren't dunked fast enough.",
+        "Knights on the high ledges are left alive and kill the totem holder."
+      ]
+    },
+    {
+      "name": "Zulmak",
+      "title": "Zulmak, Instrument of Torment",
+      "before": "The Harrow: note the three runes on the door at the entrance, then work through the jumping section to the towers carved with them. Kill the Malevolent Ritualist Wizard and its escort in each to break that lock. Watch for swinging spiked balls, rolling spiked logs and long falls, and kill the Wizards first. Breaking all three locks opens the way to Zulmak.",
+      "what": "Zulmak attacks from the centre of the Cradle of Damnation. Three Disciples around the room must die to relic swords, and their orbs, dunked in the centre, open a short window where he can be hurt from a glowing circle.",
+      "steps": [
+        "Kill the Knights around the centre to get relic swords.",
+        "Take the swords to the three outer rooms and kill each Disciple with its move: light attack on the Knight, heavy projectile on the Wizard, guard against the Shrieker.",
+        "Carry each Disciple's orb to the centre and dunk it. After the third, the floor around the central crystal glows green.",
+        "Stand inside the green circle and damage Zulmak; he only takes damage while you are in it.",
+        "When he kneels and charges the crystal, get out of the circle at once. The blast kills anyone still inside.",
+        "Dodge his fire attack, a line that ends in a lasting pool of flame. Repeat the cycle until he dies."
+      ],
+      "roles": [
+        ["Sword carriers", "Take a relic from a Knight and kill a Disciple with the right move."],
+        ["Whole team", "Dunk all three orbs, stack in the green circle for damage and leave it together when Zulmak kneels."]
+      ],
+      "wipes": [
+        "Staying in the circle when Zulmak finishes his kneeling charge.",
+        "Standing in his fire line or the flame pool it leaves."
+      ]
+    }
+  ]
+}
