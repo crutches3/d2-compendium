@@ -7,7 +7,7 @@
     ["KeenGamer: Season 19 Grandmaster Nightfall guide", "https://keengamer.com/articles/guides/destiny-2-season-19-grandmaster-nightfall-guide/"],
     ["eXputer: All Grandmaster Nightfalls", "https://exputer.com/guides/destiny-2-all-grandmaster-nightfalls/"]
   ],
-  "about": "A three-player strike from The Witch Queen, set in the Harvest, the Dark City inside Savathûn's Throne World. Scorn hold the route, Resonance Slabs and Portal Wardens gate the way forward, and the final arena is a no-respawn zone. In Grandmaster the champions, shields and modifiers change from week to week, so check them before launching.",
+  "about": "A three-player strike from The Witch Queen, set in the Harvest, the Dark City inside Savathûn's Throne World. Scorn hold the route, Resonance Slabs and Portal Wardens gate the way forward, and one guide says the final arena allows no respawns. In Grandmaster the champions, shields and modifiers change from week to week, so check them before launching.",
   "caveat": "Sources are 2022-2023 strike and Nightfall guides; no 2026 Grandmaster guide was found, and the guides list the middle sections in slightly different orders.",
   "encounters": [
     {
@@ -37,19 +37,19 @@
       "name": "Heimiks",
       "title": "Heimiks, Warden of the Harvest",
       "before": "Through the portal, fight across a large room to a Portal Warden; its death opens the way to a long hall. Cross the bridge past Nakoix, Lightscourge and its Scorn, clear the barriers on the two entrances and go into the boss room.",
-      "what": "A Scorn boss with a crossbow, backed by melee Scorn, fought in a no-respawn zone. Twice he sends the team to other halls, and a Portal Warden must die each time to get back.",
+      "what": "A Scorn boss with a crossbow, backed by melee Scorn; one guide (ProGameTalk) says his arena allows no respawns. Twice he sends the team to other halls, and a Portal Warden must die each time to get back.",
       "steps": [
         "Cleanse the corrupted Resonance in the boss room to start the fight. Enemies spawn as you do.",
         "Damage Heimiks while clearing the melee Scorn that rush the team. He snipes around cover, so keep moving.",
-        "At the first health threshold he teleports the team into halls full of Screebs. Go straight for the Portal Warden and kill it to return.",
-        "At the second threshold he sends the team to an area like the path to the Incubation Chamber. Kill that Portal Warden to get back.",
+        "His first health gate drops the team into Screeb-filled corridors. Head straight for the Portal Warden and kill it to come back.",
+        "His second gate sends the team somewhere that looks like the route to the Incubation Chamber; killing that Portal Warden brings you back.",
         "Finish his remaining health."
       ],
       "roles": [
         ["Whole team", "Stay together, kill Screebs before they arrive and focus the Portal Warden after each teleport."]
       ],
       "wipes": [
-        "The whole team dies in the no-respawn arena, which restarts the fight.",
+        "The whole team dies; if the arena allows no respawns, as one guide says, that restarts the fight.",
         "Screebs explode on the team in the narrow halls after a teleport.",
         "Standing still behind weak cover while Heimiks snipes."
       ]

@@ -27,7 +27,7 @@
       ],
       "wipes": [
         "Getting hit by a transport in the tunnels.",
-        "Exploding barrels along the tracks, which the GM guides rate as dangerous as the trains.",
+        "Exploding barrels along the tracks; one GM guide warns a single blast can also kill nearby teammates.",
         "Rushing rooms of Goblins and Hobgoblins; in Grandmaster they can kill in one hit, so clear them from cover first."
       ]
     },
@@ -69,7 +69,7 @@
       ],
       "wipes": [
         "Being caught out of cover during the fire attack.",
-        "Slow damage lets the reinforcements build up; the GM guides say to burst the Warden early.",
+        "Low damage lets the reinforcements build up; the GM guides say to burst the Warden early.",
         "Spending Supers on earlier rooms and arriving with nothing for the boss."
       ]
     }

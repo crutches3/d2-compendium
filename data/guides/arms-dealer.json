@@ -15,7 +15,7 @@
       "title": "Free Caiatl's captured Psion",
       "what": "Devrim and Caiatl send the team into Zahn's base. Ghost opens the doors, and the team frees captured Ascendant Guard Psions, who then fight alongside it.",
       "steps": [
-        "Clear the area outside the base. Legionaries and Psions snipe and throw grenades from range, so fight from cover.",
+        "Clear the area outside the base from cover: Legion snipers and grenade-throwing Psions punish anyone in the open.",
         "Push on to the thrust cannon platform. Take the Solar Fuel Cell from a Shadow Guard Cabal and free the captured Psion; it joins the team as an ally.",
         "Keep freeing Caiatl's captured forces as you push deeper. They draw fire and add damage, but don't count on them to hold a position."
       ],
@@ -30,9 +30,9 @@
       "what": "The team boards Zahn's carrier to track him down, then fights through the hangar. The route is longer than in the old strike, and the old two-tank hangar is now full of Cabal turrets, with a Tormentor in Nightfall versions.",
       "steps": [
         "Board the carrier and free more of Caiatl's forces on the way.",
-        "Clear the enemy groups on the route, including Threshers. Destroy enemy ships as soon as they appear.",
+        "Fight along the route, Threshers included, and shoot down enemy ships the moment they show up.",
         "In the hangar, destroy the Cabal turrets from cover.",
-        "In Nightfall versions a Tormentor comes down the elevator where the second tank used to be. Only its shoulders take damage at first; once both break, shoot the glowing weak point on its chest.",
+        "Nightfall versions add a Tormentor that arrives by the hangar elevator. Only its shoulders take damage at first; once both break, shoot the glowing weak point on its chest.",
         "If the Tormentor grabs a player, everyone else keeps shooting it to stagger it into letting go."
       ],
       "roles": [
@@ -48,8 +48,8 @@
       "steps": [
         "A group of Cabal turrets waits at the elevator exit. Destroy them first.",
         "Damage Zahn until he leaves the battlefield and shields himself.",
-        "While he is shielded, two Cabal ships, one of them a Thresher, fire on the team. Destroy them quickly.",
-        "The turrets respawn each time Zahn returns to the ground. Clear them again, damage him, and repeat until he dies."
+        "While his shield is up, a Thresher and a second Cabal ship strafe the team; shoot both down.",
+        "Every time Zahn drops back into the arena a fresh set of turrets appears. Clear them, damage him, and repeat until he dies."
       ],
       "roles": [
         ["Whole team", "Clear the turrets and ships, then burst Zahn while he is on the ground."]
