@@ -1,0 +1,114 @@
+{
+  "name": "Vesper's Host",
+  "checked": "2026-11-03",
+  "about": "A Fallen dungeon on Vesper Station for up to three players, released in October 2024 with Episode: Revenant. It runs on three Viral augments, each on a one-minute timer that kills the holder unless it is banked at a terminal: Scanner shows which panels or targets are safe, Operator shoots panels, and Suppressor turns your grenade into a decoy.",
+  "caveat": "Destinypedia lists two secret chests, but no source checked here says where they are, and no two guides confirm Master champion changes, so neither is given.",
+  "master": [
+    "Master enemies outlevel the team. Check the modifiers on the activity before launching, since this guide could not confirm which champions or shields appear in each encounter."
+  ],
+  "sources": [
+    ["Shacknews: Vesper's Host guide", "https://www.shacknews.com/article/141768/destiny-2-vespers-host-guide"],
+    ["KeenGamer: Vesper's Host dungeon guide, all encounters explained", "https://keengamer.com/articles/guides/destiny-2-vespers-host-dungeon-guide-all-encounters-explained/"],
+    ["The Game Post: Vesper's Host dungeon guide", "https://thegamepost.com/destiny-2-vespers-host-dungeon-guide/"],
+    ["Destinypedia: Vesper's Host", "https://www.destinypedia.com/Vesper's_Host"],
+    ["PCGamesN: Vesper's Host guide", "https://www.pcgamesn.com/destiny-2/vespers-host"]
+  ],
+  "encounters": [
+    {
+      "name": "Activation",
+      "what": "The first encounter. Restore station power by pulling a nuclear core from each of three side rooms and dunking all three in the main room.",
+      "before": "Embarkation teaches the augments. Kill a Viral Carrier for Scanner and Operator; the Scanner walks up to the hangar panels to see which are safe, and the Operator shoots only those, never an unsafe one. Then pass the airlock and the trip-mined corridors.",
+      "steps": [
+        "Use the sphere in the middle of the room to reboot the system. A Brig drops in; kill it to bring out a Viral Carrier with Scanner.",
+        "Taking Scanner unlocks the three side rooms (Heart, Brain and Lung), which can be done in any order.",
+        "Fight into a room. A second carrier appears with Operator; bank augments at the terminals on the way to reset their timers.",
+        "The room has six panels: four safe, two unsafe. The Scanner walks up to each; a safe panel turns white on the radar and an unsafe one disappears. The Operator shoots only the four safe ones.",
+        "A nuclear core forms at the back. Bank both augments, then carry the core to the main room. It stacks Radiation and 10 stacks kill, so pass or drop it to let the stacks fall.",
+        "Kill the Brig that guards the deposit to drop its barrier, then dunk the core.",
+        "Repeat for the other two rooms. The third Brig is much tougher, so save heavy ammo and Supers for it."
+      ],
+      "roles": [
+        ["Scanner (1)", "Checks every panel and calls the safe ones."],
+        ["Operator (1)", "Shoots the safe panels and nothing else."],
+        ["Third player", "Clears adds, including the partly invisible Fallen, and takes turns carrying the core."]
+      ],
+      "wipes": [
+        "An augment timer runs out because its holder didn't bank it at a terminal.",
+        "The core carrier reaches 10 Radiation stacks; hand it over early.",
+        "An unsafe panel gets shot.",
+        "The team is swarmed while the core is being carried and nobody is clearing."
+      ]
+    },
+    {
+      "name": "Infiltration",
+      "title": "Infiltration: the door maze",
+      "what": "A door maze between the first two encounters. Raneiks Unified patrols the halls and cannot be hurt yet; deliver five nuclear cores to numbered boxes in order while staying out of its sight.",
+      "steps": [
+        "Use the Fallen console for Power Reserves; you hold at most four. Opening a door costs one and closing it gives one back, so close doors behind you.",
+        "Raneiks Unified patrols the maze. When it targets you, an Integration countdown of about five seconds appears: get behind a wall or round a corner before it ends or you die.",
+        "Kill Fallen until a Captain drops a nuclear core, and carry it to box 1.",
+        "Each deposit brings another wave whose Captain drops the next core. Fill the boxes in order, 1 to 5.",
+        "Swap the core between players in the halls so nobody reaches 10 Radiation stacks."
+      ],
+      "roles": [
+        ["Whole team", "No fixed split in the guides. Watch for Integration, close doors behind you, and hand the core along the route."]
+      ],
+      "wipes": [
+        "Staying in Raneiks's line of sight until Integration completes.",
+        "The core carrier stacks Radiation to 10.",
+        "Leaving doors open spends the Power Reserves and leaves no charge for the next door."
+      ]
+    },
+    {
+      "name": "Raneiks",
+      "title": "Raneiks Unified",
+      "what": "A boss made of Servitors, fought in the Dismemberment encounter. Read four Servitor numbers, shoot the matching panels, then split it with a Suppressor decoy to damage it.",
+      "steps": [
+        "Note the ten panels numbered 0 to 9 by the rally banner; they are used later. Move into the room to start. A carrier drops Operator: bank it in the terminal for later.",
+        "Clear adds until a Machine Priest spawns. Killing it teleports the team to another arena full of exploding Shanks.",
+        "Kill Shanks until one drops Viral Suppressor, which turns your grenade into a decoy.",
+        "Throw the decoy near Raneiks and shoot it. Raneiks splits into numbered Servitors; two of them have glowing face lights. Note both numbers, ideally in text chat.",
+        "Go back through the tunnels and repeat the Machine Priest and Suppressor steps once more for two more numbers, four in total.",
+        "Take Operator from the terminal and shoot the four panels with those numbers.",
+        "A Suppressor carrier spawns in the main room. Take the buff and split Raneiks again when it appears; it can be damaged while split. Area damage works well on the spread-out Servitors. Repeat until it dies."
+      ],
+      "roles": [
+        ["Operator (1)", "Banks Operator early and later shoots the four numbered panels."],
+        ["Suppressor (1)", "Throws and pops the decoy to split Raneiks, both for reading numbers and for damage."],
+        ["Caller", "Reads the glowing Servitors' numbers and posts them in chat."]
+      ],
+      "wipes": [
+        "Exploding Shanks and Servitor cores in the teleport arena kill players quickly.",
+        "Operator is left unbanked and its timer runs out.",
+        "Numbers are misread; check them in chat before anyone shoots a panel."
+      ]
+    },
+    {
+      "name": "Corrupted Puppeteer",
+      "title": "The Corrupted Puppeteer",
+      "what": "The final boss, fought in the Shutdown encounter. Use all three augments to open the lower rooms, take a nuclear core from each to drop her shield, then damage her on the deck while sheltering from the Anomaly's blasts.",
+      "before": "Acceleration crosses derelict ships toward the Anomaly. Its yellow Arc lightning strikes the walkways, so keep moving until you reach the rally point.",
+      "steps": [
+        "Shoot the purple orb to start. The Puppeteer appears with shielded Puppets that chase players and stack Radiation fast with their aura.",
+        "Clear adds until a Suppressor carrier spawns. Pop the decoy near the Puppets to strip their shields and aura, then kill them.",
+        "Killing Puppets brings Scanner and Operator carriers. Four central pillars show blue numbers; the Scanner works out which number is safe and calls it.",
+        "The Operator shoots the four white panels around the room with that number. Bank augments, then follow the side with flashing red lights down to the lower rooms.",
+        "In each lower room, the Operator shoots the four panels there and copies of the Puppeteer appear. The Scanner marks the one carrying a core; kill only that one and dunk its core in the bunker. Repeat in the second room.",
+        "With both cores in, her shield is down. Ride the elevator up to the deck and damage her. Keep moving: standing still calls down lightning.",
+        "When the feed says the Puppeteer communes with the anomaly, a Puppet drops a core. Get everyone into the bunker and dunk it to survive, then resume damage. If she survives, go back down and run the cycle again."
+      ],
+      "roles": [
+        ["Scanner (1)", "Finds the safe pillar number and marks the Puppet copy that carries the core."],
+        ["Operator (1)", "Shoots the numbered panels upstairs and the panels in each lower room."],
+        ["Suppressor (1)", "Pops decoys to strip Puppet shields and Radiation auras."]
+      ],
+      "wipes": [
+        "Radiation from Puppet auras reaches 10 stacks; strip the auras with the decoy before fighting them.",
+        "Standing still on the deck during damage and getting hit by lightning.",
+        "Not everyone is inside the bunker with the core dunked when the Anomaly blast comes.",
+        "Killing the wrong copy in a lower room; shoot only the one the Scanner marks.",
+        "An augment timer runs out, or trip mines in the lower corridors catch someone running."
+      ]
+    }
+  ]
+}
