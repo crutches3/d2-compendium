@@ -153,6 +153,12 @@ assert.ok(p.url().endsWith('#/wiki/Defiant%20BG%3A%20EDZ'), p.url());
 await p.goto('http://localhost:8765/#/wiki'); await p.waitForSelector('#q');
 await p.fill('#q', 'warden'); assert.equal(await p.getAttribute('#refbody a:text-is("Warden of Nothing")', 'href'), '#/wiki/Warden%20of%20Nothing');
 
+// pages beside the guides that used to break: a Portal activity and a vendor (the home page's PvP link opens one) draw their page
+for (const n of ['Trials of Osiris', 'Ada-1']) {
+  await p.goto(href(n)); await p.waitForSelector(`#app :is(.hero h1:text-is("${n}"), p:text-matches("Something went wrong"))`);
+  assert.ok(!(await p.innerText('#app')).includes('Something went wrong') && await p.isVisible('table.data'), `${n}: ${(await p.innerText('#app')).slice(0, 80)}`);
+}
+
 // the home page's Grandmaster card names its strike with a link to its page, and stays a plain box, since its weapons are links too
 // (week 21: "Defiant BG: EDZ", a name with a colon). The name is read off the card, so a refresh that moves the schedule still checks
 // whichever strike it shows.
