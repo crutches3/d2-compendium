@@ -1,11 +1,11 @@
 {
   "name": "Vault of Glass",
   "checked": "2026-11-03",
-  "about": "Six-player Vex raid, a 2021 reprise of the original Destiny raid with several mechanics changed. Since Monument of Triumph (June 2026) it launches from the Raids and Dungeons node, and its Master version is still in the game.",
+  "about": "Six-player Vex raid, a 2021 reprise of the original Destiny raid with several mechanics changed. Since Monument of Triumph (June 2026) it launches from the Raids and Dungeons node, and its Master version is still in the game, but only in weeks when it is featured (see Rotation).",
   "caveat": "Mechanics come from 2021 guides and no later rework was found; the Master enemy notes come from a single 2021 guide, so check the champion types in game.",
   "master": [
     "In 2021 guides, Master adds more Champions (Barrier Hobgoblins and Overload Minotaurs) and Match Game, so shielded enemies resist damage that doesn't match their shield; TheGamer lists Arc and Void shields.",
-    "Master still exists after Monument of Triumph: update 9.7.0.2 (June 2026) fixed Master Vault of Glass not showing in Fireteam Finder."
+    "Master still exists after Monument of Triumph: update 9.7.0.2 (June 2026) fixed Master Vault of Glass not showing in Fireteam Finder. It opens only in weeks when Vault of Glass is featured."
   ],
   "sources": [
     [

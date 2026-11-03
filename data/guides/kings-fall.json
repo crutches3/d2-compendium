@@ -1,7 +1,7 @@
 {
   "name": "King's Fall",
   "checked": "2026-11-03",
-  "about": "A six-player raid aboard Oryx's Dreadnaught, brought back from the first Destiny in August 2022 (Season of Plunder). Normal and Master are both still offered in 2026, and it is one of the raids that rotate through the weekly featured slot.",
+  "about": "A six-player raid aboard Oryx's Dreadnaught, brought back from the first Destiny in August 2022 (Season of Plunder). Normal and Master are both still offered in 2026, but Master opens only in weeks when King's Fall is in the weekly featured slot (see Rotation).",
   "caveat": "The encounter guides date from 2022; no later source reports mechanic changes, but the Master champion and shield lists have not been rechecked since the June 2026 update.",
   "sources": [
     ["GameSpot: King's Fall raid guide, every encounter and secret chest", "https://www.gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/"],
@@ -18,7 +18,7 @@
     ["Kyber's Corner: King's Fall (Legacy)", "https://kyberscorner.com/destiny2/kings-fall-raid"]
   ],
   "master": [
-    "Master is still in the game: Update 9.7.0.2 (June 2026) fixed Master King's Fall not showing in Fireteam Finder.",
+    "Master is still in the game: Update 9.7.0.2 (June 2026) fixed Master King's Fall not showing in Fireteam Finder. It opens only in weeks when King's Fall is featured.",
     "Enemies are tougher and hit harder, and every encounter gains champions and elemental shields. The per-tab Master notes come from September 2022 guides (Shacknews, Sportskeeda), so check the champion and shield types in game."
   ],
   "encounters": [

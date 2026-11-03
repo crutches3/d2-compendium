@@ -1,11 +1,11 @@
 {
   "name": "Crota's End",
   "checked": "2026-11-03",
-  "about": "Six-player Hive raid on the Moon, a 2023 reprise of the original Destiny raid built around passing the Chalice of Light. Since Monument of Triumph (June 2026) it launches from the Raids and Dungeons node, and its Master version is still in the game.",
+  "about": "Six-player Hive raid on the Moon, a 2023 reprise of the original Destiny raid built around passing the Chalice of Light. Since Monument of Triumph (June 2026) it launches from the Raids and Dungeons node, and its Master version is still in the game, but only in weeks when it is featured (see Rotation).",
   "caveat": "Current sources say little about Master: only extra Champions and shields are confirmed, not which enemies carry them, so check in game.",
   "master": [
     "Master has tougher enemies plus extra Champions and extra elemental shields (Destinypedia's Master modifier list). Which enemies become Champions in each encounter could not be confirmed from two sources.",
-    "Master still exists after Monument of Triumph: update 9.7.0.2 (June 2026) fixed Master Crota's End not showing in Fireteam Finder."
+    "Master still exists after Monument of Triumph: update 9.7.0.2 (June 2026) fixed Master Crota's End not showing in Fireteam Finder. It opens only in weeks when Crota's End is featured."
   ],
   "sources": [
     [
