@@ -1,0 +1,109 @@
+{
+  "name": "Exodus Crash",
+  "checked": "2026-11-03",
+  "about": "A three-player Vanguard strike on Nessus that fights through Fallen and Vex to Thaviks, the Depraved. In 2026 it comes up as the weekly Grandmaster Vanguard Alert; champions, shields and modifiers change from week to week, so check that week's list.",
+  "caveat": "Section details come from 2017 to 2021 guides and Destinypedia; the Grandmaster version may add enemies not described here.",
+  "sources": [
+    [
+      "Destinypedia: Exodus Crash walkthrough",
+      "https://www.destinypedia.com/Exodus_Crash/Walkthrough"
+    ],
+    [
+      "ProGameTalk: Exodus Crash strike",
+      "https://progametalk.com/destiny-2/exodus-crash-strike/"
+    ],
+    [
+      "Twinfinite: Exodus Crash strike, beating Thaviks",
+      "https://twinfinite.net/guides/destiny-2-exodus-crash-strike-thaviks/"
+    ],
+    [
+      "Samurai Gamers: Thaviks the Depraved boss guide",
+      "https://samurai-gamers.com/destiny-2/thaviks-depraved-boss-guide/"
+    ],
+    [
+      "Samurai Gamers: Exodus Crash walkthrough",
+      "https://samurai-gamers.com/destiny-2/exodus-crash-mission-walkthrough/"
+    ],
+    [
+      "Shacknews: Exodus Crash Nightfall guide",
+      "https://www.shacknews.com/article/101746/destiny-2---exodus-crash-nightfall-guide"
+    ],
+    [
+      "Kyber's Corner: Weekly reset, May 26 2026 (Grandmaster Vanguard Alert)",
+      "https://kyberscorner.com/destiny-2-weekly-reset-overview-may-26-2026/"
+    ]
+  ],
+  "encounters": [
+    {
+      "name": "Prodromus Down",
+      "title": "Prodromus Down: track the Fallen",
+      "what": "The opening area. Follow the Fallen's Arc Pulses to their camp, break through a barrier, then guard your Ghost while it hacks a Fallen device.",
+      "steps": [
+        "Walk through the glowing Arc Pulses so your Ghost can track the Fallen; there are two rounds of them.",
+        "At the end of the trail, kill the Fallen and their captain, Khirin, Blinding Captain, to drop the energy barrier.",
+        "Move through the Vex structure to the Exodus Black's aft, where a Fallen device powers another barrier.",
+        "Stay near the device while your Ghost analyzes it. Waves attack, and Overcharge Shanks shock and slow anyone close to them.",
+        "Two Servitors arrive and jam the hack. Kill both and the analysis carries on; hold the area until it reaches 100 percent."
+      ],
+      "roles": [
+        [
+          "Whole team",
+          "Stay together near the device, kill Shanks before they get close and focus both Servitors as soon as they appear."
+        ]
+      ],
+      "wipes": [
+        "Standing on the conductive mesh around the device, where the webbing and the Shanks shock you.",
+        "Ignoring the Servitors, so the hack stalls while more enemies keep arriving."
+      ]
+    },
+    {
+      "name": "Fallen Walker",
+      "title": "Glade of Echoes: Fallen Walker",
+      "before": "From the device, head across the Exodus Black toward its aft, following another trail of Arc Pulses on the way.",
+      "what": "A Fallen Walker and Heavy Shanks guard the way into the ship's aft.",
+      "steps": [
+        "Shoot the Walker's legs until its orange weak point opens, then hit the weak point.",
+        "Heavy Pikes on the left side can be taken and used against it; they despawn once the Walker dies.",
+        "With the Walker dead, go on into the burning aft."
+      ],
+      "roles": [
+        [
+          "Whole team",
+          "Focus the legs together, then the weak point, while keeping an eye on the Shanks around it."
+        ]
+      ],
+      "wipes": [
+        "Damage spent on the Walker's armored body instead of its legs and weak point drags the fight out under fire from the Shanks."
+      ]
+    },
+    {
+      "name": "Thaviks",
+      "title": "Thaviks, the Depraved",
+      "before": "Inside the aft (EX-077 Command) it is pitch dark. Fight through the enemies and climb upward to the boss arena.",
+      "what": "A cloaking Fallen Marauder, fought on a ring around a central disc joined by four bridges. He vanishes and calls in reinforcements as he loses health.",
+      "steps": [
+        "Clear the Shanks first. Three ring sections have electrical emitters and enemy spawns; Destinypedia calls the left one, seen from the entrance, the safest, with cover and no emitter.",
+        "Thaviks starts cloaked and attacks from invisibility with a Shrapnel Launcher. Watch for the shimmer; damaging him makes him visible.",
+        "Focus fire while he is visible and keep your distance: his melee hits very hard.",
+        "After losing a chunk of health he vanishes in smoke and summons Fallen, including Overcharge Shanks and Servitors, while ring sections electrify. Kill the Shanks first; he comes back once the adds are down.",
+        "At about a third of his health he switches to swords and rushes players. Keep moving, keep your distance and use Supers to finish him."
+      ],
+      "roles": [
+        [
+          "Add clear (1 to 2)",
+          "Kill Shanks and Servitors as soon as they spawn so the floor stays safe to stand on."
+        ],
+        [
+          "Boss damage (1 to 2)",
+          "Track Thaviks through his cloak and burst him whenever he is visible."
+        ]
+      ],
+      "wipes": [
+        "Standing on electrified floor or near Overcharge Shanks, which slow you and drain health.",
+        "Falling off the bridges between the ring and the center; the drop is fatal.",
+        "Fighting from the middle disc, which Destinypedia calls a deathtrap.",
+        "Letting him close in during the sword phase."
+      ]
+    }
+  ]
+}
