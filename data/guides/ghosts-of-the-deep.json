@@ -1,0 +1,107 @@
+{
+  "name": "Ghosts of the Deep",
+  "checked": "2026-11-03",
+  "about": "A Hive dungeon for up to three players in the New Pacific Arcology on Titan, released in May 2023 with Season of the Deep. Every encounter mixes the same tools: Deepsight to read Hive symbols, Vestiges taken by crushing Lightbearer Ghosts, and underwater stretches where the Pressure Resistance meter runs down.",
+  "master": [
+    "Enemies outlevel the team on Master. The champion swaps listed on each tab come from 2023 guides."
+  ],
+  "sources": [
+    ["Shacknews: Ghosts of the Deep dungeon guide", "https://www.shacknews.com/article/135676/ghosts-of-the-deep-dungeon-guide-destiny-2"],
+    ["Destinypedia: Ghosts of the Deep", "https://www.destinypedia.com/Ghosts_of_the_Deep"],
+    ["Prima Games: How to disrupt the ritual in Ghosts of the Deep", "https://primagames.com/tips/how-to-disrupt-the-ritual-in-destiny-2-ghosts-of-the-deep"],
+    ["Prima Games: How to defeat Ecthar", "https://primagames.com/tips/how-to-defeat-ecthar-in-destiny-2-ghosts-of-the-deep"],
+    ["Prima Games: How to defeat Simmumah ur-Nokru", "https://primagames.com/tips/how-to-defeat-simmumah-ur-nokru-in-destiny-2-ghosts-of-the-deep"],
+    ["PCGamesN: Ghosts of the Deep guide", "https://www.pcgamesn.com/destiny-2/ghosts-of-the-deep"],
+    ["The Loadout: Ghosts of the Deep guide", "https://www.theloadout.com/destiny-2/ghosts-of-the-deep"],
+    ["KeenGamer: Ghosts of the Deep secret chest locations", "https://keengamer.com/articles/guides/destiny-2-ghosts-of-the-deep-secret-bonus-chest-locations/"],
+    ["Prima Games: Secret chest locations in Ghosts of the Deep", "https://primagames.com/tips/secret-chest-locations-in-destiny-2-ghosts-of-the-deep"]
+  ],
+  "encounters": [
+    {
+      "name": "Ritual",
+      "title": "Break the Ritual",
+      "what": "The opening at a Hive ritual site in the Arcology. Charge four Thrall statues with Vestiges of Light, each one matched to a Hive symbol found along a trail.",
+      "steps": [
+        "Kill the pair of Hive Knights past the rally banner to start. A Soulfire Binder Ogre appears: kill it.",
+        "Follow the green trail it leaves to a floating Hive symbol and remember it; agree on names for the symbols beforehand. Clear the enemies there and a new trail opens.",
+        "Keep following the trail until a Lightbearer appears. Kill it, then crush its Ghost with a finisher or it comes back.",
+        "Whoever crushes the Ghost gets Vestige of Light, which lasts 80 seconds and kills the holder if it runs out. Head straight back to the ritual site; a Sparrow helps.",
+        "Kill the Veilweaver Wizard at the site and take the Deepsight it leaves. Deepsight shows the symbols on the Thrall statues.",
+        "The Vestige holder dunks it into the statue with the matching symbol. That starts the next round with a new Ogre; four statues finish the encounter."
+      ],
+      "roles": [
+        ["Trail runners", "Follow the trail, call the symbol, kill the Lightbearer and crush its Ghost; the one who crushes it carries the Vestige back."],
+        ["Site player (1)", "Stays at the ritual site and kills the Veilweaver Wizard so Deepsight is ready when the carrier arrives."]
+      ],
+      "wipes": [
+        "Dunking at the wrong statue kills the carrier and resets progress.",
+        "The Vestige runs out on the way back and kills the carrier.",
+        "The Lightbearer's Ghost is not crushed, so it revives."
+      ],
+      "master": [
+        "In 2023 guides, the Ogres in this encounter are Unstoppable champions on Master."
+      ]
+    },
+    {
+      "name": "Ecthar",
+      "title": "Ecthar, the Shield of Savathûn",
+      "what": "A Hive Lightbearer fought in a temple room with flooded chambers below it. Symbols read in the room are matched to runes underwater, and the Lightbearers that spawn charge three statues before his shield can drop.",
+      "before": "A short jump leads down into the Arcology and the Dive, an underwater descent through the wreck past turbines and air rooms. Watch the Pressure Resistance meter on the left of the screen and refill it at air bubbles. At the bottom you leave through a cracked window onto the sea floor and drop off a cliff toward the wreckage.",
+      "steps": [
+        "Kill the praying Acolytes at the altar to start. Ecthar appears with adds but cannot be hurt yet.",
+        "Kill the three Blistered Knights on the upper level (back, left and right). A Keeper of the Deep Ogre spawns; kill it and take the Deepsight it leaves.",
+        "Deepsight lasts 20 seconds and lights three Hive symbols around the room. Memorise all three.",
+        "Drop into the water through the floor openings and touch the underwater runes that match. Ecthar hunts you down there, so keep moving and refill Pressure Resistance at bubbles.",
+        "Each rune touched spawns a Lightbearer Wizard and Thrall upstairs. Kill the Wizard and crush its Ghost to get Vestige of Light, then dunk it into one of the three Thrall statues.",
+        "After the third statue, a Wellkeeper Knight spawns. Kill it fast and stand in its green pool for Piercing Light, which lets you break Ecthar's shield.",
+        "Damage him until the shield returns, then repeat. When his health is gone, crush his Ghost to finish him, or he comes back."
+      ],
+      "roles": [
+        ["Diver (1 or more)", "Goes underwater to touch the matching runes while dodging Ecthar and watching pressure."],
+        ["Room team (2)", "Hold the room against adds, kill each Lightbearer Wizard, crush its Ghost and dunk the Vestige."]
+      ],
+      "wipes": [
+        "The diver runs out of Pressure Resistance or gets caught by Ecthar underwater.",
+        "The room team is overrun; surviving the adds in the main room is the hardest part of this fight.",
+        "Ecthar is not finished with his Ghost and comes back."
+      ],
+      "chests": [
+        "Secret chest 1 is at the end of the Dive, before Ecthar. Out on the sea floor, walk to the big cliff and drop: partway down, a ledge and a water wall above the main path lead into an air pocket with the chest. If you fall past it into the room with Hive, clear them and climb back up above to reach it."
+      ],
+      "master": [
+        "In 2023 guides, the Ogre here is an Unstoppable champion on Master."
+      ]
+    },
+    {
+      "name": "Šimmumah",
+      "title": "Šimmumah ur-Nokru, Lucent Necromancer",
+      "what": "The final boss, a flying Lucent Hive Lightbearer in an arena built over Oryx's body. Mark three body parts with runes, charge them with Vestiges from three side rooms, then break her shield.",
+      "before": "After Ecthar, swim on through the Lucent Hive halls and cross a chasm full of Shriekers and Wizards. A Keeper of the Deep Ogre and a horde guard the end of the path into the final arena.",
+      "steps": [
+        "Crush the unclaimed Ghost at Oryx's heart to start. Šimmumah takes to the air and adds keep spawning.",
+        "Take Deepsight from the node. It draws a triangle linking three of Oryx's body parts (head, hands, heart, knee, foot); the heart is always one.",
+        "Stand in a marked part's green zone and kill Vorlog, Risen in Heresy, there; you must be in the zone for the kill. Šimmumah is drawn to that spot and revives Vorlog each time.",
+        "A ring and a Taken symbol float nearby. Move until they line up to raise a Hive rune over that body part. Do the other two the same way, the heart last; after the third, Vorlog stops coming back.",
+        "Split up through the water passages into the three side rooms. There are no air bubbles on the way, so go straight there.",
+        "In each room, note the rune, kill the Lightbearer and crush its Ghost for a timed Vestige. Return, use Deepsight and dunk it at the body part with the matching rune.",
+        "With all three charged, wells appear at the body parts. Stand in one for Piercing Light, break her shield and damage her. Repeat the cycle, and crush her Ghost to finish."
+      ],
+      "roles": [
+        ["Side-room players (3)", "One per side room: note that room's rune, kill the Lightbearer, crush its Ghost and bring the Vestige back."],
+        ["Whole team", "Kill Vorlog in the right zones, shoot down Lucent Moths and line up the symbols together."]
+      ],
+      "wipes": [
+        "Lucent Moths fly at the nearest player after Vorlog revives and can kill from full health; shoot them early.",
+        "A Vestige runs out before it is dunked and kills its holder.",
+        "Šimmumah moves to the body part where Vorlog was just killed and can wipe a team standing there; don't group up under her.",
+        "Her health is emptied but her Ghost is not crushed, so the fight restarts."
+      ],
+      "chests": [
+        "Secret chest 2 is just before the final arena: after the Keeper of the Deep Ogre at the end of the chasm, climb the small Lucent Hive gazebo it came from. The chest is on its roof."
+      ],
+      "master": [
+        "In 2023 guides, Barrier champion Knights replace the three standard Knights on Master, and Vorlog carries an Arc shield."
+      ]
+    }
+  ]
+}
