@@ -1587,7 +1587,8 @@ async function wikiData() {
   return wikiIndex = { tabs, art, acts, terms, names, linkNames, linkRe: nameRe([...linkNames.keys()].sort((x, y) => y.length - x.length).map(rxEsc).join('|'), 'g') };
 }
 
-async function wikiPage(raw) {
+// #/wiki/<name>/guide/<n> opens the guide on encounter n (the tabs keep it there with replaceState, so a reload mid-run comes back to it)
+async function wikiPage(raw, pane, n) {
   const name = decodeURIComponent(raw), key = name.toLowerCase();
   const [W, d, a, rot, places] = await live(Promise.all([wikiData(), data(), armorData(), load('rotation'), load('destinations')]));
   const act = W.acts.get(key), defs = W.terms.get(key) || [], champ = CHAMPIONS.find(c => c.toLowerCase() === key);
@@ -1632,13 +1633,13 @@ async function wikiPage(raw) {
     ${champ ? `<section class="panel"><h2>Counters</h2><p>Everything here mentions ${esc(champ)} champions.${counters ? ` Court's full list of what stuns them is in the <a href="${esc(counters)}" target="_blank" rel="noopener">Champion counters sheet ↗</a>.` : ''}</p></section>` : ''}`.trim();
   const found = main || side, grid = main && side ? `<div class="wtop wiki"><div>${main}</div><div class="wside">${side}</div></div>` : main || side;
   // a guide gets its own tab beside Drops, above the whole layout (phones move the side panels up); Drops opens first and is drawn as before
-  const tabbed = guide && act.kind !== 'Strike', open = false;
+  const tabbed = guide && act.kind !== 'Strike', open = tabbed && pane === 'guide', step = /^\d+$/.test(n) && n >= 1 && n <= (guide?.encounters.length || 0) ? n - 1 : 0;
   $app.innerHTML = `<p class="crumbs"><a href="#/wiki">Wiki</a></p>${found ? hero({ ...art, n: title }, `<span class="wikitags">${tags.map(t => `<span class="badge">${esc(t)}</span>`).join('')}${raid?.badge || ''}</span>`) : `<h1>${esc(title)}</h1>`}
     ${tabbed ? `<div class="tabs typetabs" role="group" aria-label="Page">${[['drops', 'Drops'], ['guide', 'Guide']].map(([k, t]) => `<button type="button" data-pane="${k}"${(k === 'guide') === open ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${t}</button>`).join('')}</div>
-      <div id="dropspane"${open ? ' hidden' : ''}>${grid}</div><div id="guidepane"${open ? '' : ' hidden'}>${guideHtml(W, act, guide, 0)}</div>` : grid}
+      <div id="dropspane"${open ? ' hidden' : ''}>${grid}</div><div id="guidepane"${open ? '' : ' hidden'}>${guideHtml(W, act, guide, step)}</div>` : grid}
     ${found ? '' : `<p class="empty">The wiki has nothing on “${esc(name)}” yet. <a href="#/wiki">Search the wiki</a></p>`}`;
   raid?.wire();
-  if (guide) wireGuide();
+  if (guide) wireGuide(act, step);
   const showRollers = n => { const box = $app.querySelector('#rollers'); if (box) box.innerHTML = rollers.slice(0, n).map(w => card(w, `<small>${tierBadge(d.rolls[w.h])}${esc(w.ty)}</small>`)).join(''); };
   showRollers(24);
   $app.querySelector('#morerollers')?.addEventListener('click', e => { showRollers(Infinity); e.target.remove(); });
@@ -1661,14 +1662,16 @@ function guideHtml(W, act, g, step) {
     ${all ? `<dl class="entries">${all}</dl>` : ''}
     <p class="refsrc">Written from ${g.sources.map(([t, u]) => /^https:\/\//.test(u) ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} ↗</a>` : esc(t)).join(' · ')} · checked ${esc(g.checked)}</p></section>`;
 }
-// Drops | Guide and the encounter pills only show and hide what's drawn, so the drop filters, the vault and the scroll all survive
-function wireGuide() {
-  const press = (l, on) => l.forEach(x => x.setAttribute('aria-pressed', String(on(x))));
+// Drops | Guide and the encounter pills only show and hide what's drawn, so the drop filters, the vault and the scroll all survive; the
+// address follows with replaceState (a hash change would rebuild the page), and Back leaves the page as on the perk finder
+function wireGuide(act, step) {
+  const press = (l, on) => l.forEach(x => x.setAttribute('aria-pressed', String(on(x)))), pane = $app.querySelector('#guidepane');
+  const url = () => history.replaceState(null, '', wikiHref(act.name) + (!pane || !pane.hidden ? '/guide' + (step ? '/' + (step + 1) : '') : ''));
   $app.querySelector('.typetabs[aria-label="Page"]')?.addEventListener('click', e => { const b = e.target.closest('button[data-pane]'); if (!b) return;
     const tabs = $app.querySelectorAll('.typetabs [data-pane]'); press(tabs, x => x === b); tabs.forEach(x => x.classList.toggle('on', x === b));
-    $app.querySelector('#dropspane').hidden = b.dataset.pane !== 'drops'; $app.querySelector('#guidepane').hidden = b.dataset.pane !== 'guide'; });
+    $app.querySelector('#dropspane').hidden = b.dataset.pane !== 'drops'; pane.hidden = b.dataset.pane !== 'guide'; url(); });
   $app.querySelector('#guide').addEventListener('click', e => { const b = e.target.closest('button[data-step]'); if (!b) return;
-    press($app.querySelectorAll('#guide button[data-step]'), x => x === b); $app.querySelectorAll('#guide .gstep').forEach(x => x.hidden = x.dataset.step !== b.dataset.step); });
+    step = +b.dataset.step; press($app.querySelectorAll('#guide button[data-step]'), x => x === b); $app.querySelectorAll('#guide .gstep').forEach(x => x.hidden = x.dataset.step !== b.dataset.step); url(); });
 }
 
 // Llama's sheets list raid and dungeon armor by slot ("Helm", "Class Item")
@@ -1995,7 +1998,7 @@ async function route() {
     else if (parts[0] === 'farm') await farm();
     else if (parts[0] === 'vendors') await vendorsPage(parts[1]);
     else if (parts[0] === 'ref') await reference(parts[1] ? +parts[1] : -1);
-    else if (parts[0] === 'wiki') await (parts[1] ? wikiPage(parts[1]) : reference(-1));
+    else if (parts[0] === 'wiki') await (parts[1] ? wikiPage(parts[1], parts[2], parts[3]) : reference(-1));
     else if (parts[0] === 'images') images();
     else $app.innerHTML = '<p class="empty">Page not found. <a href="#/">Back home</a></p>';
   } catch (e) {

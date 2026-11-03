@@ -1,5 +1,5 @@
 // Browser test for the wiki's encounter guides: raid, dungeon and exotic mission pages get a Guide tab beside Drops (Drops opens first and
-// is unchanged), one encounter at a time, sources credited, text escaped. Expected content is read from data/guides at run time, so new
+// is unchanged), one encounter at a time kept in the address, sources credited, text escaped. Expected content is read from data/guides at run time, so new
 // writing never breaks it. Pinned to week 20 (Oct 20 2026 reset: King's Fall featured with Master).
 // Run from the repo root: python3 -m http.server 8765 & npm i --no-save playwright && node tools/guides.test.mjs
 import { chromium } from 'playwright';
@@ -69,14 +69,23 @@ await checkGuide("King's Fall");
 assert.deepEqual(await pressed('.typetabs button[data-pane]'), ['Guide']);
 assert.ok(!(await p.isVisible('.drops')) && !(await p.isVisible('#raidmine')), 'Guide hides Drops and its side column');
 assert.ok(!(await p.$('#guide [data-enc], #guide .drop, #guide .drops')), "the guide's tabs are no drop filters or cards");
+// the open encounter is in the address (replaceState, so no re-render), and a reload or a shared link comes back to it
+assert.ok(p.url().endsWith(`/wiki/King's%20Fall/guide/${G.get("King's Fall").encounters.length}`), p.url());
+await p.click(`${S.pills} >> nth=0`); assert.ok(p.url().endsWith("/wiki/King's%20Fall/guide"), p.url());
+await p.click(`${S.pills} >> nth=2`); assert.ok(p.url().endsWith('/guide/3'), p.url());
 // back on Drops: the same cards with the filter still on, at the same scroll (switching tabs never rebuilds the page)
 await p.click(S.tab('drops'));
-assert.ok(await p.isVisible('.drops') && !(await p.isVisible('#guide')));
+assert.ok(await p.isVisible('.drops') && !(await p.isVisible('#guide')) && p.url().endsWith("/wiki/King's%20Fall"), p.url());
 assert.deepEqual(await visibleDrops(), ['Doom of Chelchis', "Midha's Reckoning"]);
 assert.equal(await p.evaluate(() => scrollY), top);
-// signed in, the vault fills whichever tab is open
+await p.click(S.tab('guide')); assert.ok(p.url().endsWith('/guide/3'), p.url()); await p.click(S.tab('drops'));
+await openWiki("King's Fall", '/guide/3');
+assert.ok(await p.isVisible('#guide') && !(await p.isVisible('.drops')));
+assert.deepEqual([await pressed('.typetabs button[data-pane]'), await pressed(S.pills)], [['Guide'], [`3${G.get("King's Fall").encounters[2].name}`]]);
+await openWiki("King's Fall", '/guide/99'); assert.deepEqual(await pressed(S.pills), [`1${G.get("King's Fall").encounters[0].name}`]);
+// signed in, the vault fills whichever tab is open, even when the page opens on Guide
 await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', expires_at: Date.now() + 3e6 })));
-await openWiki("King's Fall"); await p.click(S.tab('guide')); await p.click(S.tab('drops'));
+await openWiki("King's Fall", '/guide'); await p.click(S.tab('drops'));
 await p.waitForSelector('.drop:has(.dropname b:text-is("Doom of Chelchis")) .own .have');
 assert.match(await p.innerText('#raidmine'), /\b1 of 7 weapons/);
 await p.evaluate(() => localStorage.removeItem('d2c_token'));
@@ -101,6 +110,7 @@ const serve = async fn => { await p.route('**/data/guides/**', async route => { 
   return x === undefined ? route.fulfill({ response: res }) : x === null ? route.fulfill({ status: 404, body: '' }) : route.fulfill({ response: res, json: x }); }); await p.goto('about:blank'); };
 await serve(g => g.name === 'Equilibrium' ? null : undefined);
 await openWiki('Equilibrium'); assert.ok(await p.isVisible('.drops') && !(await p.$('.typetabs button[data-pane]')));
+await openWiki('Equilibrium', '/guide'); assert.ok(await p.isVisible('.drops'));
 await p.unroute('**/data/guides/**');
 await serve(g => g.name === 'Prophecy' ? { ...g, encounters: g.encounters.slice(0, 1) } : undefined);
 await openWiki('Prophecy'); await p.click(S.tab('guide')); assert.equal(await p.$(S.pills), null); assert.equal(await shown(S.step), 1);
@@ -109,7 +119,7 @@ const hits = []; p.on('request', r => r.url().includes('x-xss') && hits.push(r.u
 await serve(g => { if (g.name !== "King's Fall") return; const e = g.encounters[0];
   return { ...g, sources: [['<i>Source</i>', g.sources[0][1]], ['Bad link', 'javascript:window.__xss=3']],
     encounters: [{ ...e, what: 'Plain <b>bold</b> text', steps: ['<img src="x-xss" onerror="window.__xss=1">', ...e.steps], roles: [['<script>window.__xss=2</script>', 'x']] }, ...g.encounters.slice(1)] }; });
-await openWiki("King's Fall"); await p.click(S.tab('guide')); await p.waitForTimeout(300);
+await openWiki("King's Fall", '/guide'); await p.waitForTimeout(300);
 const body = await p.innerText('#guide');
 assert.ok(body.includes('Plain <b>bold</b> text') && body.includes('<img src="x-xss"') && body.includes('<script>') && body.includes('Bad link'), body.slice(0, 200));
 assert.deepEqual([await p.evaluate(() => window.__xss), hits, await p.$$eval('#guide b:text-is("bold"), #guide img[src="x-xss"], #guide script, #guide a[href^="javascript"]', l => l.length)], [undefined, [], 0]);
