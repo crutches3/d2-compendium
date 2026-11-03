@@ -32,6 +32,9 @@ const openWiki = async (n, tail = '', m = p) => { await m.evaluate(() => documen
   if (m.url() === href(n, tail)) await m.goto('about:blank');
   await m.goto(href(n, tail)); await m.waitForSelector(`.hero h1:not([data-old]):text-is("${n.replace(/"/g, '\\"')}")`, { timeout: 10000 }); };
 const pressed = (sel, m = p) => m.$$eval(sel, bs => bs.filter(x => x.getAttribute('aria-pressed') === 'true').map(x => x.textContent.trim()));
+// the Drops | Guide tab that is pressed, which must also be the one drawn as selected (.on, the underline)
+const paneTab = async (m = p) => { const l = await pressed('.typetabs button[data-pane]', m);
+  assert.deepEqual(await m.$$eval('.typetabs button[data-pane].on', bs => bs.map(x => x.textContent.trim())), l, 'selected tab drawn'); return l; };
 // shown means laid out, not just lacking the hidden attribute (a display rule beats [hidden])
 const shown = (sel, m = p) => m.$$eval(sel, l => l.filter(x => x.checkVisibility()).length);
 // rendered text collapses runs of spaces, so a guide line is compared the same way
@@ -68,14 +71,14 @@ const checkGuide = async (name, m = p) => {
 await openWiki("King's Fall");
 const len = await p.evaluate(() => history.length);
 assert.deepEqual(await p.$$eval('.typetabs button[data-pane]', bs => bs.map(x => x.textContent.trim())), ['Drops', 'Guide']);
-assert.deepEqual(await pressed('.typetabs button[data-pane]'), ['Drops']);
+assert.deepEqual(await paneTab(), ['Drops']);
 assert.ok(await p.isVisible('.drops') && !(await p.isVisible('#guide')));
 await p.click('.dropfilter button[data-enc="Golgoroth"]');
 const top = await p.evaluate(() => scrollY);
 await checkGuide("King's Fall");
 // its prose links wiki names as sheet notes do (King's Fall names Overload champions), never the page's own name
 assert.ok(await p.$('#guide a[href="#/wiki/Overload"]') && !(await p.$('#guide a[href="#/wiki/King\'s%20Fall"]')), 'guide prose links');
-assert.deepEqual(await pressed('.typetabs button[data-pane]'), ['Guide']);
+assert.deepEqual(await paneTab(), ['Guide']);
 assert.ok(!(await p.isVisible('.drops')) && !(await p.isVisible('#raidmine')), 'Guide hides Drops and its side column');
 assert.ok(!(await p.$('#guide [data-enc], #guide .drop, #guide .drops')), "the guide's tabs are no drop filters or cards");
 // the open encounter is in the address (replaceState, so no re-render), and a reload or a shared link comes back to it
@@ -95,9 +98,13 @@ await p.click(S.tab('guide')); assert.deepEqual(await pressed(S.pills), [`3${G.g
 await p.click(`${S.pills} >> nth=0`); await p.click(S.tab('drops')); assert.ok(p.url().endsWith("/wiki/King's%20Fall"), p.url());
 await openWiki("King's Fall", '/guide/3');
 assert.ok(await p.isVisible('#guide') && !(await p.isVisible('.drops')));
-assert.deepEqual([await pressed('.typetabs button[data-pane]'), await pressed(S.pills)], [['Guide'], [`3${G.get("King's Fall").encounters[2].name}`]]);
+assert.deepEqual([await paneTab(), await pressed(S.pills)], [['Guide'], [`3${G.get("King's Fall").encounters[2].name}`]]);
 assert.deepEqual(await p.$$eval(`${S.step} h3:not(.drophead)`, hs => hs.filter(h => h.checkVisibility()).map(h => h.textContent.split('.')[0])), ['3']);
-await openWiki("King's Fall", '/guide/99'); assert.deepEqual(await pressed(S.pills), [`1${G.get("King's Fall").encounters[0].name}`]);
+// the last encounter (the address a click on the last pill writes) opens there; past the end, 0 or not a whole number opens the first
+const kf = G.get("King's Fall").encounters;
+await openWiki("King's Fall", `/guide/${kf.length}`);
+assert.deepEqual([await pressed(S.pills), await shown(S.step)], [[`${kf.length}${kf.at(-1).name}`], 1]);
+for (const n of ['99', '0', '2.5']) { await openWiki("King's Fall", `/guide/${n}`); assert.deepEqual([await pressed(S.pills), await shown(S.step)], [[`1${kf[0].name}`], 1], n); }
 // signed in, the vault fills whichever tab is open, even when the page opens on Guide
 await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', expires_at: Date.now() + 3e6 })));
 await openWiki("King's Fall", '/guide'); await p.click(S.tab('drops'));
