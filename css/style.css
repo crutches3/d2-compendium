@@ -518,6 +518,7 @@ section.panel.bare h2.acthead { font: 400 15px/1.4 Georgia, "Times New Roman", s
 /* the same spaced serif capitals as the Distortion planets */
 .act b, .globe b { font-family: Georgia, "Times New Roman", serif; font-weight: 400; text-transform: uppercase; letter-spacing: .3em; color: #f3ead8; }
 .act b { font-size: 14px; text-shadow: 0 0 8px rgba(0, 0, 0, .8); }
+.act b a { color: inherit; }
 .act small { color: var(--muted); font-size: 12px; }
 .actart { position: relative; display: block; }
 .actart > img { display: block; }

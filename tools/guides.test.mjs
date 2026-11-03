@@ -1,7 +1,7 @@
 // Browser test for the wiki's encounter guides: raid, dungeon and exotic mission pages get a Guide tab beside Drops (Drops opens first and
 // is unchanged), one encounter at a time kept in the address, sources credited, text escaped; each Grandmaster strike gets a page with
-// its guide and when it is next the Grandmaster, listed in the wiki. Expected content is read from data/guides at run time, so new
-// writing never breaks it. Pinned to week 20 (Oct 20 2026 reset: King's Fall featured with Master).
+// its guide and when it is next the Grandmaster, listed in the wiki, and the home page's Grandmaster card links to it. Expected content is read from data/guides at run time, so new
+// writing never breaks it. Pinned to week 20 (Oct 20 2026 reset: King's Fall featured with Master), week 21 for the home card.
 // Run from the repo root: python3 -m http.server 8765 & npm i --no-save playwright && node tools/guides.test.mjs
 import { chromium } from 'playwright';
 import fs from 'fs';
@@ -152,6 +152,18 @@ await p.click('#app h3:text-is("Grandmaster strikes") + .tabs a:text-is("Defiant
 assert.ok(p.url().endsWith('#/wiki/Defiant%20BG%3A%20EDZ'), p.url());
 await p.goto('http://localhost:8765/#/wiki'); await p.waitForSelector('#q');
 await p.fill('#q', 'warden'); assert.equal(await p.getAttribute('#refbody a:text-is("Warden of Nothing")', 'href'), '#/wiki/Warden%20of%20Nothing');
+
+// the home page's Grandmaster card names its strike with a link to its page, and stays a plain box, since its weapons are links too
+// (week 21: "Defiant BG: EDZ", a name with a colon). The name is read off the card, so a refresh that moves the schedule still checks
+// whichever strike it shows.
+await p.clock.setFixedTime(new Date('2026-10-29T05:30:00Z'));
+await p.goto('http://localhost:8765/#/'); await p.waitForSelector('#gmguns a');
+const gmName = await p.textContent('.act:has(#gmguns) b');
+assert.ok(gms.includes(gmName), gmName);
+assert.deepEqual([await p.$eval('.act:has(#gmguns)', x => x.tagName), await p.$$eval('a a', l => l.length)], ['DIV', 0]);
+await p.click('.act:has(#gmguns) b a'); await p.waitForSelector(`.hero h1:text-is("${gmName}")`, { timeout: 5000 });
+await p.goBack(); await p.waitForSelector('#gmguns a');
+await p.click('#gmguns a'); await p.waitForSelector('#app h1'); assert.ok(p.url().includes('#/weapon/'));
 
 // on a phone: the tab row is on the first screen, above the side panels phones move up; the tabs wrap rather than push the page
 // sideways; tapping one switches. Checked on the guides with the most encounters and the longest tab names, whatever they are today.
