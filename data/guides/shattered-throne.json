@@ -1,0 +1,91 @@
+{
+  "name": "Shattered Throne",
+  "checked": "2026-11-03",
+  "sources": [
+    ["TheGamer: Shattered Throne complete guide", "https://www.thegamer.com/destiny-2-shattered-throne-dungeon-complete-guide/"],
+    ["Destinypedia: The Shattered Throne walkthrough", "https://www.destinypedia.com/The_Shattered_Throne/Walkthrough"],
+    ["Destinypedia: The Shattered Throne", "https://www.destinypedia.com/The_Shattered_Throne"],
+    ["Shacknews: Shattered Throne dungeon guide", "https://shacknews.com/article/107607/shattered-throne-dungeon-guide-destiny-2"],
+    ["PC Gamer: Shattered Throne map and dungeon guide", "https://pcgamer.com/destiny-2-shattered-throne-map"]
+  ],
+  "about": "A three-player Taken dungeon in the Dreaming City's Ascendant Plane, from Forsaken: a labyrinth and two bosses, linked by long traversal sections. It has checkpoints, so you can leave and return to the last one.",
+  "caveat": "Both hidden chests come from a single guide (TheGamer); no second source was found to confirm them.",
+  "encounters": [
+    {
+      "name": "Erebus",
+      "title": "Erebus: the Labyrinth",
+      "what": "A maze of floating Ascendant buildings. Each area you clear shows a symbol that points to the next one, and the chain changes from run to run; the last symbol leads back to the start and opens the way down.",
+      "steps": [
+        "At the first building, kill the Taken Acolytes and the Labyrinth Architect miniboss. The Acolytes keep making Acolyte's Eyes until they die.",
+        "Note the symbol that appears when the area is clear (birds, fish, dragons and others) and find the building carved with it.",
+        "The right building holds another Labyrinth Architect and a pack of Taken. Kill them all to reveal the next symbol.",
+        "Keep following the chain. The order changes each run, so a community map of the symbols saves time.",
+        "The last symbol points back to the starting building. Clear it again and drop through the hole that opens.",
+        "At the bottom, kill Asterion, Set Apart, the boss that closes this section, while watching for snipers."
+      ],
+      "roles": [
+        ["Whole team", "Move together, call out the symbol after each area and finish each Architect's pack before moving on."]
+      ],
+      "wipes": [
+        "Hobgoblin snipers pick players off on the paths between buildings. Kill them from range.",
+        "The team gets lost and pulls extra Taken between buildings.",
+        "A full team wipe sends you back to the start of the area."
+      ]
+    },
+    {
+      "name": "Vorgeth",
+      "title": "Vorgeth, the Boundless Hunger",
+      "before": "On the descent, snipe the Hobgoblins, Knights and Phalanxes on the broken bridge from its entrance. On the catwalks, kill each Taken Ogre from range as it appears, since its blasts knock you off. Past the fog in the Thrall hall you can't sprint or jump and Thrall never stop coming: keep to the ledges, push to the far end and drop off.",
+      "what": "A Taken Ogre in Eleusinia, shielded until one player gathers four marks from the Keepers of Petitions and puts out one of the four flames around him.",
+      "steps": [
+        "Four Keeper of Petitions Wizards stand around the room, each with Vandals and Goblins. Kill the guards first, then the Wizard.",
+        "A dead Wizard drops an orb that gives Petitioner's Mark. Each orb adds a stack and resets its 45-second timer; if it runs out, the holder dies.",
+        "Have one player take every orb. Kill the next Wizard before picking up the waiting orb so the timer never runs low.",
+        "At four stacks the debuff becomes Petitioner's Burden. Put out one of the flames around Vorgeth to drop his shield.",
+        "Damage him. During the window he releases homing Taken orbs: shoot them down or move away from them.",
+        "If he survives, take cover, kill the Wizards again and use another flame. TheGamer says the encounter fails after the fourth attempt."
+      ],
+      "roles": [
+        ["Mark carrier (1)", "Collects every Wizard orb, keeps the timer alive and puts out a flame."],
+        ["Orb shooter (1)", "During damage, shoots down the homing orbs so the others can stay on Vorgeth."],
+        ["Whole team", "Clear each Wizard's guards and damage Vorgeth when the shield falls."]
+      ],
+      "wipes": [
+        "Petitioner's Mark runs out and kills the carrier.",
+        "The carrier dies with stacks, and all of them are lost.",
+        "Standing in the open while Vorgeth is shielded. His eye blasts hit hard and knock you back; use the pillars.",
+        "Homing orbs reach the team during damage because nobody shot them."
+      ],
+      "chests": [
+        "Start of the Thrall hall: in the first room go to the far end instead of taking the stairs on the left and jump over the railing into the drop. As the slow wears off, jump to break the fall, then turn around to find the chest."
+      ]
+    },
+    {
+      "name": "Dûl Incaru",
+      "title": "Dûl Incaru, the Eternal Return",
+      "before": "After Vorgeth, talk to the Awoken statue, then ride the gravity lifts up the tower past Wizards, Thrall and Phalanxes. The Ascend section runs outside along a narrow ledge where Taken blights push you: stay against the tower wall and move slowly. Elevators lead to the top.",
+      "what": "A Taken Hive Wizard guarded by three large Knights. Each Knight drops an orb that gives Finite Thought, which lets you damage her, but the buff kills you unless you cleanse it in the middle of the room in time.",
+      "steps": [
+        "Kill the Taken Psions on the two side ledges as soon as they appear. Left alive, they multiply.",
+        "Kill the Knights one at a time. They walk slowly at first but sprint once their helmets break.",
+        "Each dead Knight drops an orb. Take two or three stacks of Finite Thought; more stacks mean more damage.",
+        "Damage Dûl Incaru while the buff lasts.",
+        "Before the timer ends, stand in the central well to cleanse it.",
+        "If a Knight lives too long she summons a crystal that makes the Knights immune. Break it, then finish them.",
+        "The Knights return after a while. Repeat until she dies; with three stacks she can fall in one phase."
+      ],
+      "roles": [
+        ["Whole team", "Clear Psions first, focus one Knight at a time, take the orbs together and cleanse together."]
+      ],
+      "wipes": [
+        "Finite Thought runs out before its holder cleanses.",
+        "Psions are left alive, multiply and overwhelm the small arena.",
+        "A Knight survives long enough to be shielded by the crystal.",
+        "Sprinting Knights corner a player; use the pillars and the back balcony to kite."
+      ],
+      "chests": [
+        "After Vorgeth, at the first elevator: stay to the right of the elevator and drink a Tincture of Queensfoil (you need one). Platforms appear beside a large pillar; follow them to the chest."
+      ]
+    }
+  ]
+}
