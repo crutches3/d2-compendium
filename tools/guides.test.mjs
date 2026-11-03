@@ -122,6 +122,12 @@ await p.unroute('**/data/guides/**');
 await serve(g => g.name === 'Prophecy' ? { ...g, encounters: g.encounters.slice(0, 1) } : undefined);
 await openWiki('Prophecy'); await p.click(S.tab('guide')); assert.equal(await p.$(S.pills), null); assert.equal(await shown(S.step), 1);
 await p.unroute('**/data/guides/**');
+// a file that parses but breaks the format (a hand edit) is no guide either: Drops, or the strike's empty-state line, still draws
+await serve(g => g.name === "King's Fall" ? { ...g, encounters: [{ ...g.encounters[0], roles: undefined }, ...g.encounters.slice(1)] }
+  : g.name === 'Prophecy' ? { ...g, encounters: undefined } : g.name === 'Warden of Nothing' ? { ...g, encounters: 'x' } : undefined);
+for (const n of ["King's Fall", 'Prophecy']) { await openWiki(n, '/guide/2'); assert.ok(await p.isVisible('.drops') && !(await p.$('.typetabs button[data-pane]')), n); }
+await openWiki('Warden of Nothing'); assert.ok(!(await p.$('#guide')) && /guide/i.test(await p.textContent('.wtop .empty')));
+await p.unroute('**/data/guides/**');
 const hits = []; p.on('request', r => r.url().includes('x-xss') && hits.push(r.url()));
 await serve(g => { if (g.name !== "King's Fall") return; const e = g.encounters[0];
   return { ...g, sources: [['<i>Source</i>', g.sources[0][1]], ['Bad link', 'javascript:window.__xss=3']],

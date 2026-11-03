@@ -1599,7 +1599,9 @@ async function wikiPage(raw, pane, n) {
   const defs = W.terms.get(key) || [], champ = CHAMPIONS.find(c => c.toLowerCase() === key);
   // hand-written, one file per activity and only for activities (perk and weapon names would all 404); a missing or broken file means no guide
   const guide = act && /Raid|Dungeon|mission|Strike/.test(act.kind) ? await load('guides/' + guideFile(act.name)).catch(() => null) : null;
-  const step = /^\d+$/.test(n) && n >= 1 && n <= (guide?.encounters.length || 0) ? n - 1 : 0;
+  const step = /^\d+$/.test(n) && n >= 1 && n <= (guide?.encounters?.length || 0) ? n - 1 : 0;
+  // so is one that parses but breaks the format (a hand edit): drawn once here, a throw leaves the page as it would be with no guide
+  let gh = ''; try { gh = guide ? guideHtml(W, act, guide, step) : '' } catch (e) { console.error(e) }
   const weapon = d.weapons.find(w => w.n.toLowerCase() === key), armor = a.armor.find(x => x.n.toLowerCase() === key);
   // weapons that can roll a perk or frame of this name, one per weapon name, best rated first
   const plugs = new Set(Object.keys(d.plugs).filter(h => d.plugs[h].n.toLowerCase() === key).map(Number)), rank = w => 'SABCDF'.indexOf(d.rolls[w.h]?.t) + 1 || 9;
@@ -1625,7 +1627,7 @@ async function wikiPage(raw, pane, n) {
     // an activity named like a perk (the Encore mission) keeps its own banner, not the perk's icon and text
     i: raid ? null : plug?.i || W.art.icon[key] || defs.find(x => x.icon)?.icon || W.art.icon[defs[0]?.where.toLowerCase()] };
   // a strike's page is its guide (one held back says so)
-  const main = `${act?.kind === 'Strike' ? guide ? guideHtml(W, act, guide, step) : `<p class="empty">The guide for ${esc(act.name)} isn't written yet.</p>` : raid?.main || loot || ''}
+  const main = `${act?.kind === 'Strike' ? gh ? gh : `<p class="empty">The guide for ${esc(act.name)} isn't written yet.</p>` : raid?.main || loot || ''}
     ${defs.length ? `<section class="panel"><h2>What it does</h2><dl class="entries">${defs.map(x => entryHtml(x.e, { W, self: name,
       where: x.i != null ? `<a href="#/ref/${x.i}">${esc(x.where)}</a>${x.section ? ' · ' + esc(x.section) : ''}` : `${esc(x.where)} · ${esc(x.section)}` })).join('')}</dl></section>` : ''}
     ${rollers.length ? `<section class="panel"><h2>Weapons that can roll it <span class="count">${rollers.length}</span></h2>
@@ -1640,13 +1642,13 @@ async function wikiPage(raw, pane, n) {
     ${champ ? `<section class="panel"><h2>Counters</h2><p>Everything here mentions ${esc(champ)} champions.${counters ? ` Court's full list of what stuns them is in the <a href="${esc(counters)}" target="_blank" rel="noopener">Champion counters sheet ↗</a>.` : ''}</p></section>` : ''}`.trim();
   const found = main || side, grid = main && side ? `<div class="wtop wiki"><div>${main}</div><div class="wside">${side}</div></div>` : main || side;
   // a guide gets its own tab beside Drops, above the whole layout (phones move the side panels up); Drops opens first and is drawn as before
-  const tabbed = guide && act.kind !== 'Strike', open = tabbed && pane === 'guide';
+  const tabbed = gh && act.kind !== 'Strike', open = tabbed && pane === 'guide';
   $app.innerHTML = `<p class="crumbs"><a href="#/wiki">Wiki</a></p>${found ? hero({ ...art, n: title }, `<span class="wikitags">${tags.map(t => `<span class="badge">${esc(t)}</span>`).join('')}${raid?.badge || ''}</span>`) : `<h1>${esc(title)}</h1>`}
     ${tabbed ? `<div class="tabs typetabs" role="group" aria-label="Page">${[['drops', 'Drops'], ['guide', 'Guide']].map(([k, t]) => `<button type="button" data-pane="${k}"${(k === 'guide') === open ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${t}</button>`).join('')}</div>
-      <div id="dropspane"${open ? ' hidden' : ''}>${grid}</div><div id="guidepane"${open ? '' : ' hidden'}>${guideHtml(W, act, guide, step)}</div>` : grid}
+      <div id="dropspane"${open ? ' hidden' : ''}>${grid}</div><div id="guidepane"${open ? '' : ' hidden'}>${gh}</div>` : grid}
     ${found ? '' : `<p class="empty">The wiki has nothing on “${esc(name)}” yet. <a href="#/wiki">Search the wiki</a></p>`}`;
   raid?.wire();
-  if (guide) wireGuide(act, step);
+  if (gh) wireGuide(act, step);
   const showRollers = n => { const box = $app.querySelector('#rollers'); if (box) box.innerHTML = rollers.slice(0, n).map(w => card(w, `<small>${tierBadge(d.rolls[w.h])}${esc(w.ty)}</small>`)).join(''); };
   showRollers(24);
   $app.querySelector('#morerollers')?.addEventListener('click', e => { showRollers(Infinity); e.target.remove(); });
