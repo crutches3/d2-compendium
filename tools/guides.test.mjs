@@ -34,6 +34,8 @@ const openWiki = async (n, tail = '', m = p) => { await m.evaluate(() => documen
 const pressed = (sel, m = p) => m.$$eval(sel, bs => bs.filter(x => x.getAttribute('aria-pressed') === 'true').map(x => x.textContent.trim()));
 // shown means laid out, not just lacking the hidden attribute (a display rule beats [hidden])
 const shown = (sel, m = p) => m.$$eval(sel, l => l.filter(x => x.checkVisibility()).length);
+// rendered text collapses runs of spaces, so a guide line is compared the same way
+const sp = t => t.replace(/\s+/g, ' ');
 const visibleDrops = () => p.$$eval('.drop[data-h]', cs => cs.filter(c => !c.hidden).map(c => c.querySelector('b').textContent));
 // open the guide and check every encounter against its file: one shown at a time, in file order, with all its parts
 const checkGuide = async (name, m = p) => {
@@ -50,11 +52,11 @@ const checkGuide = async (name, m = p) => {
       return [x.querySelector('h3').textContent, x.innerText, [...x.querySelectorAll('.entry dt')].map(d => d.textContent)]; });
     assert.equal(h, `${i + 1}. ${e.title || e.name}`, name);
     for (const line of [e.what, e.before, ...e.steps, ...e.roles.flat(), ...e.wipes, ...(e.chests || []), ...(e.master || []), ...(e.epic || [])].filter(Boolean))
-      assert.ok(t.includes(line), `${name} / ${e.name}: missing "${line.slice(0, 50)}"`);
+      assert.ok(sp(t).includes(sp(line)), `${name} / ${e.name}: missing "${line.slice(0, 50)}"`);
     assert.deepEqual(labels, [['Roles', e.roles], ['Common wipes', e.wipes], ['Secret chests', e.chests], ['Master', e.master], ['Epic', e.epic]].filter(([, l]) => l).map(([k]) => k), name);
   }
   const all = await m.innerText('#guide');
-  for (const line of [g.about, g.caveat, ...(g.master || []), ...(g.epic || [])].filter(Boolean)) assert.ok(all.includes(line), `${name}: missing "${line.slice(0, 50)}"`);
+  for (const line of [g.about, g.caveat, ...(g.master || []), ...(g.epic || [])].filter(Boolean)) assert.ok(sp(all).includes(sp(line)), `${name}: missing "${line.slice(0, 50)}"`);
   if (g.caveat) assert.equal(await m.textContent('#guide > p.muted'), g.caveat);
   // each source credited by its title, opening in a new tab, and the day they were checked
   assert.deepEqual(await m.$$eval(S.src, as => as.map(a => [a.textContent.trim(), a.getAttribute('href'), a.target, a.rel])), g.sources.map(([t, u]) => [`${t} ↗`, u, '_blank', 'noopener']), name);
