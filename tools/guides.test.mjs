@@ -66,12 +66,15 @@ const checkGuide = async (name, m = p) => {
 
 // King's Fall: Drops opens first and works as before; Guide sits beside it and hides the whole Drops view, side column included
 await openWiki("King's Fall");
+const len = await p.evaluate(() => history.length);
 assert.deepEqual(await p.$$eval('.typetabs button[data-pane]', bs => bs.map(x => x.textContent.trim())), ['Drops', 'Guide']);
 assert.deepEqual(await pressed('.typetabs button[data-pane]'), ['Drops']);
 assert.ok(await p.isVisible('.drops') && !(await p.isVisible('#guide')));
 await p.click('.dropfilter button[data-enc="Golgoroth"]');
 const top = await p.evaluate(() => scrollY);
 await checkGuide("King's Fall");
+// its prose links wiki names as sheet notes do (King's Fall names Overload champions), never the page's own name
+assert.ok(await p.$('#guide a[href="#/wiki/Overload"]') && !(await p.$('#guide a[href="#/wiki/King\'s%20Fall"]')), 'guide prose links');
 assert.deepEqual(await pressed('.typetabs button[data-pane]'), ['Guide']);
 assert.ok(!(await p.isVisible('.drops')) && !(await p.isVisible('#raidmine')), 'Guide hides Drops and its side column');
 assert.ok(!(await p.$('#guide [data-enc], #guide .drop, #guide .drops')), "the guide's tabs are no drop filters or cards");
@@ -85,6 +88,7 @@ assert.ok(await p.isVisible('.drops') && !(await p.isVisible('#guide')) && p.url
 assert.deepEqual(await visibleDrops(), ['Doom of Chelchis', "Midha's Reckoning"]);
 assert.equal(await p.evaluate(() => scrollY), top);
 await p.click(S.tab('guide')); assert.ok(p.url().endsWith('/guide/3'), p.url()); await p.click(S.tab('drops'));
+assert.equal(await p.evaluate(() => history.length), len, 'tabs and pills replace the address, so Back leaves the page');
 await openWiki("King's Fall", '/guide/3');
 assert.ok(await p.isVisible('#guide') && !(await p.isVisible('.drops')));
 assert.deepEqual([await pressed('.typetabs button[data-pane]'), await pressed(S.pills)], [['Guide'], [`3${G.get("King's Fall").encounters[2].name}`]]);
@@ -131,11 +135,13 @@ await p.unroute('**/data/guides/**');
 const hits = []; p.on('request', r => r.url().includes('x-xss') && hits.push(r.url()));
 await serve(g => { if (g.name !== "King's Fall") return; const e = g.encounters[0];
   return { ...g, sources: [['<i>Source</i>', g.sources[0][1]], ['Bad link', 'javascript:window.__xss=3']],
-    encounters: [{ ...e, what: 'Plain <b>bold</b> text', steps: ['<img src="x-xss" onerror="window.__xss=1">', ...e.steps], roles: [['<script>window.__xss=2</script>', 'x']] }, ...g.encounters.slice(1)] }; });
+    encounters: [{ ...e, what: 'Plain <b>bold</b> text', steps: ['<img src="x-xss" onerror="window.__xss=1">', ...e.steps], roles: [['<script>window.__xss=2</script>', 'x']] },
+      { ...g.encounters[1], name: '<u>W</u>', title: '<img src="x-xss-t" onerror="window.__xss=4">' }, ...g.encounters.slice(2)] }; });
 await openWiki("King's Fall", '/guide'); await p.waitForTimeout(300);
 const body = await p.innerText('#guide');
 assert.ok(body.includes('Plain <b>bold</b> text') && body.includes('<img src="x-xss"') && body.includes('<script>') && body.includes('Bad link'), body.slice(0, 200));
-assert.deepEqual([await p.evaluate(() => window.__xss), hits, await p.$$eval('#guide b:text-is("bold"), #guide img[src="x-xss"], #guide script, #guide a[href^="javascript"]', l => l.length)], [undefined, [], 0]);
+assert.deepEqual([await p.$eval(`${S.pills} >> nth=1`, x => x.textContent), await p.textContent('#guide .gstep[data-step="1"] h3')], ['2<u>W</u>', '2. <img src="x-xss-t" onerror="window.__xss=4">']);
+assert.deepEqual([await p.evaluate(() => window.__xss), hits, await p.$$eval('#guide b:text-is("bold"), #guide img, #guide u, #guide script, #guide a[href^="javascript"]', l => l.length)], [undefined, [], 0]);
 assert.equal(await p.textContent(`${S.src} >> nth=0`), '<i>Source</i> ↗');
 await p.unroute('**/data/guides/**');
 
@@ -164,10 +170,14 @@ await p.goto('http://localhost:8765/#/wiki'); await p.waitForSelector('#q');
 await p.fill('#q', 'warden'); assert.equal(await p.getAttribute('#refbody a:text-is("Warden of Nothing")', 'href'), '#/wiki/Warden%20of%20Nothing');
 
 // pages beside the guides that used to break: a Portal activity and a vendor (the home page's PvP link opens one) draw their page
+// and only activities look for a guide file: a Portal activity, a vendor or a champion fetches none
+const guideReqs = [], onReq = r => r.url().includes('/data/guides/') && guideReqs.push(r.url()); p.on('request', onReq);
+await openWiki('Overload');
 for (const n of ['Trials of Osiris', 'Ada-1']) {
   await p.goto(href(n)); await p.waitForSelector(`#app :is(.hero h1:text-is("${n}"), p:text-matches("Something went wrong"))`);
   assert.ok(!(await p.innerText('#app')).includes('Something went wrong') && await p.isVisible('table.data'), `${n}: ${(await p.innerText('#app')).slice(0, 80)}`);
 }
+p.off('request', onReq); assert.deepEqual(guideReqs, []);
 
 // the home page's featured-raid card for the newest raid ("Desert Perpetual" in the schedule) opens its page, as does that name typed in
 await p.goto('http://localhost:8765/#/'); await p.click(`.act[href="#/wiki/${encodeURIComponent(rot.always.raids[0])}"]`);
