@@ -1,0 +1,206 @@
+{
+  "name": "King's Fall",
+  "checked": "2026-11-03",
+  "about": "A six-player raid aboard Oryx's Dreadnaught, brought back from the first Destiny in August 2022 (Season of Plunder). Normal and Master are both still offered in 2026, and it is one of the raids that rotate through the weekly featured slot.",
+  "caveat": "The encounter guides date from 2022; no later source reports mechanic changes, but the Master champion and shield lists have not been rechecked since the June 2026 update.",
+  "sources": [
+    ["GameSpot: King's Fall raid guide, every encounter and secret chest", "https://www.gamespot.com/articles/destiny-2-kings-fall-raid-guide-how-to-beat-every-encounter-and-open-every-secret-chest/1100-6506998/"],
+    ["Shacknews: King's Fall raid guide", "https://www.shacknews.com/article/131935/kings-fall-raid-guide-destiny-2"],
+    ["Windows Central: King's Fall raid guide", "https://www.windowscentral.com/gaming/destiny-2-kings-fall-raid-guide"],
+    ["PCGamesN: King's Fall raid guide", "https://www.pcgamesn.com/destiny-2/kings-fall-raid-guide"],
+    ["Yardbarker: King's Fall raid guide (June 2026)", "https://www.yardbarker.com/video_games/articles/destiny_2_kings_fall_2026_raid_guide/s1_17456_43921066"],
+    ["Gfinity: Daughters of Oryx guide", "https://www.gfinityesports.com/article/destiny-2-kings-fall-daughters-of-oryx-guide"],
+    ["Gfinity: King's Fall secret chests", "https://www.gfinityesports.com/article/kings-fall-secret-chests"],
+    ["Destinypedia: King's Fall", "https://www.destinypedia.com/King%27s_Fall"],
+    ["Shacknews: Master King's Fall changes", "https://www.shacknews.com/article/132394/master-kings-fall-changes-destiny-2"],
+    ["Sportskeeda: Master King's Fall enemy changes", "https://www.sportskeeda.com/esports/destiny-2-master-king-s-fall-enemy-guide-all-enemy-changes-additions-normal-version"],
+    ["Shattered Vault: Destiny 2 Update 9.7.0.2", "https://shatteredvault.com/destiny-2-update-9-7-0-2/"],
+    ["Kyber's Corner: King's Fall (Legacy)", "https://kyberscorner.com/destiny2/kings-fall-raid"]
+  ],
+  "master": [
+    "Master is still in the game: Update 9.7.0.2 (June 2026) fixed Master King's Fall not showing in Fireteam Finder.",
+    "Enemies are tougher and hit harder, and every encounter gains champions and elemental shields. The per-tab Master notes come from September 2022 guides (Shacknews, Sportskeeda), so check the champion and shield types in game."
+  ],
+  "encounters": [
+    {
+      "name": "Opening relics",
+      "title": "Hall of Souls: the Court of Oryx relics",
+      "what": "The opening puzzle: carry pairs of relics to six Thrall statues in the Court of Oryx to open the portal into the Dreadnaught. There is no boss.",
+      "steps": [
+        "Split into three pairs: one for the left wing, one for the right wing and one holding the middle hall.",
+        "In each wing one player picks up a relic and the partner escorts them. A relic carrier can't shoot or use abilities, and the relic only lasts a short time.",
+        "Each pickup seals the doorway back with a Taken blight and spawns adds. The escort, or the middle pair from the other side, shoots the blight to reopen the way.",
+        "Bring both relics to the same statue and dunk them within a few seconds of each other.",
+        "The statue lights and the next pair of relics spawns further back in the wings. Repeat until all six statues are lit.",
+        "Clear the enemies that then appear in the court and the portal opens."
+      ],
+      "roles": [
+        ["Relic runners (2)", "One per wing. Carry each relic to the statue and call the pickup so both dunks line up."],
+        ["Escorts (2)", "One per wing. Clear adds and break the blight that seals the doorway."],
+        ["Middle pair (2)", "Hold the hall, kill adds around the statues and help break blights."]
+      ],
+      "wipes": [
+        "There is no team wipe here. A missed pair just has to be run again.",
+        "The two relics are dunked too far apart, so the statue doesn't light.",
+        "A runner is stuck behind an unbroken blight while the relic timer runs down."
+      ],
+      "chests": [
+        "Code for the rune chest: before going through the portal, look up at the underside of the portal platform and note or screenshot the three Hive runes. They are the code for the bonus chest after Oryx, and you can't come back to read them later."
+      ],
+      "master": [
+        "In 2022 guides, each relic pickup spawns Unstoppable Taken Phalanxes on the sides and an Overload Taken Hobgoblin in the middle, so the middle pair has to support the wings more. Guides differ on the shield elements here."
+      ]
+    },
+    {
+      "name": "Totems",
+      "title": "Annihilator Totems (Basilica)",
+      "what": "Two side rooms each hold an Annihilator Totem that floods the room with poison. Hold both Totems, turn kills into Deathsinger's Power and deposit 200 of it in the middle to open the door. No boss.",
+      "before": "Through the portal, cross the pendulums, then the tomb ships: ride each ship until it breaks up and jump to the next, skip the decoy, and use the round ledge in the middle as a checkpoint. At the end, two players hold the two plates to let the other four through, then two of those hold the far plates for the last two.",
+      "steps": [
+        "Split into two teams of three, one per side, and number each player 1 to 3 for the rotation.",
+        "Player 1 on each side takes the Brand at the room's entrance (Brand of the Weaver or Brand of the Unraveler) and stands on the plate under the Totem. The Brand blocks the poison and lasts 30 seconds.",
+        "The Brand holder kills adds from the plate. Every kill adds stacks of Deathsinger's Power.",
+        "Player 2 kills the Hive Wizard on the central balcony, then the Blightguard (a Taken Knight) that follows, and takes Brand Claimer.",
+        "Player 2 uses Brand Claimer next to player 1 to take the Brand and the plate.",
+        "Player 1 deposits the stacks on the central plate. Keep rotating 1, 2, 3 on both sides; the glyphs on the door fill as power goes in.",
+        "Kill the Unstoppable Ogres that spawn partway through. The door opens at 200 deposited."
+      ],
+      "roles": [
+        ["Brand holder (1 per side)", "Holds the Totem plate, kills adds and builds Deathsinger's Power."],
+        ["Claimer (1 per side)", "Kills the balcony Wizard and Blightguard and steals the Brand before its timer ends."],
+        ["Depositor (1 per side)", "Takes the stacks to the central plate, then rejoins the rotation."]
+      ],
+      "wipes": [
+        "A Totem plate left empty for a few seconds wipes the team.",
+        "The Brand timer hits zero: its holder dies, the stacks are lost and the Brand returns to its pickup spot.",
+        "Holding Deathsinger's Power blocks taking Brand Claimer (the game shows Brand Denied), so deposit first.",
+        "A slow Blightguard kill leaves no Claimer in time."
+      ],
+      "chests": [
+        "Tomb ship chest: at the end of the ships, leave one player on each of the two plates. The other four ride a ship to the small ledge on the left and follow the sloped wall up to the doorway the plates opened; the chest is inside past some Hive. Two of the four then hold the far plates so the first two can cross."
+      ],
+      "master": [
+        "In 2022 guides, Unstoppable Ogres spawn in the side rooms as well as the middle, and the Hive Wizards carry Solar shields."
+      ]
+    },
+    {
+      "name": "Warpriest",
+      "title": "Warpriest",
+      "what": "The first boss. Three plates face three monoliths; stepping on the plates in the order the monoliths glow gives one player Brand of the Initiate, whose aura is the only way to damage the Warpriest.",
+      "steps": [
+        "Put one player on each of the left, middle and right plates to start. Hive adds pour in.",
+        "Kill the Blistered Wizards, then the Knights that follow. This starts the glyph reading.",
+        "The middle player stands on the middle plate, sees which monolith glows, calls it and steps off.",
+        "Step onto the plates one at a time in the order the monoliths light, each player calling the next glow. A wrong order fails the reading.",
+        "The player on the last plate gets Brand of the Initiate, an aura with a timer. Everyone stands inside it and damages the Warpriest.",
+        "Blightguards (Taken Knights) spawn during damage. Kill one, grab Brand Claimer and take the Brand near the end of its timer; a second Blightguard gives one more extension.",
+        "When the last Brand runs out, the whole team hides behind the same monolith to survive the Oculus. That monolith breaks. Repeat; there are at most four damage phases."
+      ],
+      "roles": [
+        ["Plate players (3)", "One each on left, middle and right. The middle one reads the first glow; each calls the next."],
+        ["Partners (3)", "Clear adds by their plate, shoot down the Warpriest's projectiles and kill Blightguards for Brand Claimer."]
+      ],
+      "wipes": [
+        "Anyone not behind the chosen monolith when the Oculus fires dies.",
+        "Hiding behind two different monoliths breaks both and costs a damage phase.",
+        "Stepping on the plates out of order fails the reading. Guides differ on whether one mistake or two wipes the team, so call each glow clearly.",
+        "A late Brand Claimer swap ends the damage phase early."
+      ],
+      "master": [
+        "In 2022 guides, Barrier Hive Knights replace the Revenant Knights and Overload Hobgoblins replace the Ravenous Taken Knights. Blistered Wizards and Servile Knights carry Solar shields and Taken Acolytes Void shields. Expect the fight to take all four phases."
+      ]
+    },
+    {
+      "name": "Golgoroth",
+      "title": "Golgoroth",
+      "what": "A giant Ogre in a pit. Two players take turns holding his Gaze to turn him, while the rest shoot his belly from pools of light dropped from the ceiling.",
+      "before": "After the Warpriest, cross Golgoroth's Cellar, a dark maze with pits and Thrall. Two guides give the route as right, left, left, then right.",
+      "steps": [
+        "Shoot the orb above the centre to start; Golgoroth comes up. Clear the adds first.",
+        "Gaze player 1 shoots the glowing spot on his back to take Golgoroth's Gaze for 20 seconds. He follows that player, who turns him so his belly faces the damage team.",
+        "Shoot an orb on the ceiling. It drops a Pool of Reclaimed Light; the damage team stands in it and shoots his belly. Damage only counts from inside a pool.",
+        "Before the Gaze runs out, gaze player 2 shoots his back to take it over and the next orb is shot. The pools alternate sides, so the team moves each time.",
+        "Standing in a pool can give one player Unstable Light. That player moves away from the team, ideally to Golgoroth's feet, where the blast also hurts him.",
+        "Gaze holders shoot down the darts aimed at them. The phase ends when all six orbs are used or the Gaze drops; regroup, clear adds and repeat."
+      ],
+      "roles": [
+        ["Gaze holders (2)", "Alternate taking the Gaze, keep Golgoroth facing the team and shoot the next orb."],
+        ["Damage team (4)", "Stand in each pool, shoot his belly and move to the next pool together."]
+      ],
+      "wipes": [
+        "The Gaze lapses. Every orb left unused is marked on the tablet behind Golgoroth, and six marks wipe the team.",
+        "Unstable Light goes off next to the team.",
+        "A Gaze holder dies to darts or adds and the Gaze can't be passed on."
+      ],
+      "chests": [
+        "Maze chest: five plates in Golgoroth's Cellar must be stood on in a set order. A right plate turns green; a wrong one turns red and resets the run. One plate needs a jump onto a small pillar and up into a hole in the wall. Guides follow a community map for the order (GameSpot links one)."
+      ],
+      "master": [
+        "In 2022 guides, Barrier Hive Knights replace the Knights on the outcroppings. Blistered and Revenant Wizards carry Solar shields and Ravenous Taken Wizards Void shields. Enemies hit much harder."
+      ]
+    },
+    {
+      "name": "Daughters",
+      "title": "Daughters of Oryx",
+      "what": "Two Deathsingers, Ir Anûk and Ir Halak, sing a song that wipes the team after two minutes. A runner collects three pieces of the Blightguard to steal one Daughter's aura, which keeps the team alive while it damages her.",
+      "before": "After Golgoroth, cross the Transept jumping section: time your jumps past the pistons that push out of the walls. The door at the top opens when the whole team reaches it.",
+      "steps": [
+        "Assign one player to each of the four plates (left 1, left 2, right 1, right 2) and two floaters.",
+        "Kill the Knight on the plate that is glowing. The two-minute song timer starts.",
+        "One random player becomes Torn Between Dimensions; their screen turns grey.",
+        "The glowing plate's player stands on it and calls which plate the floating Blightguard piece is above. That plate's player jumps up, and platforms appear for the Torn player to reach the piece. Plate players stay still until it is grabbed.",
+        "Run this three times. The third pickup gives Brand Claimer.",
+        "The Brand Claimer takes the immunity aura from the Daughter who is singing. Everyone stands in that aura on the ledge partway up her pillar and damages her.",
+        "Stay inside the aura until the song's white flash has passed, then run the next cycle for the other Daughter."
+      ],
+      "roles": [
+        ["Plate players (4)", "One per plate. The glowing plate's player calls the piece; the called plate's player raises the path."],
+        ["Floaters (2)", "Clear adds and cover any plate whose player has become Torn."],
+        ["Torn runner (random)", "Crosses the path, takes the piece, and on the third run steals the aura."]
+      ],
+      "wipes": [
+        "The song finishes before the aura is stolen.",
+        "Someone leaves the aura before the white flash ends.",
+        "A plate player steps off while the Torn player is still crossing, so the path vanishes."
+      ],
+      "chests": [
+        "Transept chest: at the far end of the Transept, use your Ghost to reveal hidden platforms leading to an opening in the wall beside a large column. The chest is at the back of the room inside."
+      ],
+      "master": [
+        "In 2022 guides, the Knight on the plates is a Barrier champion, and Taken Phalanxes and Captains carry Arc shields."
+      ]
+    },
+    {
+      "name": "Oryx",
+      "title": "Oryx, the Taken King",
+      "what": "The final boss, in the same arena. The runner routine from the Daughters repeats while plate players kill Ogres for blights, then detonate them together to stun Oryx.",
+      "steps": [
+        "Kill the Taken Knights on the plates. Oryx slams one plate; that is the starting plate for the run.",
+        "Run the Torn routine from the Daughters fight to collect three Blightguard pieces.",
+        "Each plate player kills the Light-Eater Ogre at their plate; it leaves a Taken Blight. Kill the Light-Eater Knights fast, because they try to eat the blights.",
+        "The Vessel of Oryx, a Knight with an aura, walks to the middle. The runner with the third piece uses Brand Claimer on it to take the Aura of Immortality, then the team kills the Vessel.",
+        "When Oryx calls upon the Darkness, the four plate players stand in their blights until their names show in the lower left, then everyone runs into the aura.",
+        "The blasts stun Oryx and open his chest. Damage it from inside the aura.",
+        "Next he either pulls the team into a dark dome where a Shade of Oryx must die before time runs out, or drops bombs on every player: keep moving or kill the Knights on the plates until it ends.",
+        "Repeat. At his final stand two Light-Eater Ogres appear; detonate their blights when he calls the Darkness and kill him before his last attack."
+      ],
+      "roles": [
+        ["Plate players (4)", "Kill their Ogre, guard its blight from Knights and detonate it on the call."],
+        ["Floaters (2)", "Kill Light-Eater Knights and adds, and take over a plate when its player is Torn."],
+        ["Torn runner (random)", "Collects the three pieces and takes the Vessel's aura."]
+      ],
+      "wipes": [
+        "A Light-Eater Knight eats a blight, so the stun is shorter.",
+        "Anyone outside the aura when the blights detonate dies.",
+        "The Shade of Oryx survives the dome's time limit.",
+        "Oryx survives his final stand."
+      ],
+      "chests": [
+        "Rune chest: shoot glowing Hive runes around the raid to toggle them until exactly the three from under the portal are lit; a message in the lower left confirms it. The nine spots: the pendulums, over the tomb ship chest door, the left Totem room, the Warpriest room, the maze, Golgoroth's arena, two in the Transept and over the final arena door. A bonus chest then appears after Oryx, once a week."
+      ],
+      "master": [
+        "In 2022 guides, Overload Taken Hobgoblins replace the Taken Knights on the plates, Light-Eater Knights and the Vessel of Oryx carry Arc shields and Taken Acolytes Void shields. If Oryx picks bombs over the dome, the Overload champions are hard to kill in time, so keep moving."
+      ]
+    }
+  ]
+}
