@@ -1,0 +1,149 @@
+{
+  "name": "Kell's Fall",
+  "checked": "2026-11-03",
+  "about": "An exotic mission for one to three players against Fikrul's Scorn, added in Episode: Revenant (January 2025), that rewards Slayer's Fang. Most fights switch between the material world and the Revenant Plane, which you enter by shooting cracked mirrors and archways. The organ in the Bailey plays melodies found around the mission; several open rooms that hold Slayer's Fang upgrades.",
+  "caveat": "Whether all three variants (Reflection, Distortion, Diffraction) still rotate after June 2026 is unconfirmed, and Diffraction's final-fight details come from Destinypedia alone.",
+  "sources": [
+    [
+      "Destinypedia: Kell's Fall",
+      "https://www.destinypedia.com/Kell's_Fall"
+    ],
+    [
+      "Dot Esports: How to complete Kell's Fall and its secret puzzles",
+      "https://dotesports.com/destiny/news/destiny-2-how-to-complete-kells-fall-and-its-secret-puzzles"
+    ],
+    [
+      "Destructoid: How to complete the Kell's Fall exotic mission",
+      "https://destructoid.com/destiny-2-how-to-complete-the-kells-fall-exotic-mission"
+    ],
+    [
+      "Prima Games: How to complete Kell's Fall",
+      "https://primagames.com/tips/how-to-complete-kells-fall-exotic-mission-in-destiny-2"
+    ],
+    [
+      "Sportskeeda: Kell's Fall exotic mission guide",
+      "https://sportskeeda.com/mmo/destiny-2-kell-s-fall-exotic-mission-guide-how-get-slayer-s-fang-shotgun"
+    ],
+    [
+      "KeenGamer: Kell's Fall melody locations",
+      "https://www.keengamer.com/articles/guides/destiny-2-all-kells-fall-melody-locations-and-how-to-play-them-slayers-fang-intrinsic-guide"
+    ],
+    [
+      "Shattered Vault: Destiny 2 Update 9.7.0.1",
+      "https://shatteredvault.com/destiny-2-update-9-7-0-1/"
+    ]
+  ],
+  "encounters": [
+    {
+      "name": "Araskes",
+      "title": "Araskes, the Trickster",
+      "what": "A short opening boss at the Gatehouse. Araskes keeps fading out of sight and immunity, then flees once she has lost part of her health.",
+      "before": "From the start, go right past the twisted tree and follow the cliff ledges and gaps to the big Gatehouse doorway.",
+      "steps": [
+        "Shoot Araskes whenever she is visible; she turns invisible and immune at intervals.",
+        "Clear her Scorn quickly so they don't block your shots.",
+        "Some Heavy ammo bricks are fakes that set off a Scorn mine when touched, so check before grabbing ammo.",
+        "Once she has lost enough health she flees and the door to the Bailey opens. Guides put the point between a third and half of her health."
+      ],
+      "roles": [
+        [
+          "Whole team",
+          "Damage Araskes while she is visible and clear the Scorn."
+        ]
+      ],
+      "wipes": [
+        "Grabbing a fake Heavy ammo brick and getting caught by its mine.",
+        "Standing in the open: the area has little cover."
+      ]
+    },
+    {
+      "name": "Fighting Pit",
+      "title": "Fighting Pit: Pit Enforcers and Kaniks, the Mad Bomber",
+      "what": "Two Pit Enforcers, Abominations that take no damage without the Revenant Empowerment buff, then Kaniks, the Mad Bomber. The buff is earned on the Revenant Plane side of the pit.",
+      "before": "In the Bailey, leave the organ and light the brazier by the stairs to open the Mirror Gallery. Shoot cracked mirrors to switch planes and light braziers in both to open doors; their spots can change between runs. Shoot glowing rocks to open hidden paths.",
+      "steps": [
+        "Go through the mirror in the arena into the Revenant Plane.",
+        "Kill the Revenant Essentia there and pick up the motes they drop. Ten stacks of Revenant Essence become Revenant Empowerment; the stacks expire, so collect them quickly.",
+        "Return to the material world and kill both Pit Enforcers while empowered.",
+        "Kaniks, the Mad Bomber, spawns next. He has little health, so burst him while the buff lasts. Araskes may show up as a distraction; focus Kaniks.",
+        "When Fikrul appears, leave through the doorway on the right side of the arena."
+      ],
+      "roles": [
+        [
+          "Whole team",
+          "Cross into the Revenant Plane for motes, then burn the Enforcers and Kaniks while empowered."
+        ]
+      ],
+      "wipes": [
+        "Shooting the Enforcers without Empowerment: they take no damage.",
+        "Letting your Essence stacks lapse before you reach ten."
+      ]
+    },
+    {
+      "name": "Hiraks",
+      "title": "Hiraks, the Mindbender",
+      "what": "A boss fought across both planes in three parts, with time in the Revenant Plane limited by the Refracting countdown.",
+      "before": "Cross the Undercroft's turning turbines and ledges, drop through the gap in the wall and follow the lit crevice down to the Vestibule and its rally banner. Light the three torches there to open the way to the mirror.",
+      "steps": [
+        "Shoot the archway to enter the Revenant Plane. Refracting counts down; when it runs out, Shattering damages you until you leave or die. Leaving and re-entering resets it.",
+        "Damage Hiraks in the Sanctum until he loses about a third of his health and disappears.",
+        "Light three braziers spread across both planes to open the metal door in the material world. Their spots can vary between runs.",
+        "Fight him in the material world until he loses another third and flees.",
+        "Follow through the last mirror into the Revenant Plane and finish him. You can't leave until he dies, so kill him before Refracting runs out, then get out."
+      ],
+      "roles": [
+        [
+          "Whole team",
+          "Damage Hiraks, light the braziers in both planes and watch your own Refracting timer."
+        ]
+      ],
+      "wipes": [
+        "Staying in the Revenant Plane until Refracting runs out.",
+        "Lingering after the final kill: the timer keeps running."
+      ]
+    },
+    {
+      "name": "Staircase",
+      "title": "Araskes on the Staircase",
+      "what": "Araskes returns as you climb the long spiral stairs to the throne room. She plays as at the Gatehouse, now with Grims firing from above.",
+      "before": "After Hiraks, take the door and mirror back to the material world and ride the grav lift up to the staircase.",
+      "steps": [
+        "Climb the stairs; Araskes appears partway up and can teleport as you go.",
+        "Watch the sky: Grims fly overhead and keep firing.",
+        "Shoot her before she fades again, and check Heavy ammo before grabbing it, as some bricks are traps."
+      ],
+      "roles": [
+        [
+          "Whole team",
+          "Burst Araskes while she is visible and keep the Grims off the team."
+        ]
+      ],
+      "wipes": [
+        "Triggering a trap disguised as Heavy ammo.",
+        "Ignoring the Grims overhead."
+      ]
+    },
+    {
+      "name": "Throne Room",
+      "title": "Throne Room: Fikrul, the Fanatic",
+      "what": "The final room. Fikrul is immune in the material world; you escape his big attack into the Revenant Plane, and the variant decides who you fight next.",
+      "steps": [
+        "Kill adds until Fikrul starts his big attack and the mirror on the far side opens. Get through it before the attack lands, or it wipes the team.",
+        "In the Revenant Plane, kill Essentia for ten stacks of Revenant Essence to gain Revenant Empowerment. Watch for the Grim overhead.",
+        "Reflection: back in the material world Fikrul summons Reksis Vahn, the Hangman. Kill him to finish.",
+        "Distortion: he summons the Screeb Matriarch instead. Screebs around her explode in chains, so don't fight her up close.",
+        "Diffraction: Fikrul himself is the target. He keeps you in the Revenant Plane and casts a wipe attack; shoot the archway while he casts to stun him, then damage him until he recovers. Leaving the plane drops your Empowerment, so repeat the cycle."
+      ],
+      "roles": [
+        [
+          "Whole team",
+          "Cross into the Revenant Plane on Fikrul's attack, collect Essence, then burn the final boss."
+        ]
+      ],
+      "wipes": [
+        "Still being in the material world when Fikrul's attack lands.",
+        "In Diffraction, missing the archway stun while he casts."
+      ]
+    }
+  ]
+}
