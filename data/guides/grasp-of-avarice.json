@@ -6,7 +6,9 @@
     ["PC Gamer: How to complete the Grasp of Avarice dungeon", "https://pcgamer.com/destiny-2-grasp-of-avarice-loot-table-solo-guide"],
     ["TechRaptor: Grasp of Avarice dungeon walkthrough", "https://techraptor.net/gaming/guides/destiny-2-grasp-of-avarice-dungeon-walkthrough-guide"],
     ["High Ground Gaming: Grasp of Avarice dungeon guide", "https://www.highgroundgaming.com/destiny-2-grasp-of-avarice-dungeon-guide-walkthrough/"],
-    ["PC Invasion: Grasp of Avarice Sparrow and mines", "https://pcinvasion.com/destiny-2-grasp-of-avarice-phryzhia-ogre-sparrow-guide/2"]
+    ["PC Invasion: Grasp of Avarice Sparrow and mines", "https://pcinvasion.com/destiny-2-grasp-of-avarice-phryzhia-ogre-sparrow-guide/2"],
+    ["LFCarry: Gjallarhorn catalyst chests", "https://lfcarry.com/guides/destiny-2-gjallarhorn-catalyst"],
+    ["The Game Post: How to unlock the Gjallarhorn catalyst", "https://thegamepost.com/destiny-2-how-to-unlock-gjallarhorn-exotic-catalyst-guide/"]
   ],
   "about": "A three-player Fallen and Hive dungeon under the Cosmodrome's old loot cave, from the 30th Anniversary Pack. Almost every fight uses the Burdened by Riches debuff: picking up engrams adds stacks on a timer that kills you, and banking them at a crystal is what drops each boss's shield. A Scorch Cannon taken from a Vandal opens doors, fires launchers and breaks generators.",
   "caveat": "Guides give different engram counts for each shield, so this page gives none; the Master notes come from Shacknews's 2021 guide and may have changed since.",
@@ -30,6 +32,10 @@
       "wipes": [
         "A player's Burdened by Riches timer reaches zero while chasing one more engram.",
         "Engrams are left on the ground until they explode."
+      ],
+      "chests": [
+        "The dungeon hides three Gjallarhorn catalyst chests, and they all open the same way: damage the chest's Reaver Vandal (yellow health bar) until it drops an engram, grab it, and reach the chest within about 30 seconds, before Burdened by Riches kills you. LFCarry adds that the Vandal should be left alive and that each player opens each chest for themselves.",
+        "Chest 1 is in the crystal cavern you drop into after this fight. The Vandal stands on a ledge on the right side of the cavern; the chest is on a metal platform by the crystal bridge."
       ]
     },
     {
@@ -54,6 +60,9 @@
         "Burdened by Riches runs out because a player stayed in the garage too long.",
         "Standing in the open during damage and taking the Ogre's beam."
       ],
+      "chests": [
+        "Catalyst chest 2 is on the way to this fight. At the top of the stairs where the barrel rolls down, a Reaver Vandal waits in the room ahead. Take its engram, go through the vent as usual, and the chest is on a platform to your right as you come out."
+      ],
       "master": [
         "In 2021 guides, Barrier Knights spawn in the garages. Clear one garage, bank, and move to the next as a group."
       ]
@@ -77,6 +86,9 @@
         "Burdened by Riches runs out while the island is still being cleared.",
         "A player misses the landing after a launch and falls.",
         "Launching before everyone is on the plate, which leaves players stranded on separate islands."
+      ],
+      "chests": [
+        "Catalyst chest 3 appears only once the shield is down, before you go on to Avarokk. A Reaver Vandal spawns out by the waterfall. Take its engram, launch back to the central island and open the chest on top of the round building there."
       ],
       "master": [
         "In 2021 guides, Overload Captains spawn at each island. Kill them first."
