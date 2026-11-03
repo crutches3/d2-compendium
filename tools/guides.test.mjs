@@ -41,6 +41,7 @@ const checkGuide = async (name, m = p) => {
   if (await m.$(S.tab('guide'))) await m.click(S.tab('guide'));  // a strike page is all guide, so it has no Drops | Guide row
   await m.waitForSelector('#guide');
   const n = g.encounters.length;
+  assert.equal(await shown(S.step, m), 1, `${name}: opens on one encounter`);
   assert.deepEqual(await m.$$eval(S.pills, bs => bs.map(x => x.textContent.trim())), n > 1 ? g.encounters.map((e, i) => `${i + 1}${e.name}`) : [], name);
   for (const [i, e] of g.encounters.entries()) {
     if (n > 1) { await m.click(`${S.pills} >> nth=${i}`); assert.deepEqual(await pressed(S.pills, m), [`${i + 1}${e.name}`]); }
@@ -85,6 +86,7 @@ await p.click(S.tab('guide')); assert.ok(p.url().endsWith('/guide/3'), p.url());
 await openWiki("King's Fall", '/guide/3');
 assert.ok(await p.isVisible('#guide') && !(await p.isVisible('.drops')));
 assert.deepEqual([await pressed('.typetabs button[data-pane]'), await pressed(S.pills)], [['Guide'], [`3${G.get("King's Fall").encounters[2].name}`]]);
+assert.deepEqual(await p.$$eval(`${S.step} h3:not(.drophead)`, hs => hs.filter(h => h.checkVisibility()).map(h => h.textContent.split('.')[0])), ['3']);
 await openWiki("King's Fall", '/guide/99'); assert.deepEqual(await pressed(S.pills), [`1${G.get("King's Fall").encounters[0].name}`]);
 // signed in, the vault fills whichever tab is open, even when the page opens on Guide
 await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access_token: 'x', expires_at: Date.now() + 3e6 })));
