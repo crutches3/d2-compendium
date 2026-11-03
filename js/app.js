@@ -1492,8 +1492,9 @@ async function reference(idx) {
 // ---------- wiki ----------
 // One page per name with everything the site knows about it: an activity's loot and the encounters that drop it, what a perk, status,
 // ability or exotic does in every sheet that defines it, the weapons that can roll a perk, and every entry that mentions it.
+// (Grandmaster is no Monument tab: wikiData adds those strikes from the weekly schedule)
 const WIKI_KINDS = { Raids: ['Raid', 'Raids'], Dungeons: ['Dungeon', 'Dungeons'], 'Legacy Exotic Mission Gear (Cla': ['Exotic mission', 'Exotic missions'],
-  'Portal Attuneable Gear': ['Portal activity', 'Portal'], Destinations: ['Destination', 'Destinations'], Vendors: ['Vendor', 'Vendors'] };
+  Grandmaster: ['Strike', 'Grandmaster strikes'], 'Portal Attuneable Gear': ['Portal activity', 'Portal'], Destinations: ['Destination', 'Destinations'], Vendors: ['Vendor', 'Vendors'] };
 const CHAMPIONS = ['Barrier', 'Overload', 'Unstoppable'];
 const wikiHref = n => '#/wiki/' + encodeURIComponent(n);
 // names as the sheets and Bungie spell them differently: case, accents, curly quotes, a leading "The"
@@ -1517,7 +1518,7 @@ const linkify = (W, html, self = '') => html.replace(W.linkRe, n => n === esc(se
 let wikiIndex;
 async function wikiData() {
   if (wikiIndex) return wikiIndex;
-  const [tabs, arts, art] = await Promise.all([sheets(), load('artifacts'), load('wiki')]);
+  const [tabs, arts, art, rot] = await Promise.all([sheets(), load('artifacts'), load('wiki'), load('rotation')]);
   const acts = new Map(), terms = new Map();
   // activities and their loot from the Monument of Triumph tabs, where a row with only a second cell starts a group
   for (const t of tabs) {
@@ -1529,6 +1530,8 @@ async function wikiData() {
         enc: r[col('Encounter(s)')] || '', how: r[col('Acquisition Method')] || '' });
     }
   }
+  // the Grandmaster strikes the schedule names, spelt as it spells them (each comes round about every six weeks); no sheet lists their loot
+  for (const n of [...new Set(rot.weeks.map(w => w.gm).filter(Boolean))].sort()) acts.has(n.toLowerCase()) || acts.set(n.toLowerCase(), { name: n, kind: 'Strike', loot: [] });
   // raids and dungeons from Llama's Raid Loot and Dungeon Loot (made by Court): a block per activity (its name in capitals, launch and refresh
   // dates), "Loot | 1st | 2nd…" headers, then a row per item with the encounter that drops it under each column. A cell can open with the
   // mode ("Standard & Epic\nAgraios" is Agraios) or wrap a name over two lines ("Dredgen\nSere").
@@ -1580,7 +1583,7 @@ async function wikiData() {
   }
   // linked in running text: raids, dungeons, missions, champions, statuses from the subclass glossaries, exotics, and names of two or more words
   // (single-word perk names like "Focus" or "Momentum" read as plain words too often)
-  const linkable = [...[...acts.values()].filter(x => /Raid|Dungeon|mission/.test(x.kind)).map(x => x.name), ...CHAMPIONS,
+  const linkable = [...[...acts.values()].filter(x => /Raid|Dungeon|mission|Strike/.test(x.kind)).map(x => x.name), ...CHAMPIONS,
     ...[...terms.values()].flat().filter(x => x.glossary || /^Exotic/.test(x.where) || x.e.term.includes(' ')).map(x => x.e.term)].filter(n => n.length > 3);
   const linkNames = new Map(linkable.map(n => [esc(n), n]));
   const names = [...new Set([...[...acts.values()].map(x => x.name), ...CHAMPIONS, ...[...terms.values()].map(l => l[0].e.term)])];
@@ -1594,6 +1597,7 @@ async function wikiPage(raw, pane, n) {
   const act = W.acts.get(key), defs = W.terms.get(key) || [], champ = CHAMPIONS.find(c => c.toLowerCase() === key);
   // hand-written, one file per activity and only for activities (perk and weapon names would all 404); a missing or broken file means no guide
   const guide = act && /Raid|Dungeon|mission|Strike/.test(act.kind) ? await load('guides/' + guideFile(act.name)).catch(() => null) : null;
+  const step = /^\d+$/.test(n) && n >= 1 && n <= (guide?.encounters.length || 0) ? n - 1 : 0;
   const weapon = d.weapons.find(w => w.n.toLowerCase() === key), armor = a.armor.find(x => x.n.toLowerCase() === key);
   // weapons that can roll a perk or frame of this name, one per weapon name, best rated first
   const plugs = new Set(Object.keys(d.plugs).filter(h => d.plugs[h].n.toLowerCase() === key).map(Number)), rank = w => 'SABCDF'.indexOf(d.rolls[w.h]?.t) + 1 || 9;
@@ -1605,7 +1609,7 @@ async function wikiPage(raw, pane, n) {
   // the loot table links each weapon to its page: the version from this activity if the names repeat, else a rated one
   const lootWeapon = x => { const l = d.weapons.filter(w => w.n.toLowerCase() === x.key); return l.find(w => act && w.src.includes(act.name)) || l.find(w => d.rolls[w.h]) || l[0]; };
   const tags = [act?.kind, champ && 'Champion', weapon && `${weapon.ti} ${weapon.ty}`, armor && `${armor.ti} ${armor.ty}`, ...new Set(defs.map(x => x.where === 'Artifact perks' ? 'Artifact perk' : x.where)), rollers.length && !defs.some(x => x.where === 'Weapon perks') && 'Weapon perk'].filter(Boolean);
-  const raid = act && /Raid|Dungeon|mission|Destination/.test(act.kind) && lootPage(act, d, a, rot, act.kind === 'Destination' && { ...places.places[act.name], how: places.events, distortions: places.distortions, art: W.art.places[fold(act.name)] });
+  const raid = act && /Raid|Dungeon|mission|Destination|Strike/.test(act.kind) && lootPage(act, d, a, rot, act.kind === 'Destination' && { ...places.places[act.name], how: places.events, distortions: places.distortions, art: W.art.places[fold(act.name)] });
   const loot = act && !raid && `<section class="panel"><h2>Loot <span class="count">${act.loot.length}</span></h2>${act.loot.some(x => x.enc) || act.kind === 'Dungeon' ? '<p class="refsrc">Which encounters drop each item, from the Monument of Triumph and Llama\'s loot sheets.</p>' : ''}
     <div class="datawrap"><table class="data"><thead><tr><th scope="col">Item</th><th scope="col">Type</th><th scope="col">Element</th>${act.loot.some(x => x.enc) ? '<th scope="col">Encounters</th>' : ''}${act.loot.some(x => x.how) ? '<th scope="col">How</th>' : ''}</tr></thead>
     <tbody>${act.loot.map(x => { const w = lootWeapon(x);
@@ -1618,7 +1622,8 @@ async function wikiPage(raw, pane, n) {
   const art = weapon || armor || { n: title, ss: W.art.img[key] || W.art.places[fold(name)]?.img, fl: raid ? raid.flavor : plug?.d,
     // an activity named like a perk (the Encore mission) keeps its own banner, not the perk's icon and text
     i: raid ? null : plug?.i || W.art.icon[key] || defs.find(x => x.icon)?.icon || W.art.icon[defs[0]?.where.toLowerCase()] };
-  const main = `${raid?.main || loot || ''}
+  // a strike's page is its guide (one held back says so)
+  const main = `${act?.kind === 'Strike' ? guide ? guideHtml(W, act, guide, step) : `<p class="empty">The guide for ${esc(act.name)} isn't written yet.</p>` : raid?.main || loot || ''}
     ${defs.length ? `<section class="panel"><h2>What it does</h2><dl class="entries">${defs.map(x => entryHtml(x.e, { W, self: name,
       where: x.i != null ? `<a href="#/ref/${x.i}">${esc(x.where)}</a>${x.section ? ' · ' + esc(x.section) : ''}` : `${esc(x.where)} · ${esc(x.section)}` })).join('')}</dl></section>` : ''}
     ${rollers.length ? `<section class="panel"><h2>Weapons that can roll it <span class="count">${rollers.length}</span></h2>
@@ -1633,7 +1638,7 @@ async function wikiPage(raw, pane, n) {
     ${champ ? `<section class="panel"><h2>Counters</h2><p>Everything here mentions ${esc(champ)} champions.${counters ? ` Court's full list of what stuns them is in the <a href="${esc(counters)}" target="_blank" rel="noopener">Champion counters sheet ↗</a>.` : ''}</p></section>` : ''}`.trim();
   const found = main || side, grid = main && side ? `<div class="wtop wiki"><div>${main}</div><div class="wside">${side}</div></div>` : main || side;
   // a guide gets its own tab beside Drops, above the whole layout (phones move the side panels up); Drops opens first and is drawn as before
-  const tabbed = guide && act.kind !== 'Strike', open = tabbed && pane === 'guide', step = /^\d+$/.test(n) && n >= 1 && n <= (guide?.encounters.length || 0) ? n - 1 : 0;
+  const tabbed = guide && act.kind !== 'Strike', open = tabbed && pane === 'guide';
   $app.innerHTML = `<p class="crumbs"><a href="#/wiki">Wiki</a></p>${found ? hero({ ...art, n: title }, `<span class="wikitags">${tags.map(t => `<span class="badge">${esc(t)}</span>`).join('')}${raid?.badge || ''}</span>`) : `<h1>${esc(title)}</h1>`}
     ${tabbed ? `<div class="tabs typetabs" role="group" aria-label="Page">${[['drops', 'Drops'], ['guide', 'Guide']].map(([k, t]) => `<button type="button" data-pane="${k}"${(k === 'guide') === open ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${t}</button>`).join('')}</div>
       <div id="dropspane"${open ? ' hidden' : ''}>${grid}</div><div id="guidepane"${open ? '' : ' hidden'}>${guideHtml(W, act, guide, step)}</div>` : grid}
@@ -1715,9 +1720,13 @@ function lootPage(act, d, a, rot, place) {
     .map(x => { const epic = /epic/i.test(x.src), row = armor.find(r => r.slot === slotOf(x.ty) && r.epic === epic);
       return { x, epic, slot: slotOf(x.ty), encs: row?.encs || [], notes: row ? [...row.how, row.note] : [] }; })
     .sort((p, q) => p.epic - q.epic || setOf(p.x) - setOf(q.x) || order.indexOf(p.slot) - order.indexOf(q.slot));
-  const list = { Raid: 'raids', Dungeon: 'dungeons' }[act.kind], { weeks, cur } = rotationWeeks(rot), on = w => list && w[list].find(n => fold(act.name).startsWith(fold(n)));
+  const strike = act.kind === 'Strike', list = { Raid: 'raids', Dungeon: 'dungeons' }[act.kind], { weeks, cur } = rotationWeeks(rot);
+  const on = w => strike ? w.gm === act.name : list && w[list].find(n => fold(act.name).startsWith(fold(n)));
   const next = weeks.find(w => w.start > cur.start && on(w));
   const fmt = s => new Date(s + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const rotation = list || strike ? `<section class="panel"><h2>Rotation</h2><p>${on(cur) ? `Featured this week${cur.master.some(n => fold(act.name).startsWith(fold(n))) ? ', with Master' : ''}.` : `Not featured this week.${next ? ` Next featured the week of ${fmt(next.start)}.` : ''}`}</p></section>` : '';
+  // a strike has no loot sheet: its page is its guide, and when it is next the Grandmaster
+  if (strike) return { main: '', side: rotation, wire() {}, flavor: '', badge: on(cur) ? '<span class="badge good">Featured this week</span>' : '' };
   const chips = l => l.length ? `<p class="encs">${l.map(e => `<span class="enc">${esc(e)}</span>`).join('')}</p>` : '';
   const dropCard = (x, href, sub, facts, notes, attrs) => `<article class="drop" data-encs="${esc(x.encs.join('|'))}"${attrs}>
       <a class="dropart" href="${href}" tabindex="-1" aria-hidden="true">${x.ss ? `<img loading="lazy" src="${BNET}${x.ss}" alt="">` : ''}</a>
@@ -1741,7 +1750,7 @@ function lootPage(act, d, a, rot, place) {
   const side = `<section class="panel" id="raidmine"><h2>Your collection</h2><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see which drops you own and how good your best copy is.'}</p></section>
     ${place?.distorted ? `<section class="panel raidnotes"><h2>Distortions</h2><dl class="sidelist">${place.distortions.map(([t, x]) => `<dt>${esc(t)}</dt><dd>${esc(x)}</dd>`).join('')}</dl>
       <p class="refsrc">From Bungie's Monument of Triumph notes.</p></section>` : ''}
-    ${list ? `<section class="panel"><h2>Rotation</h2><p>${on(cur) ? `Featured this week${cur.master.some(n => fold(act.name).startsWith(fold(n))) ? ', with Master' : ''}.` : `Not featured this week.${next ? ` Next featured the week of ${fmt(next.start)}.` : ''}`}</p></section>` : ''}
+    ${rotation}
     ${R.notes.length || extras.length ? `<section class="panel raidnotes"><h2>Notes</h2>${[...extras, ...R.notes].map(n => `<p class="raidnote">${esc(n)}</p>`).join('')}
       ${R.tab ? `<p class="refsrc">From Llama's sheets (${R.tab}, by Court).</p>` : ''}</section>` : ''}`;
   const wire = () => {

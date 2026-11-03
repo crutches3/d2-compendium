@@ -1,5 +1,6 @@
 // Browser test for the wiki's encounter guides: raid, dungeon and exotic mission pages get a Guide tab beside Drops (Drops opens first and
-// is unchanged), one encounter at a time kept in the address, sources credited, text escaped. Expected content is read from data/guides at run time, so new
+// is unchanged), one encounter at a time kept in the address, sources credited, text escaped; each Grandmaster strike gets a page with
+// its guide and when it is next the Grandmaster, listed in the wiki. Expected content is read from data/guides at run time, so new
 // writing never breaks it. Pinned to week 20 (Oct 20 2026 reset: King's Fall featured with Master).
 // Run from the repo root: python3 -m http.server 8765 & npm i --no-save playwright && node tools/guides.test.mjs
 import { chromium } from 'playwright';
@@ -9,6 +10,8 @@ const G = new Map((fs.existsSync('data/guides') ? fs.readdirSync('data/guides') 
   .map(f => JSON.parse(fs.readFileSync('data/guides/' + f))).map(g => [g.name, g]));
 // held by the owner until checked in game (Nov 2026), as in guidedata.test.mjs: their pages work, with no guide
 const HELD = ['Starcrossed', 'The Sunless Cell', 'Pantheon', 'Desert Perpetual & Epic DP'];
+const ART = JSON.parse(fs.readFileSync('data/wiki.json')).img, rot = JSON.parse(fs.readFileSync('data/rotation.json'));
+const gms = [...new Set(rot.weeks.map(w => w.gm).filter(Boolean))];
 const S = { tab: t => `.typetabs button[data-pane="${t}"]`, pills: '#guide .dropfilter button[data-step]', step: '#guide .gstep', src: '#guide .refsrc a' };
 const W = JSON.parse(fs.readFileSync('data/weapons.json')).weapons, doom = W.find(w => w.n === 'Doom of Chelchis');
 const profile = { characters: { data: { H1: { classType: 1, light: 480 } } }, profileInventory: { data: { items: [{ itemHash: doom.h, itemInstanceId: '1', bucketHash: 138197802 }] } },
@@ -125,6 +128,30 @@ assert.ok(body.includes('Plain <b>bold</b> text') && body.includes('<img src="x-
 assert.deepEqual([await p.evaluate(() => window.__xss), hits, await p.$$eval('#guide b:text-is("bold"), #guide img[src="x-xss"], #guide script, #guide a[href^="javascript"]', l => l.length)], [undefined, [], 0]);
 assert.equal(await p.textContent(`${S.src} >> nth=0`), '<i>Source</i> ↗');
 await p.unroute('**/data/guides/**');
+
+// each Grandmaster strike has a page: its banner (not an icon), a strike tag, its guide, when it is next the Grandmaster, and no loot.
+// The pinned day is in week 20 (reset Oct 20), worked out here as the page does, from the schedule's weeks.
+const cur = rot.weeks.filter(w => w.start <= '2026-10-22').at(-1);
+for (const n of gms) {
+  await openWiki(n);
+  assert.ok(!(await p.$('.hero .icon')) && !(await p.$('table.data, .drops, #raidmine, .typetabs')), n);
+  assert.ok(!(await p.innerText('#app')).includes('The wiki has nothing on'), n);
+  assert.ok((await p.getAttribute('.hero', 'style')).includes(ART[n.toLowerCase()]), `${n} banner`);
+  assert.ok((await p.$$eval('.wikitags .badge', bs => bs.map(x => x.textContent))).includes('Strike'), `${n} tag`);
+  const next = rot.weeks.find(w => w.start > cur.start && w.gm === n), when = await p.evaluate(s => new Date(s + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), next?.start);
+  assert.equal(await p.textContent('section.panel:has(h2:text-is("Rotation")) p'), cur.gm === n ? 'Featured this week.' : `Not featured this week.${next ? ` Next featured the week of ${when}.` : ''}`, n);
+  assert.equal(!!(await p.$('.wikitags .badge.good:text-is("Featured this week")')), cur.gm === n, n);
+  // a held strike keeps its page, with a line saying its guide isn't written yet
+  if (HELD.includes(n)) assert.ok(!(await p.$('#guide')) && /guide/i.test(await p.textContent('.wtop .empty')), n);
+  else { assert.ok(!(await p.$('.empty')), n); await checkGuide(n); }
+}
+// they're listed with the other activities and found by the wiki search; a name with a colon opens from its link
+await p.goto('http://localhost:8765/#/wiki'); await p.waitForSelector('#q');
+assert.deepEqual((await p.$$eval('#app h3:text-is("Grandmaster strikes") + .tabs a', as => as.map(a => a.textContent))).sort(), [...gms].sort());
+await p.click('#app h3:text-is("Grandmaster strikes") + .tabs a:text-is("Defiant BG: EDZ")'); await p.waitForSelector('.hero h1:text-is("Defiant BG: EDZ")');
+assert.ok(p.url().endsWith('#/wiki/Defiant%20BG%3A%20EDZ'), p.url());
+await p.goto('http://localhost:8765/#/wiki'); await p.waitForSelector('#q');
+await p.fill('#q', 'warden'); assert.equal(await p.getAttribute('#refbody a:text-is("Warden of Nothing")', 'href'), '#/wiki/Warden%20of%20Nothing');
 
 // on a phone: the tab row is on the first screen, above the side panels phones move up; the tabs wrap rather than push the page
 // sideways; tapping one switches. Checked on the guides with the most encounters and the longest tab names, whatever they are today.
