@@ -1590,7 +1590,8 @@ async function wikiData() {
   return wikiIndex = { tabs, art, acts, terms, names, linkNames, linkRe: nameRe([...linkNames.keys()].sort((x, y) => y.length - x.length).map(rxEsc).join('|'), 'g') };
 }
 
-// #/wiki/<name>/guide/<n> opens the guide on encounter n (the tabs keep it there with replaceState, so a reload mid-run comes back to it)
+// #/wiki/<name>/guide/<n> opens the guide on encounter n, /drops/<n> opens Drops with it ready (the tabs keep it there with replaceState,
+// so a reload mid-run comes back to it)
 async function wikiPage(raw, pane, n) {
   const name = decodeURIComponent(raw), key = name.toLowerCase();
   const [W, d, a, rot, places] = await live(Promise.all([wikiData(), data(), armorData(), load('rotation'), load('destinations')]));
@@ -1675,7 +1676,8 @@ function guideHtml(W, act, g, step) {
 // address follows with replaceState (a hash change would rebuild the page), and Back leaves the page as on the perk finder
 function wireGuide(act, step) {
   const press = (l, on) => l.forEach(x => x.setAttribute('aria-pressed', String(on(x)))), pane = $app.querySelector('#guidepane');
-  const url = () => history.replaceState(null, '', wikiHref(act.name) + (!pane || !pane.hidden ? '/guide' + (step ? '/' + (step + 1) : '') : ''));
+  // Drops keeps the encounter too (#/wiki/X/drops/5), so a reload there still has the guide on it
+  const url = () => history.replaceState(null, '', wikiHref(act.name) + (!pane || !pane.hidden ? '/guide' + (step ? '/' + (step + 1) : '') : step ? '/drops/' + (step + 1) : ''));
   $app.querySelector('.typetabs[aria-label="Page"]')?.addEventListener('click', e => { const b = e.target.closest('button[data-pane]'); if (!b) return;
     const tabs = $app.querySelectorAll('.typetabs [data-pane]'); press(tabs, x => x === b); tabs.forEach(x => x.classList.toggle('on', x === b));
     $app.querySelector('#dropspane').hidden = b.dataset.pane !== 'drops'; pane.hidden = b.dataset.pane !== 'guide'; url(); });

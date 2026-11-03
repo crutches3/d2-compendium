@@ -82,13 +82,17 @@ assert.ok(!(await p.$('#guide [data-enc], #guide .drop, #guide .drops')), "the g
 assert.ok(p.url().endsWith(`/wiki/King's%20Fall/guide/${G.get("King's Fall").encounters.length}`), p.url());
 await p.click(`${S.pills} >> nth=0`); assert.ok(p.url().endsWith("/wiki/King's%20Fall/guide"), p.url());
 await p.click(`${S.pills} >> nth=2`); assert.ok(p.url().endsWith('/guide/3'), p.url());
-// back on Drops: the same cards with the filter still on, at the same scroll (switching tabs never rebuilds the page)
+// back on Drops: the same cards with the filter still on, at the same scroll (switching tabs never rebuilds the page); the address
+// keeps the encounter, so a reload on Drops still has it ready in the guide
 await p.click(S.tab('drops'));
-assert.ok(await p.isVisible('.drops') && !(await p.isVisible('#guide')) && p.url().endsWith("/wiki/King's%20Fall"), p.url());
+assert.ok(await p.isVisible('.drops') && !(await p.isVisible('#guide')) && p.url().endsWith("/wiki/King's%20Fall/drops/3"), p.url());
 assert.deepEqual(await visibleDrops(), ['Doom of Chelchis', "Midha's Reckoning"]);
 assert.equal(await p.evaluate(() => scrollY), top);
 await p.click(S.tab('guide')); assert.ok(p.url().endsWith('/guide/3'), p.url()); await p.click(S.tab('drops'));
 assert.equal(await p.evaluate(() => history.length), len, 'tabs and pills replace the address, so Back leaves the page');
+await openWiki("King's Fall", '/drops/3'); assert.ok(await p.isVisible('.drops') && !(await p.isVisible('#guide')));
+await p.click(S.tab('guide')); assert.deepEqual(await pressed(S.pills), [`3${G.get("King's Fall").encounters[2].name}`]);
+await p.click(`${S.pills} >> nth=0`); await p.click(S.tab('drops')); assert.ok(p.url().endsWith("/wiki/King's%20Fall"), p.url());
 await openWiki("King's Fall", '/guide/3');
 assert.ok(await p.isVisible('#guide') && !(await p.isVisible('.drops')));
 assert.deepEqual([await pressed('.typetabs button[data-pane]'), await pressed(S.pills)], [['Guide'], [`3${G.get("King's Fall").encounters[2].name}`]]);
