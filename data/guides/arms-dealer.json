@@ -1,0 +1,60 @@
+{
+  "name": "The Arms Dealer",
+  "checked": "2026-11-03",
+  "about": "A three-player strike in the European Dead Zone, rebuilt in Lightfall (2023): the team hunts Bracus Zahn, now arming the Shadow Legion, with Caiatl's Psions as allies. It is one of the six strikes in the weekly Grandmaster rotation, where champions and modifiers change from week to week.",
+  "caveat": "Few guides cover the 2023 version of this strike, so how Zahn's shield is broken and some section details could not be confirmed from two sources.",
+  "sources": [
+    ["Destinypedia: The Arms Dealer", "https://www.destinypedia.com/The_Arms_Dealer"],
+    ["KeenGamer: Season 20 Grandmaster Nightfall guide (The Arms Dealer)", "https://www.keengamer.com/articles/guides/destiny-2-season-20-grandmaster-nightfall-guide/"],
+    ["Destinypedia: Tormentor", "https://destinypedia.com/Tormentor"],
+    ["Kyber's Corner: Weekly reset guide, March 10 2026", "https://kyberscorner.com/destiny-2-weekly-reset-guide-march-10-2026/"]
+  ],
+  "encounters": [
+    {
+      "name": "Psion Rescue",
+      "title": "Free Caiatl's captured Psion",
+      "what": "Devrim and Caiatl send the team into Zahn's base. Ghost opens the doors, and the team frees captured Ascendant Guard Psions, who then fight alongside it.",
+      "steps": [
+        "Clear the area outside the base. Legionaries and Psions snipe and throw grenades from range, so fight from cover.",
+        "Push on to the thrust cannon platform. Take the Solar Fuel Cell from a Shadow Guard Cabal and free the captured Psion; it joins the team as an ally.",
+        "Keep freeing Caiatl's captured forces as you push deeper. They draw fire and add damage, but don't count on them to hold a position."
+      ],
+      "roles": [
+        ["Whole team", "Move cover to cover and clear the snipers before pushing into the open."]
+      ],
+      "wipes": ["Pushing into the open into sniper fire and grenades.", "Relying on the freed Psions to hold a lane on their own."]
+    },
+    {
+      "name": "Zahn's Carrier",
+      "title": "Board Zahn's carrier",
+      "what": "The team boards Zahn's carrier to track him down, then fights through the hangar. The route is longer than in the old strike, and the old two-tank hangar is now full of Cabal turrets, with a Tormentor in Nightfall versions.",
+      "steps": [
+        "Board the carrier and free more of Caiatl's forces on the way.",
+        "Clear the enemy groups on the route, including Threshers. Destroy enemy ships as soon as they appear.",
+        "In the hangar, destroy the Cabal turrets from cover.",
+        "In Nightfall versions a Tormentor comes down the elevator where the second tank used to be. Only its shoulders take damage at first; once both break, shoot the glowing weak point on its chest.",
+        "If the Tormentor grabs a player, everyone else keeps shooting it to stagger it into letting go."
+      ],
+      "roles": [
+        ["Whole team", "Stay at range from the Tormentor and break its shoulders together."]
+      ],
+      "wipes": ["Fighting the Tormentor at melee range.", "Being caught in the open when Threshers arrive."]
+    },
+    {
+      "name": "Bracus Zahn",
+      "title": "Defeat Bracus Zahn",
+      "before": "After the hangar, unlock the door and ride the elevator up to Zahn's arena at the top of the base.",
+      "what": "The final fight. At points Zahn leaves the fight and sits inside a shield that has to be disabled; each time he comes back to the ground, more turrets appear.",
+      "steps": [
+        "A group of Cabal turrets waits at the elevator exit. Destroy them first.",
+        "Damage Zahn until he leaves the battlefield and shields himself.",
+        "While he is shielded, two Cabal ships, one of them a Thresher, fire on the team. Destroy them quickly.",
+        "The turrets respawn each time Zahn returns to the ground. Clear them again, damage him, and repeat until he dies."
+      ],
+      "roles": [
+        ["Whole team", "Clear the turrets and ships, then burst Zahn while he is on the ground."]
+      ],
+      "wipes": ["A respawned turret appearing right next to you.", "Standing in the open when the Thresher arrives."]
+    }
+  ]
+}
