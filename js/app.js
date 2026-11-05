@@ -273,7 +273,7 @@ async function weaponPage(hash) {
     ${hero(w, `<span class="htags">${esc(w.ti)} · <span class="dmg-${esc(w.dm)}">${esc(w.dm)}</span> · ${esc(w.ty)} · ${esc(w.sl)} · ${esc(w.am)}</span>${tierBadge(er)}${craftBadge(w, S.profile)}`)}
     ${w.old ? '<p class="versions">Retired version: it no longer drops, so lists show the current one.</p>' : ''}
     ${same.length ? `<p class="versions">Other versions: ${same.map((x, i) => `<a href="#/weapon/${x.h}">${esc(bungieSource(x) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
-    <div class="cols2 toprow">${obtainPanel(w.h)}<section class="panel" id="endgame"><h2>Endgame Analysis</h2>${endgamePanel(d, er)}</section></div>
+    <div class="cols2 toprow">${obtainPanel(w.h)}<section class="panel" id="endgame"><h2>Endgame Analysis</h2>${endgameRank(d, er)}</section></div>
     <div class="wtop"><section class="panel perkpanel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll <span class="key cur"></span> Curated roll${goalBuilds.length ? ' <span class="key goal"></span> Build roll' : ''}</p>
       ${goalBuilds.length ? `<div class="goalbar"><label for="goal">Build roll</label><select id="goal"><option value="">None</option>${goalBuilds.map(b => `<option value="${esc(b.key)}"${b.key === goalKey ? ' selected' : ''}>${esc(b.name)}</option>`).join('')}</select>
         <button type="button" id="editgoal"${goalKey ? '' : ' hidden'}>Pick perks</button><small class="muted" id="goalhint"></small></div>` : ''}
@@ -447,14 +447,9 @@ async function showCopies(d, w, er, mwPicks, goal) {  // goal(): the selected bu
   } catch (e) { box.innerHTML = `<h3>Your copies</h3><p>${esc(e.message)}</p>`; }
 }
 
-// Aegis's rating: tier, rank within the weapon type, why, and the roll to chase in priority order.
-function endgamePanel(d, r) {
-  if (!r) return '<p class="muted">Not rated in the Endgame Analysis sheet.</p>';
-  const rows = [...Object.entries(r.p || {}), ['Masterwork', r.mw ? [r.mw] : []], ['Origin trait', r.o ? [r.o] : []]].filter(([, v]) => v.length);
-  return `<p>${tierBadge(r)} <span class="muted">#${r.r} of ${r.of} in ${esc(r.tab)}</span></p>${r.d ? `<p>${esc(r.d)}</p>` : ''}${r.note ? `<p>${esc(r.note)}</p>` : ''}
-    ${rows.map(([k, v]) => `<div class="eg"><span class="muted">${k}</span><div class="perks">${v.map(n => `<span class="badge${/^Perk/.test(k) ? ' good' : ''}">${esc(n)}</span>`).join('')}</div></div>`).join('')}
-    <p class="muted"><small>From <a href="${esc(d.source)}" target="_blank" rel="noopener">Aegis's Destiny 2: Endgame Analysis</a>.${r.c?.length ? ' A copy counts as a god roll when it has one of the Perk 1 picks and one of the Perk 2 picks.' : ''}</small></p>`;
-}
+// the gun's Endgame Analysis tier and rank; the roll it recommends shows on the perk grid
+const endgameRank = (d, r) => r ? `<p class="rank">${tierBadge(r)} <b>#${r.r}</b> <span class="muted">of ${r.of} in ${esc(r.tab)}</span></p>
+  <p class="muted"><small>From <a href="${esc(d.source)}" target="_blank" rel="noopener">Aegis's Destiny 2: Endgame Analysis</a></small></p>` : '<p class="muted">Not rated in the Endgame Analysis sheet.</p>';
 
 // ---------- boss damage ----------
 // theaegisrelic's Destiny 2: Boss Damage sheet. Sustained: a row per tested setup, its first line the gun or archetype ("Aggressive rocket
