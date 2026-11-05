@@ -66,7 +66,7 @@ const open = async link => { await p.goto('http://localhost:8765/#/build'); awai
 await open('https://dim.gg/igeavhy/The-Build-Of-Spite');
 assert.equal(new URL(p.url()).hash, '#/build/igeavhy');
 const text = await p.locator('#build').innerText();
-for (const s of ['THE BUILD OF SPITE', 'Shoot the boss.', 'Prismatic Hunter', 'Golden Gun: Marksman', 'Stylish Executioner', 'Facet of Grace', 'Heavy Ammo Finder ×2', 'You have 3 of 4 pieces of gear.'])
+for (const s of ['The Build Of Spite', 'Shoot the boss.', 'Prismatic Hunter', 'Golden Gun: Marksman', 'Stylish Executioner', 'Facet of Grace', 'Heavy Ammo Finder ×2', 'You have 3 of 4 pieces of gear.'])
   assert.ok(text.includes(s), 'missing: ' + s);
 // stat priorities in the build's order, and the helmet you own is checked against the top two
 // a DIM minimum is checked against what your armor for the build adds up to
@@ -141,7 +141,7 @@ assert.ok((await p.textContent('#build')).includes('No saved builds yet'));
 // a full DIM loadouts link carries the build in the URL; saving it gives it an address that survives a reload
 await open('https://app.destinyitemmanager.com/loadouts?' + new URLSearchParams({ loadout: JSON.stringify(loadout) }));
 assert.equal(new URL(p.url()).hash, '#/build/link');
-assert.ok((await p.locator('#build').innerText()).includes('THE BUILD OF SPITE'));
+assert.ok((await p.locator('#build').innerText()).includes('The Build Of Spite'));
 // farming a build saves it first, since the farming plan reads saved builds
 await p.click('[data-farmbuild]');
 assert.equal(new URL(p.url()).hash, '#/build/saved-x');
@@ -149,7 +149,7 @@ assert.equal(await p.textContent('[data-save]'), 'Remove from saved');
 assert.equal(await p.textContent('[data-farmbuild]'), 'Stop farming this build');
 assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('d2c_farm')).builds), ['saved-x']);
 await p.reload(); await p.waitForSelector('.buildhead');
-assert.ok((await p.locator('#build').innerText()).includes('THE BUILD OF SPITE'));
+assert.ok((await p.locator('#build').innerText()).includes('The Build Of Spite'));
 
 // a build without stat priorities can get your own; adding them saves the build, and they drive the armor check
 const bare = { ...loadout, id: 'y', name: 'No Stats', parameters: {} };
@@ -188,7 +188,7 @@ assert.equal(await p.isDisabled(`[data-perk="${t1.perks[5].h}"]`), true);  // al
 assert.ok((await p.locator('#build').innerText()).includes('7 of 7 picked'));
 await p.click('[data-art-done]');
 const artText = await p.locator('#build').innerText();
-assert.ok(artText.includes(ARTS[0].n) && chosen.every(k => artText.includes(k.n)) && artText.includes('ARTIFACT SET BY YOU'));
+assert.ok(artText.includes(ARTS[0].n) && chosen.every(k => artText.includes(k.n)) && artText.includes('Artifact set by you'));
 await p.reload(); await p.waitForSelector('.arthead');
 assert.deepEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('d2c_builds')).find(b => b.key === 'saved-y').artifact),
   { h: ARTS[0].h, perks: chosen.map(k => k.h) });

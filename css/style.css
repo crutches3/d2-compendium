@@ -556,3 +556,19 @@ section.panel.bare h2.acthead { font: 400 15px/1.4 Georgia, "Times New Roman", s
 .vitem small { display: block; color: var(--muted); font-size: 12px; }
 .vsub { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .vsub .minis img { width: 22px; height: 22px; border-radius: 3px; margin-right: 3px; vertical-align: middle; }
+
+/* sections float on the background video like the wiki, with normal-case headings; Home's .bare sections keep their own look */
+section.panel:not(.bare) { background: none; border: 0; border-radius: 0; padding: 0; margin: 36px 0 0; }
+.cols2 section.panel:not(.bare):first-child { margin-top: 36px; }
+section.panel:not(.bare) h2, .copies h3 { font-size: 20px; line-height: 1.25; text-transform: none; letter-spacing: -.01em; color: var(--text); font-weight: 700; }
+.farmprefs summary, h3.drophead { font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--text); }
+section.panel:not(.bare) .obody small { text-transform: none; letter-spacing: 0; font-size: 12px; }
+section.panel:not(.bare) .oart, .dropart { background: var(--panel); }
+.hero.plain { border: 0; background: none; }
+.htags { color: #cfd3dd; font-size: 14px; margin-right: 8px; }
+.good { color: var(--good); }
+.cols2, .wtop { column-gap: 40px; }
+/* the farm plan's activity row shares the .act class with Home's activity cards; keep it a row of buttons */
+.tabs.act { flex-direction: row; gap: 6px; }
+section.panel:not(.bare) h2 .count { font-size: 15px; letter-spacing: 0; }
+section.panel:not(.bare) .obtains { grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); }
