@@ -270,7 +270,7 @@ async function weaponPage(hash) {
   let goalKey = goalBuilds.some(b => b.key === Bungie.store.get('d2c_goal')?.[baseName(w.n)]) ? Bungie.store.get('d2c_goal')[baseName(w.n)] : '', editing = false;
   const goal = () => { const b = savedBuilds().find(x => x.key === goalKey); return b ? buildRoll(d, b, w) : null; };
   $app.innerHTML = `
-    ${hero(w, `<span class="badge">${esc(w.ti)}</span><span class="badge dmg-${esc(w.dm)}">${esc(w.dm)}</span><span class="badge">${esc(w.ty)}</span><span class="badge">${esc(w.sl)} · ${esc(w.am)}</span>${tierBadge(er)}${craftBadge(w, S.profile)}`)}
+    ${hero(w, `<span class="htags">${esc(w.ti)} · <span class="dmg-${esc(w.dm)}">${esc(w.dm)}</span> · ${esc(w.ty)} · ${esc(w.sl)} · ${esc(w.am)}</span>${tierBadge(er)}${craftBadge(w, S.profile)}`)}
     ${w.old ? '<p class="versions">Retired version: it no longer drops, so lists show the current one.</p>' : ''}
     ${same.length ? `<p class="versions">Other versions: ${same.map((x, i) => `<a href="#/weapon/${x.h}">${esc(bungieSource(x) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
     ${obtainPanel(w.h)}
@@ -583,7 +583,7 @@ async function armorPage(hash) {
   const set = a.sets[x.set];
   const same = a.armor.filter(y => y.n === x.n && y.cl === x.cl && y.h !== x.h);
   $app.innerHTML = `
-    ${hero(x, `<span class="badge">${esc(x.ti)}</span><span class="badge">${esc(x.cl)}</span><span class="badge">${esc(x.ty)}</span>${set ? `<span class="badge">${esc(set.n)} set</span>` : ''}${x.a3 ? '' : '<span class="badge">Legacy armor</span>'}`)}
+    ${hero(x, `<span class="htags">${[x.ti, x.cl, x.ty, set && `${set.n} set`, !x.a3 && 'Legacy armor'].filter(Boolean).map(esc).join(' · ')}</span>`)}
     ${same.length ? `<p class="versions">Other versions: ${same.map((y, i) => `<a href="#/armor/${y.h}">${esc(bungieSource(y) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
     ${obtainPanel(x.h)}
     <div class="cols2"><div>
@@ -1241,11 +1241,8 @@ async function farm() {
   const craftable = new Map(d.weapons.filter(w => 'rc' in w).map(w => [baseName(w.n), w]));
 
   $app.innerHTML = `<h1>Farming plan</h1><p class="muted">Week ${cur.week ?? ''} · ${fmtDate(cur.start)} reset. ${p ? '' : 'Sign in with Bungie so the plan skips what you already own.'}</p>
-    <section class="panel"><h2>This week</h2><div class="eg"><span class="muted">Raids</span><div class="perks">${cur.raids.map(n => `<span class="badge${cur.master.includes(n) ? ' good' : ''}">${esc(n)}${cur.master.includes(n) ? ' · Master' : ''}</span>`).join('')}</div></div>
-      <div class="eg"><span class="muted">Dungeons</span><div class="perks">${cur.dungeons.map(n => `<span class="badge${cur.master.includes(n) ? ' good' : ''}">${esc(n)}${cur.master.includes(n) ? ' · Master' : ''}</span>`).join('')}</div></div>
-      <div class="eg"><span class="muted">Pantheon</span><div class="perks">${cur.pantheon.map(n => `<span class="badge">${esc(n)}</span>`).join('')}</div></div>
-      <div class="eg"><span class="muted">Grandmaster</span><div class="perks"><span class="badge">${esc(cur.gm)}</span>${cur.gmWeapons.map(n => `<span class="badge">${esc(n)}</span>`).join('')}</div></div>
-      <div class="eg"><span class="muted">PvP</span><div class="perks"><span class="badge">${esc(cur.pvp)}</span></div></div></section>
+    <section class="panel"><h2>This week</h2>${[['Raids', cur.raids], ['Dungeons', cur.dungeons], ['Pantheon', cur.pantheon], ['Grandmaster', [cur.gm, ...cur.gmWeapons]], ['PvP', [cur.pvp]]]
+      .map(([k, l]) => `<div class="eg"><span class="muted">${k}</span><span>${l.filter(Boolean).map(n => cur.master.includes(n) ? `<span class="good">${esc(n)} · Master</span>` : esc(n)).join(' · ')}</span></div>`).join('')}</section>
     <section class="panel"><details class="farmprefs" id="prefs"><summary>What you're farming for</summary>
       <div class="eg"><span class="muted">God rolls</span><div><select id="tier" aria-label="God rolls to chase"><option value="">Off</option>${TIERS.slice(0, 4).map(t => `<option value="${t}">Tier ${t}${t === 'S' ? '' : ' and up'}</option>`).join('')}</select>
         <small class="muted">Endgame Analysis rolls you don't own yet</small></div></div>

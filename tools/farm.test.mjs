@@ -50,7 +50,7 @@ const allText = async () => {
 // signed out: S-tier god rolls, with this week's rotating raid or dungeon as the priority
 await p.goto('http://localhost:8765/#/farm'); await p.waitForSelector('#plan section');
 assert.ok((await p.innerText('#app')).includes('Sign in with Bungie so the plan skips what you already own.'));
-assert.match(await p.innerText('#plan section.priority h2'), /^PRIORITY FARM: (KING'S FALL|SUNDERED DOCTRINE|GRASP OF AVARICE|GARDEN OF SALVATION) /);
+assert.match(await p.innerText('#plan section.priority h2'), /^Priority farm: (King's Fall|Sundered Doctrine|Grasp of Avarice|Garden of Salvation) /);
 // tabs: This week / Coming up, then activity type, then activity, showing one activity at a time
 const types = () => p.$$eval('.typetabs button', bs => bs.map(b => b.dataset.type));
 assert.deepEqual((await types()).slice(0, 5), ['Raids', 'Dungeons', 'Pantheon', 'Grandmaster', 'PvP']);
@@ -62,11 +62,11 @@ assert.ok(!(await plan()).includes('Doom of Chelchis (Harrowed)'), 'Harrowed cop
 // the priority callout jumps back to its tab
 await section('PvP', 'Iron Banner');
 await p.click('.farmtop .linkbtn');
-assert.match(await p.innerText('#plan section.priority h2'), /^PRIORITY FARM: /);
+assert.match(await p.innerText('#plan section.priority h2'), /^Priority farm: /);
 assert.ok(!(await p.$$eval('.tabs.act button', bs => bs.map(b => b.dataset.act))).includes('Deep Stone Crypt'));
 await p.click('[data-view="later"]');
 assert.deepEqual(await types(), ['Raids', 'Dungeons']);
-assert.ok((await section('Raids', 'Deep Stone Crypt')).includes('Featured Oct 27'.toUpperCase()));
+assert.ok((await section('Raids', 'Deep Stone Crypt')).includes('Featured Oct 27'));
 await p.click('[data-view="now"]');
 assert.equal(await p.getAttribute('.typetabs [data-type="Raids"]', 'aria-pressed'), 'true');
 
