@@ -273,7 +273,7 @@ async function weaponPage(hash) {
     ${hero(w, `<span class="htags">${esc(w.ti)} · <span class="dmg-${esc(w.dm)}">${esc(w.dm)}</span> · ${esc(w.ty)} · ${esc(w.sl)} · ${esc(w.am)}</span>${tierBadge(er)}${craftBadge(w, S.profile)}`)}
     ${w.old ? '<p class="versions">Retired version: it no longer drops, so lists show the current one.</p>' : ''}
     ${same.length ? `<p class="versions">Other versions: ${same.map((x, i) => `<a href="#/weapon/${x.h}">${esc(bungieSource(x) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
-    ${obtainPanel(w.h)}
+    <div class="cols2 toprow">${obtainPanel(w.h)}<section class="panel" id="endgame"><h2>Endgame Analysis</h2>${endgamePanel(d, er)}</section></div>
     <div class="wtop"><section class="panel perkpanel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll <span class="key cur"></span> Curated roll${goalBuilds.length ? ' <span class="key goal"></span> Build roll' : ''}</p>
       ${goalBuilds.length ? `<div class="goalbar"><label for="goal">Build roll</label><select id="goal"><option value="">None</option>${goalBuilds.map(b => `<option value="${esc(b.key)}"${b.key === goalKey ? ' selected' : ''}>${esc(b.name)}</option>`).join('')}</select>
         <button type="button" id="editgoal"${goalKey ? '' : ' hidden'}>Pick perks</button><small class="muted" id="goalhint"></small></div>` : ''}
@@ -285,12 +285,11 @@ async function weaponPage(hash) {
         <p class="statacts">${w.cols.some(c => c.cur) ? '<button type="button" id="curated">Curated roll</button>' : ''}<button type="button" id="clearroll" disabled>Clear roll</button></p></section>
       <section class="panel copies" id="mine"><h3>Your copies</h3><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies here.'}</p></section>
     </div></div>
-    <div class="cols2"><div>
-      <section class="panel"><h2>Community sheets</h2><div id="sheetsrc" class="muted">Looking up community sheets…</div></section>
-    </div><div>
-      <section class="panel"><h2>Endgame Analysis</h2>${endgamePanel(d, er)}</section>
-    </div></div>
-    ${w.lore ? `<section class="panel"><h2>Lore</h2><div class="lore">${esc(w.lore)}</div></section>` : ''}`;
+    <section class="panel" id="boss" hidden><h2>Boss damage</h2><div class="cols2"></div>
+      <p class="muted"><small>From theaegisrelic's Destiny 2: Boss Damage sheet. DPS is the best tested setup over a full damage phase, with the perks and buffs
+        hover shows; per shot is one plain hit.</small></p></section>
+    ${w.lore ? `<section class="panel"><h2>Lore</h2><div class="lore">${esc(w.lore)}</div></section>` : ''}
+    <section class="panel"><details class="sheetrows"><summary>Community sheet rows</summary><div id="sheetsrc" class="muted">Looking up community sheets…</div></details></section>`;
 
   const grid = $app.querySelector('.perkcols'), copiesBox = $app.querySelector('#mine');
   const drawGoal = () => {
@@ -381,6 +380,10 @@ async function weaponPage(hash) {
   wireFarmButton();
   const obtainBox = $app.querySelector('#obtain .obtains');
   whereToFarm(w).then(srcs => obtainHtml(w, srcs, [w.n])).then(h => { obtainBox.innerHTML = h; });
+  const bossBox = $app.querySelector('#boss');
+  bossData(d).then(B => { const { dps, shot } = bossCompare(d, B, w), what = `${w.am.toLowerCase()} ${w.ty.toLowerCase()}s`;
+    const html = bossChart('bossdps', 'Sustained DPS', 'DPS', dps, what) + bossChart('bossshot', 'Damage per shot', 'damage', shot, what);
+    if (html) { bossBox.querySelector('.cols2').innerHTML = html; bossBox.hidden = false; } });
   if (Bungie.token()) showCopies(d, w, er, mw.p.filter(h => godNames.has(d.plugs[h].n)).map(h => d.plugs[h].n), goal);  // runs alongside the slower sheet lookups below
 
   // Community sheet rows mentioning this weapon by name, or its frame for the same weapon type.
@@ -451,6 +454,82 @@ function endgamePanel(d, r) {
   return `<p>${tierBadge(r)} <span class="muted">#${r.r} of ${r.of} in ${esc(r.tab)}</span></p>${r.d ? `<p>${esc(r.d)}</p>` : ''}${r.note ? `<p>${esc(r.note)}</p>` : ''}
     ${rows.map(([k, v]) => `<div class="eg"><span class="muted">${k}</span><div class="perks">${v.map(n => `<span class="badge${/^Perk/.test(k) ? ' good' : ''}">${esc(n)}</span>`).join('')}</div></div>`).join('')}
     <p class="muted"><small>From <a href="${esc(d.source)}" target="_blank" rel="noopener">Aegis's Destiny 2: Endgame Analysis</a>.${r.c?.length ? ' A copy counts as a god roll when it has one of the Perk 1 picks and one of the Perk 2 picks.' : ''}</small></p>`;
+}
+
+// ---------- boss damage ----------
+// theaegisrelic's Destiny 2: Boss Damage sheet. Sustained: a row per tested setup, its first line the gun or archetype ("Aggressive rocket
+// launcher"), then the perks and buffs, naming the gun it was tested on in brackets ("(Hezen Vengeance)"), with its ammo, family and DPS.
+// Weapons: damage per shot to a boss by weapon type and frame or exotic ("Adaptive frame", "Gjallarhorn"), the plain shot listed first.
+const BOSS_FAMILY = { 'Combat Bow': 'bow', 'Rocket Launcher': 'rocket', Shotgun: 'shotgun', 'Sniper Rifle': 'sniper', Sword: 'sword', 'Fusion Rifle': 'fusion',
+  'Linear Fusion Rifle': 'linear', 'Trace Rifle': 'trace', 'Auto Rifle': 'auto', 'Machine Gun': 'LMG', 'Hand Cannon': 'HC', 'Pulse Rifle': 'pulse',
+  'Scout Rifle': 'scout', 'Submachine Gun': 'SMG', Sidearm: 'sidearm', Glaive: 'glaive', 'Grenade Launcher': 'GL' };
+const BOSS_AMMO = { primary: 'Primary', special: 'Special', power: 'Heavy' };
+const BOSS_TYPE = { smg: 'Submachine Gun', bow: 'Combat Bow' };  // the Weapons tab's names for them
+// names compared without accents or case, keeping a leading "The" ("(The Fourth Horseman)")
+const low = t => t.normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[’‘]/g, "'").toLowerCase().trim();
+const frameOf = (d, w) => d.plugs[w.cols.find(c => c.c === 'Intrinsic Traits')?.p[0]]?.n || '';
+let bossIndex;
+async function bossData(d) {
+  if (bossIndex) return bossIndex;
+  const tabs = await sheets(), tab = n => tabs.find(t => t.source === 'Destiny 2 Boss Damage' && t.tab === n)?.rows || [];
+  const num = c => parseFloat(String(c).replace(/,/g, '')) || 0;
+  const sustained = tab('Sustained').slice(1).filter(r => r[0] && BOSS_AMMO[r[1]] && num(r[19]) > 0).map(r => {
+    const [name, ...setup] = r[0].split('\n');
+    return { name: name.trim(), setup: setup.join(' ').trim(), am: BOSS_AMMO[r[1]], fam: /GL$/.test(r[2]) ? 'GL' : r[2], v: num(r[19]) };
+  });
+  // a per-shot row's ammo comes from the guns it describes, since heavy and breech grenade launchers share a type
+  const byType = Object.groupBy(d.weapons, w => low(w.ty));
+  const shots = tab('Weapons').slice(2).filter(r => r[1] && r[2] && num(r[3]) > 0).map(r => {
+    const ty = BOSS_TYPE[low(r[1])] || r[1], sub = low(r[2]);
+    const guns = (byType[low(ty)] || []).filter(w => low(w.n) === sub || low(frameOf(d, w)) === sub);
+    const am = Object.entries(Object.groupBy(guns, w => w.am)).sort((x, y) => y[1].length - x[1].length)[0]?.[0];
+    return { name: r[2], ty: low(ty), am, v: num(r[3]), body: num(r[4]), setup: [r[5], r[6]].filter(Boolean).join(', '), patch: r[20] || '' };
+  }).filter(r => r.am);
+  return bossIndex = { sustained, shots };
+}
+// The gun's entries in each test and the guns of its type and ammo to compare with: one bar per gun or archetype (its best setup for
+// DPS, its plain shot per shot), the gun's own setups on a bar of their own, its frame's marked.
+function bossCompare(d, B, w) {
+  const frame = low(frameOf(d, w)), fk = frame.replace(/ frame$/, ''), me = low(w.n);
+  const bars = (rows, gun, same) => {
+    const by = new Map();
+    for (const r of rows) {
+      const key = gun(r) ? w.n : r.name, b = by.get(key);
+      if (!b) by.set(key, { name: key, v: r.v, rows: [r], best: r, mark: gun(r) ? 'gun' : same(r) ? 'frame' : '' });
+      else { b.rows.push(r); if (r.v > b.best.v) b.best = r; }
+    }
+    return [...by.values()];
+  };
+  const dps = bars(B.sustained.filter(r => r.am === w.am && r.fam === BOSS_FAMILY[w.ty]),
+    r => low(r.name) === me || low(r.setup).includes(`(${me})`), r => !!fk && low(r.name).startsWith(fk + ' '));
+  dps.forEach(b => { b.v = b.best.v; });
+  // per shot: the first row of each frame is its plain shot
+  const shot = bars(B.shots.filter(r => r.ty === low(w.ty) && r.am === w.am), r => low(r.name) === me, r => !!frame && low(r.name) === frame);
+  shot.forEach(b => { b.best = b.rows[0]; b.v = b.best.v; });
+  return { dps, shot };
+}
+const ordinal = n => { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+// one horizontal bar per gun or archetype, biggest first (the top 12 and this gun's): this gun or its frame in the accent, the rest gray,
+// with the group's average as a line; a table under it lists every tested setup
+function bossChart(id, title, unit, bars, what) {
+  if (bars.length < 2) return '';
+  const fmt = v => Math.round(v).toLocaleString('en-US'), avg = bars.reduce((t, b) => t + b.v, 0) / bars.length;
+  const sorted = [...bars].sort((x, y) => y.v - x.v), mine = sorted.find(b => b.mark === 'gun') || sorted.find(b => b.mark === 'frame');
+  const shown = sorted.filter((b, i) => i < 12 || b === mine), max = sorted[0].v, pct = v => (100 * v / max).toFixed(1);
+  const diff = mine && Math.round(100 * (mine.v / avg - 1));
+  const head = mine ? `<p class="bhead"><b>${fmt(mine.v)}</b> ${unit}${mine.mark === 'frame' ? ` <span class="muted">for its frame (${esc(mine.name)})</span>` : ''}
+      <span class="muted">· ${ordinal(sorted.indexOf(mine) + 1)} of ${sorted.length} ${esc(what)} · ${diff === 0 ? 'right on' : `${Math.abs(diff)}% ${diff > 0 ? 'above' : 'below'}`} their average of ${fmt(avg)}</span></p>`
+    : `<p class="bhead muted">This gun and its frame weren't tested here. How ${esc(what)} compare:</p>`;
+  return `<div class="bchart" id="${id}"><h3>${title}</h3>${head}
+    <div class="bbars" style="--avg:${pct(avg)}%">${shown.map(b => `<div class="brow${b.mark ? ' me' : ''}" tabindex="0" aria-label="${esc(b.name)}: ${fmt(b.v)} ${unit}${b.mark === 'gun' ? ', this gun' : b.mark === 'frame' ? ', its frame' : ''}">
+        <span class="bname">${esc(b.name)}${b.mark === 'gun' ? ' <small>this gun</small>' : b.mark === 'frame' ? ' <small>its frame</small>' : ''}</span>
+        <span class="btrack"><span class="bfill" style="width:${pct(b.v)}%"></span></span><span class="bval">${fmt(b.v)}</span>
+        <span class="btip" role="tooltip"><b>${fmt(b.v)} ${unit}</b> ${esc(b.name)}${b.best.setup ? `<br>${esc(b.best.setup)}` : ''}</span></div>`).join('')}
+      <span class="bavg" aria-hidden="true"><span>Average ${fmt(avg)}</span></span></div>
+    ${shown.length < sorted.length ? `<p class="muted"><small>Showing the top 12 of ${sorted.length}.</small></p>` : ''}
+    <details class="btable"><summary>Every tested setup (${bars.reduce((t, b) => t + b.rows.length, 0)})</summary><div class="datawrap"><table class="data">
+      <thead><tr><th scope="col">Gun or frame</th><th scope="col">Setup</th><th scope="col">${unit[0].toUpperCase() + unit.slice(1)}</th></tr></thead>
+      <tbody>${sorted.flatMap(b => b.rows.map(r => `<tr${b.mark ? ' class="me"' : ''}><td>${esc(r.name)}</td><td class="wide">${esc(r.setup)}</td><td>${fmt(r.v)}</td></tr>`)).join('')}</tbody></table></div></details></div>`;
 }
 
 // ---------- armor ----------

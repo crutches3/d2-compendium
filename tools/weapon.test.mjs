@@ -58,6 +58,25 @@ const hrefs = await p.$$eval('#list .card', cs => cs.map(c => (c.closest('a') ||
 assert.ok(hrefs.length && hrefs.every(h => !coup.find(w => w.old && h.endsWith('/' + w.h))), hrefs.join());
 await p.goto(`http://localhost:8765/#/weapon/${oldCoup.h}`); await p.waitForSelector('.versions');
 assert.match(await p.innerText('#app'), /Retired version/);
+
+// the Endgame Analysis ranking sits beside how to get it, above the perks
+await p.goto(`http://localhost:8765/#/weapon/${W.find(w => w.n === 'Fatebringer' && !w.old).h}`); await p.waitForSelector('#bossshot .brow');
+assert.deepEqual(await p.$$eval('.toprow > section', ss => ss.map(x => x.id)), ['obtain', 'endgame']);
+assert.match(await p.textContent('#endgame'), /#\d+ of \d+/);
+// boss damage per shot: its frame (Adaptive) is marked among primary hand cannons, with the average and every setup in a table
+const bars = id => p.$$eval(`#${id} .brow`, rs => rs.map(r => [r.querySelector('.bname').textContent.trim(), +r.querySelector('.bval').textContent.replace(/,/g, ''), r.classList.contains('me')]));
+const fate = await bars('bossshot');
+assert.ok(fate.some(([n, , me]) => n.startsWith('Adaptive frame') && me) && fate.filter(x => x[2]).length === 1, JSON.stringify(fate));
+assert.ok(fate.every((x, i) => !i || fate[i - 1][1] >= x[1]), 'bars biggest first');
+assert.match(await p.innerText('#bossshot .bhead'), /for its frame \(Adaptive frame\) · \d+\w\w of \d+ primary hand cannons · \d+% (above|below) their average/);
+assert.ok(await p.$$eval('#bossshot .btable tbody tr', rs => rs.length) >= fate.length);
+// sustained DPS: a gun the sheet tested by name gets its own bar, first among heavy rocket launchers
+await p.goto(`http://localhost:8765/#/weapon/${W.find(w => w.n === 'Bellowing Giant' && !w.old).h}`); await p.waitForSelector('#bossdps .brow');
+const giant = await bars('bossdps');
+assert.deepEqual(giant[0].slice(0, 1).concat(giant[0][2]), ['Bellowing Giant this gun', true]);
+assert.match(await p.innerText('#bossdps .bhead'), /^\s*[\d,]+ DPS · 1st of \d+ heavy rocket launchers/);
+// the sheet's setup shows on hover and keyboard focus
+await p.focus('#bossdps .brow >> nth=1'); assert.ok(await p.isVisible('#bossdps .brow:nth-child(2) .btip'));
 assert.deepEqual(errs, []);
 await b.close();
 console.log('weapon tests passed');

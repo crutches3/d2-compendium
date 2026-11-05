@@ -572,3 +572,34 @@ section.panel:not(.bare) .oart, .dropart { background: var(--panel); }
 .tabs.act { flex-direction: row; gap: 6px; }
 section.panel:not(.bare) h2 .count { font-size: 15px; letter-spacing: 0; }
 section.panel:not(.bare) .obtains { grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); }
+/* weapon page: how to get it beside the Endgame Analysis ranking */
+.toprow { align-items: start; }
+/* boss damage charts: one bar per gun or archetype, this gun (or its frame) in the accent, the rest gray, the average as a hairline */
+.bchart h3 { margin: 0 0 4px; }
+.bhead { margin: 0 0 10px; }
+.bhead b { font-size: 20px; }
+.bbars { position: relative; display: grid; gap: 4px; --label: 11rem; --value: 4rem; }
+.brow { position: relative; display: grid; grid-template-columns: var(--label) minmax(0, 1fr) var(--value); align-items: center; gap: 8px; font-size: 13px; padding: 2px 0; border-radius: 4px; }
+.brow:hover, .brow:focus { background: rgba(255, 255, 255, .04); outline: none; }
+.brow:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.bname { color: var(--muted); line-height: 1.25; overflow-wrap: anywhere; }
+.bname small { color: var(--accent); font-size: 11px; white-space: nowrap; }
+.brow.me .bname { color: var(--text); font-weight: 600; }
+.btrack { height: 12px; }
+.bfill { display: block; height: 100%; min-width: 2px; border-radius: 0 4px 4px 0; background: #6b7385; }
+.brow.me .bfill { background: var(--accent); }
+.bval { font-variant-numeric: tabular-nums; text-align: right; color: var(--muted); }
+.brow.me .bval { color: var(--text); }
+.bavg { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--text); opacity: .55; pointer-events: none;
+  left: calc(var(--label) + 8px + (100% - var(--label) - var(--value) - 16px) * var(--avg) / 100%); }
+.bavg span { position: absolute; bottom: 100%; left: 4px; white-space: nowrap; font-size: 11px; color: var(--text); }
+.bbars { margin-top: 18px; }
+.btip { display: none; position: absolute; z-index: 3; left: var(--label); top: calc(100% + 4px); max-width: 360px; padding: 8px 10px; font-size: 12px; line-height: 1.4;
+  background: var(--panel2); border: 1px solid var(--line-strong); border-radius: 6px; color: var(--muted); box-shadow: 0 6px 18px rgba(0, 0, 0, .45); }
+.btip b { color: var(--text); }
+.brow:hover .btip, .brow:focus .btip { display: block; }  /* focus: keyboard, and a tap on phones */
+.btable { margin-top: 10px; font-size: 13px; }
+.btable summary, .sheetrows summary { cursor: pointer; color: var(--muted); }
+.btable tr.me td { color: var(--text); font-weight: 600; }
+@media (max-width: 720px) { .bbars { --label: 8rem; --value: 3.5rem; } }
+#boss .cols2 { grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 24px 32px; }
