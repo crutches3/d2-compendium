@@ -447,9 +447,9 @@ async function showCopies(d, w, er, mwPicks, goal) {  // goal(): the selected bu
   } catch (e) { box.innerHTML = `<h3>Your copies</h3><p>${esc(e.message)}</p>`; }
 }
 
-// the gun's Endgame Analysis tier and rank; the roll it recommends shows on the perk grid
+// the gun's Endgame Analysis tier, rank and Aegis's note on it; the roll it recommends shows on the perk grid
 const endgameRank = (d, r) => r ? `<p class="rank">${tierBadge(r)} <b>#${r.r}</b> <span class="muted">of ${r.of} in ${esc(r.tab)}</span></p>
-  <p class="muted"><small>From <a href="${esc(d.source)}" target="_blank" rel="noopener">Aegis's Destiny 2: Endgame Analysis</a></small></p>` : '<p class="muted">Not rated in the Endgame Analysis sheet.</p>';
+  ${r.d ? `<p>${esc(r.d)}</p>` : ''}${r.note ? `<p>${esc(r.note)}</p>` : ''}<p class="muted"><small>From <a href="${esc(d.source)}" target="_blank" rel="noopener">Aegis's Destiny 2: Endgame Analysis</a></small></p>` : '<p class="muted">Not rated in the Endgame Analysis sheet.</p>';
 
 // ---------- boss damage ----------
 // theaegisrelic's Destiny 2: Boss Damage sheet. Sustained: a row per tested setup, its first line the gun or archetype ("Aggressive rocket
