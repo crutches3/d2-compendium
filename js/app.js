@@ -537,8 +537,6 @@ async function armorData() {
 const slotLabel = x => x.ty.startsWith(x.cl) ? x.ty : `${x.cl} ${x.ty}`;
 const archetypeOf = (a, item) => [...item.plugs].map(h => a.archetypes[h]).find(Boolean);
 const statTotal = (a, item) => Object.keys(a.stats).reduce((t, h) => t + (item.stats[h] || 0), 0);
-// "Primary Stat: Super Secondary Stat: Melee" -> ['Super', 'Melee']
-const archetypeStats = d => [/Primary Stat:\s*(\w+)/, /Secondary Stat:\s*(\w+)/].map(re => d.match(re)?.[1] || '');
 // a build's top two stats by name; DIM keeps statConstraints in the order the build ranks them
 const buildTop = (a, loadout) => (loadout.parameters?.statConstraints || []).map(c => a.stats[c.statHash]).filter(Boolean).slice(0, 2);
 // Armor 3.0 rolls a primary, a secondary and a third stat, so a copy fits a build when the build's top two are among its three highest.
@@ -663,19 +661,13 @@ async function armorPage(hash) {
     <div class="cols2"><div>
       ${x.ex ? `<section class="panel"><h2>Exotic perk</h2><div class="bonus">${x.ex[2] ? `<img src="${BNET}${x.ex[2]}" alt="">` : ''}<div><b>${esc(x.ex[0])}</b><br><span class="muted">${esc(x.ex[1])}</span></div></div></section>` : ''}
       ${set ? `<section class="panel"><h2>Set bonus</h2>${setBonus(set)}<p class="muted"><a href="#/armor?set=${x.set}">See every ${esc(set.n)} piece</a></p></section>` : ''}
-      <section class="panel"><h2>Community sheets</h2><div id="sheetsrc" class="muted">Looking up community sheets…</div></section>
     </div><div>
       <section class="panel" id="mine"><h2>Your copies</h2><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies, their tier, archetype and stats.'}</p></section>
-      ${x.a3 ? `<section class="panel"><h2>Archetypes</h2><p class="muted">Every current armor piece can drop as any of these. The archetype sets its two highest stats.</p>
-        <table class="sheet"><tr><td class="muted">Archetype</td><td class="muted">Primary stat</td><td class="muted">Secondary stat</td></tr>
-        ${Object.values(Object.fromEntries(Object.values(a.archetypes).map(t => [t.n, t]))).sort((p, q) => p.n.localeCompare(q.n)).map(t => `<tr><td>${esc(t.n)}</td>${archetypeStats(t.d).map(v => `<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</table></section>` : ''}
     </div></div>`;
 
   wireFarmButton();
   const obtainBox = $app.querySelector('#obtain .obtains');
   armorSource(a, x).then(srcs => obtainHtml(x, srcs, [x.n, set && `${set.n} Armor`].filter(Boolean), slotOf(x.ty))).then(h => { obtainBox.innerHTML = h; });
-  const hits = [...await sheetRows(x.n), ...(set ? await sheetRows(`${set.n} Armor`) : [])];
-  document.getElementById('sheetsrc').innerHTML = hits.length ? rowTable(hits) : 'Not mentioned in the community sheets.';
 
   if (Bungie.token()) {
     try {
