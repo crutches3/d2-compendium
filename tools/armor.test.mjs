@@ -63,6 +63,11 @@ await p.click('.classpick [data-cl="Titan"]'); assert.deepEqual(await classesSho
 
 await p.setViewportSize({ width: 390, height: 844 }); await p.click('.classpick [data-cl="Titan"]'); await p.waitForTimeout(200);
 await p.screenshot({ path: OUT + 'armor-m.png' });
+// an exotic keeps its notes from the Data Compendium's Exotic Armors tab, under a plain "Notes" heading
+const cowl = JSON.parse(fs.readFileSync('data/armor.json')).armor.find(x => x.n === "Assassin's Cowl");
+await p.goto(`http://localhost:8765/#/armor/${cowl.h}`); await p.waitForSelector('#notes:not([hidden])');
+assert.equal(await p.textContent('#notes h2'), 'Notes');
+assert.match(await p.innerText('#notes .notes'), /restores 67 Health/);
 assert.deepEqual(errs, []);
 console.log('armor tests passed');
 await b.close();

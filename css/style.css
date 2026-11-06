@@ -606,3 +606,5 @@ section.panel:not(.bare) .obtains { grid-template-columns: repeat(auto-fill, min
 .btable tr.me td { color: var(--text); font-weight: 600; }
 @media (max-width: 720px) { .bbars { --label: 8rem; --value: 3.5rem; } }
 #boss .cols2 { grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 24px 32px; }
+/* an exotic armor piece's notes from the Data Compendium keep the sheet's line breaks */
+.notes p { white-space: pre-line; margin: 0 0 8px; }

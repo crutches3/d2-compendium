@@ -660,6 +660,7 @@ async function armorPage(hash) {
     ${obtainPanel(x.h)}
     <div class="cols2"><div>
       ${x.ex ? `<section class="panel"><h2>Exotic perk</h2><div class="bonus">${x.ex[2] ? `<img src="${BNET}${x.ex[2]}" alt="">` : ''}<div><b>${esc(x.ex[0])}</b><br><span class="muted">${esc(x.ex[1])}</span></div></div></section>` : ''}
+      ${x.ti === 'Exotic' ? '<section class="panel" id="notes" hidden><h2>Notes</h2><div class="notes"></div></section>' : ''}
       ${set ? `<section class="panel"><h2>Set bonus</h2>${setBonus(set)}<p class="muted"><a href="#/armor?set=${x.set}">See every ${esc(set.n)} piece</a></p></section>` : ''}
     </div><div>
       <section class="panel" id="mine"><h2>Your copies</h2><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies, their tier, archetype and stats.'}</p></section>
@@ -668,6 +669,12 @@ async function armorPage(hash) {
   wireFarmButton();
   const obtainBox = $app.querySelector('#obtain .obtains');
   armorSource(a, x).then(srcs => obtainHtml(x, srcs, [x.n, set && `${set.n} Armor`].filter(Boolean), slotOf(x.ty))).then(h => { obtainBox.innerHTML = h; });
+  // an exotic's notes from the Destiny Data Compendium, whose Exotic Armors tab gives each class an Armor | Icon | Notes block
+  const notesBox = $app.querySelector('#notes');
+  if (notesBox) sheetRows(x.n, t => t.tab === 'Exotic Armors').then(hits => {
+    const notes = hits.map(({ row, head }) => row[head.indexOf('Notes')]).filter(Boolean);
+    if (notes.length) { notesBox.querySelector('.notes').innerHTML = notes.map(n => `<p>${esc(n)}</p>`).join(''); notesBox.hidden = false; }
+  });
 
   if (Bungie.token()) {
     try {
