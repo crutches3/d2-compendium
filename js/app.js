@@ -1724,10 +1724,11 @@ function guideHtml(W, act, g, step, gout) {
   const all = rows([['Master, every encounter', g.master?.map(prose)], ['Epic, every encounter', g.epic?.map(prose)]]);
   return `<section class="panel" id="guide"><h2>Guide</h2>${g.about ? `<p>${prose(g.about)}</p>` : ''}${g.caveat ? `<p class="muted">${prose(g.caveat)}</p>` : ''}
     ${g.encounters.length > 1 ? `<div class="dropfilter" role="group" aria-label="Encounter">${g.encounters.map((e, i) => `<button type="button" data-step="${i}" aria-pressed="${i === step}"><small>${i + 1}</small>${esc(e.name)}</button>`).join('')}</div>` : ''}
-    ${g.encounters.map((e, i) => `<div class="gstep" data-step="${i}"${i === step ? '' : ' hidden'}><h3>${i + 1}. ${esc(e.title || e.name)}</h3><p>${prose(e.what)}</p>
-      ${e.before ? `<p><b>Getting there.</b> ${prose(e.before)}</p>` : ''}<h3 class="drophead">Mechanics</h3><ol>${e.steps.map(t => `<li>${prose(t)}</li>`).join('')}</ol>
-      <dl class="entries">${rows([['Roles', e.roles.map(([r, t]) => `<b>${esc(r)}</b> ${prose(t)}`)], ['Common wipes', e.wipes.map(prose)], ['Secret chests', e.chests?.map(prose)],
-        ['Master', e.master?.map(prose)], ['Epic', e.epic?.map(prose)]])}</dl>${goutHtml(gout?.enc?.[i], gout?.url, 'Walkthrough and pictures')}</div>`).join('')}
+    ${g.encounters.map((e, i) => { const go = gout?.enc?.[i]?.length, mine = [['Roles', e.roles.map(([r, t]) => `<b>${esc(r)}</b> ${prose(t)}`)], ['Common wipes', e.wipes.map(prose)]];  // Randy: where Grindout has the encounter, its walkthrough replaces ours (chests, Master and Epic notes stay)
+      return `<div class="gstep" data-step="${i}"${i === step ? '' : ' hidden'}><h3>${i + 1}. ${esc(e.title || e.name)}</h3>${go ? '' : `<p>${prose(e.what)}</p>
+      ${e.before ? `<p><b>Getting there.</b> ${prose(e.before)}</p>` : ''}<h3 class="drophead">Mechanics</h3><ol>${e.steps.map(t => `<li>${prose(t)}</li>`).join('')}</ol>`}
+      <dl class="entries">${rows([...go ? [] : mine, ['Secret chests', e.chests?.map(prose)],
+        ['Master', e.master?.map(prose)], ['Epic', e.epic?.map(prose)]])}</dl>${goutHtml(gout?.enc?.[i], gout?.url, 'Walkthrough and pictures')}</div>`; }).join('')}
     ${all ? `<dl class="entries">${all}</dl>` : ''}
     <p class="refsrc">Written from ${g.sources.map(([t, u]) => /^https:\/\//.test(u) ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} ↗</a>` : esc(t)).join(' · ')} · checked ${esc(g.checked)}</p></section>`;
 }

@@ -10,6 +10,7 @@ const G = new Map((fs.existsSync('data/guides') ? fs.readdirSync('data/guides') 
   .map(f => JSON.parse(fs.readFileSync('data/guides/' + f))).map(g => [g.name, g]));
 // held by the owner until checked in game (Nov 2026), as in guidedata.test.mjs: their pages work, with no guide
 const HELD = ['Starcrossed', 'The Sunless Cell', 'Pantheon', 'Desert Perpetual & Epic DP'];
+const GO = n => { const f = 'data/grindout/' + n.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.json'; return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f)) : null; };
 const ART = JSON.parse(fs.readFileSync('data/wiki.json')).img, rot = JSON.parse(fs.readFileSync('data/rotation.json'));
 const gms = [...new Set(rot.weeks.map(w => w.gm).filter(Boolean))];
 const S = { tab: t => `.typetabs button[data-pane="${t}"]`, pills: '#guide .dropfilter button[data-step]', step: '#guide .gstep', src: '#guide .refsrc a' };
@@ -54,9 +55,12 @@ const checkGuide = async (name, m = p, g = G.get(name)) => {
     const [h, t, labels] = await m.$$eval(S.step, l => { const x = l.find(y => y.checkVisibility());
       return [x.querySelector('h3').textContent, x.innerText, [...x.querySelectorAll('.entry dt')].map(d => d.textContent)]; });
     assert.equal(h, `${i + 1}. ${e.title || e.name}`, name);
-    for (const line of [e.what, e.before, ...e.steps, ...e.roles.flat(), ...e.wipes, ...(e.chests || []), ...(e.master || []), ...(e.epic || [])].filter(Boolean))
+    // where Grindout covers the encounter, its walkthrough replaces ours: only chests and Master or Epic notes stay from the guide file
+    const go = GO(name)?.enc?.[i]?.length, ours = [e.what, e.before, ...e.steps, ...e.roles.flat(), ...e.wipes];
+    for (const line of [...go ? [] : ours, ...(e.chests || []), ...(e.master || []), ...(e.epic || [])].filter(Boolean))
       assert.ok(sp(t).includes(sp(line)), `${name} / ${e.name}: missing "${line.slice(0, 50)}"`);
-    assert.deepEqual(labels, [['Roles', e.roles], ['Common wipes', e.wipes], ['Secret chests', e.chests], ['Master', e.master], ['Epic', e.epic]].filter(([, l]) => l).map(([k]) => k), name);
+    if (go) assert.ok(!sp(t).includes(sp(e.steps[0])) && sp(t).includes('from Grindout'), `${name} / ${e.name}: shows both walkthroughs`);
+    assert.deepEqual(labels, [...go ? [] : [['Roles', e.roles], ['Common wipes', e.wipes]], ['Secret chests', e.chests], ['Master', e.master], ['Epic', e.epic]].filter(([, l]) => l).map(([k]) => k), name);
   }
   const all = await m.innerText('#guide');
   for (const line of [g.about, g.caveat, ...(g.master || []), ...(g.epic || [])].filter(Boolean)) assert.ok(sp(all).includes(sp(line)), `${name}: missing "${line.slice(0, 50)}"`);
@@ -143,6 +147,8 @@ await serve(g => g.name === "King's Fall" ? { ...g, encounters: [{ ...g.encounte
 for (const n of ["King's Fall", 'Prophecy']) { await openWiki(n, '/guide/2'); assert.ok(await p.isVisible('.drops') && !(await p.$('.typetabs button[data-pane]')), n); }
 await openWiki('Warden of Nothing'); assert.ok(!(await p.$('#guide')) && /guide/i.test(await p.textContent('.wtop .empty')));
 await p.unroute('**/data/guides/**');
+// escaping is checked on our own text, so Grindout's walkthrough (which replaces it where it covers an encounter) is left out here
+await p.route('**/data/grindout/**', r => r.fulfill({ status: 404, body: '' }));
 const hits = []; p.on('request', r => r.url().includes('x-xss') && hits.push(r.url()));
 await serve(g => { if (g.name !== "King's Fall") return; const e = g.encounters[0];
   return { ...g, sources: [['<i>Source</i>', g.sources[0][1]], ['Bad link', 'javascript:window.__xss=3']],
@@ -154,6 +160,7 @@ assert.ok(body.includes('Plain <b>bold</b> text') && body.includes('<img src="x-
 assert.deepEqual([await p.$eval(`${S.pills} >> nth=1`, x => x.textContent), await p.textContent('#guide .gstep[data-step="1"] h3')], ['2<u>W</u>', '2. <img src="x-xss-t" onerror="window.__xss=4">']);
 assert.deepEqual([await p.evaluate(() => window.__xss), hits, await p.$$eval('#guide b:text-is("bold"), #guide img:not(.gimg), #guide u, #guide script, #guide a[href^="javascript"]', l => l.length)], [undefined, [], 0]);
 assert.equal(await p.textContent(`${S.src} >> nth=0`), '<i>Source</i> ↗');
+await p.unroute('**/data/grindout/**');
 await p.unroute('**/data/guides/**');
 // Epic notes (only Desert Perpetual has them, and its guide is held) draw like Master's: for every encounter, and per encounter
 const epic = { ...G.get("King's Fall"), epic: ['Fake Epic line for every encounter.'],
