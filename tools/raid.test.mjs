@@ -8,11 +8,15 @@ const W = JSON.parse(fs.readFileSync('data/weapons.json')).weapons;
 const R = JSON.parse(fs.readFileSync('data/godrolls.json')).rolls;
 const rated = n => W.find(w => w.n === n && R[w.h]?.c?.length);
 const A = JSON.parse(fs.readFileSync('data/armor.json')), mask = A.armor.find(x => x.n === 'Darkhollow Mask');
+const grasps = A.armor.find(x => x.n === 'Darkhollow Grasps' && x.cl === 'Hunter' && x.c && x.a3) , yasmin = rated('Defiance of Yasmin');
 const doom = rated('Doom of Chelchis'), zaouli = W.find(w => w.n === "Zaouli's Bane (Harrowed)");
 const profile = {
   characters: { data: { H1: { classType: 1, light: 480 } } },
   profileInventory: { data: { items: [{ itemHash: doom.h, itemInstanceId: '1', bucketHash: 138197802 }, { itemHash: zaouli.h, itemInstanceId: '2', bucketHash: 138197802 },
     { itemHash: mask.h, itemInstanceId: '3', bucketHash: 138197802 }] } },
+  // Collections: Defiance of Yasmin (profile scope) and the Hunter's Darkhollow Grasps (character scope) unlocked, Doom of Chelchis not (state 1)
+  profileCollectibles: { data: { collectibles: { [yasmin.c]: { state: 0 }, [doom.c]: { state: 1 } } } },
+  characterCollectibles: { data: { H1: { collectibles: { [grasps.c]: { state: 64 } } } } },
   characterInventories: { data: { H1: { items: [] } } }, characterEquipment: { data: { H1: { items: [] } } },
   // the Doom of Chelchis copy has a Perk 1 and a Perk 2 pick (a god roll); the adept Zaouli's Bane has no perks
   itemComponents: { sockets: { data: { 1: { sockets: R[doom.h].c.map(col => ({ plugHash: col[0] })) }, 2: { sockets: [] } } }, reusablePlugs: { data: {} }, instances: { data: { 3: { gearTier: 4 } } }, stats: { data: {} } },
@@ -67,10 +71,13 @@ await p.reload(); await p.waitForSelector(`${card('Doom of Chelchis')} .own .hav
 assert.match(await p.innerText(`${card('Doom of Chelchis')} .own`), /^You have 1/);
 assert.ok(await p.$(`${card('Doom of Chelchis')} .own .pips.g-god`));
 assert.equal(await p.innerText(`${card("Zaouli's Bane")} .own .have`), 'You have 1 · 1 adept');
-assert.equal(await p.innerText(`${card('Defiance of Yasmin')} .own`), 'Not in your vault');
+assert.equal(await p.innerText(`${card('Defiance of Yasmin')} .own`), 'Not in your vault\nIn Collections');
+assert.match(await p.innerText(`${card('Doom of Chelchis')} .own`), /Not in Collections$/);
 assert.match(await p.innerText('#raidmine'), /2 of 7 weapons, 1 with a god roll\.\s+1 of 15 armor pieces/);
-assert.equal(await p.innerText(`${card('Darkhollow Mask')} .own`), 'You have 1\nBest: Tier 4');
-assert.equal(await p.innerText(`${card('Darkhollow Grasps')} .own`), 'Not in your vault');
+assert.equal(await p.innerText(`${card('Darkhollow Mask')} .own`), 'You have 1\nBest: Tier 4\nNot in Collections');
+assert.equal(await p.innerText(`${card('Darkhollow Grasps')} .own`), 'Not in your vault\nIn Collections');
+assert.match(await p.innerText('#raidmine'), /Secret chests here only drop what you've unlocked in Collections: 1 of 7 weapons and 1 of 15 armor pieces/);
+await p.click('#ownfilter button[data-own="col"]'); assert.deepEqual(await visible(), ['Defiance of Yasmin']); assert.deepEqual(await visible('.drop[data-a]'), ['Darkhollow Grasps']);
 await p.click('#ownfilter button[data-own="need"]'); assert.equal((await visible()).length, 5); assert.equal((await visible('.drop[data-a]')).length, 4);
 await p.click('#ownfilter button[data-own="have"]'); assert.deepEqual(await visible(), ['Doom of Chelchis', "Zaouli's Bane"]); assert.deepEqual(await visible('.drop[data-a]'), ['Darkhollow Mask']);
 await p.click('.dropfilter button[data-enc="Golgoroth"]'); assert.deepEqual(await visible(), ['Doom of Chelchis']);
@@ -116,6 +123,11 @@ assert.ok(await p.$('.entry b:text-is("Invasions")'));
 // a sheet's typo two letters off still finds the gun, shown under Bungie's name
 await openWiki('Neomuna');
 assert.match(await p.getAttribute(`${card('Dimensional Hypotrochoid')} .dropart img`, 'src'), /screenshots/);
+
+// gun and armor pages say whether Collections has it (so a secret chest can drop it)
+await p.goto(`http://localhost:8765/#/weapon/${yasmin.h}`); await p.waitForSelector('#mine .badge.good:text-is("In Collections")');
+await p.goto(`http://localhost:8765/#/weapon/${doom.h}`); await p.waitForSelector('#mine .badge:text-is("Not in Collections")');
+await p.goto(`http://localhost:8765/#/armor/${grasps.h}`); await p.waitForSelector('#mine .badge.good:text-is("In Collections")');
 
 assert.deepEqual(errs, []);
 await b.close();
