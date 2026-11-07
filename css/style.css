@@ -24,7 +24,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 16px; }
 footer { max-width: 1200px; margin: 32px auto; padding: 0 16px; font-size: 12px; }
 
 /* shell */
-.top { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 4px 24px; padding: 0 16px; min-height: 52px;
+.top { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 4px 24px; padding: 0 16px; min-height: 52px;
   background: var(--shell); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
 .brand { font-weight: 700; color: var(--text); font-size: 16px; white-space: nowrap; }
 .brand:hover { text-decoration: none; }
@@ -33,9 +33,25 @@ footer { max-width: 1200px; margin: 32px auto; padding: 0 16px; font-size: 12px;
 .top nav a:hover { color: var(--text); text-decoration: none; }
 .top nav a[aria-current] { color: var(--text); border-bottom-color: var(--accent); }
 #account { font-size: 13px; color: var(--muted); white-space: nowrap; }
+/* site search: the box sits in the header, results drop under it */
+.sitesearch { position: relative; min-width: 0; }
+.sitesearch input { width: 200px; max-width: 100%; padding: 6px 10px; font-size: 14px; }
+.sres { position: absolute; right: 0; top: calc(100% + 8px); width: min(420px, calc(100vw - 32px)); max-height: 70vh; overflow-y: auto;
+  background: var(--shell); border: 1px solid var(--line); border-radius: var(--radius); padding: 6px; box-shadow: 0 12px 32px rgba(0,0,0,.5); }
+.sres a { display: flex; gap: 10px; align-items: center; padding: 6px 8px; border-radius: 4px; color: var(--text); }
+.sres a:hover, .sres a:focus { background: var(--panel2); text-decoration: none; outline: none; }
+.sres .icon, .sres .icon img { width: 32px; height: 32px; }
+.sres span { min-width: 0; }
+.sres b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sres small { display: block; color: var(--muted); font-size: 12px; }
+.sres .more { color: var(--accent); font-size: 13px; }
+.sres p { margin: 6px 8px; }
 @media (max-width: 720px) {
   .top { grid-template-columns: 1fr auto; padding-top: 8px; }
-  .top nav { grid-column: 1 / -1; grid-row: 2; margin: 0 -16px; padding: 0 6px; }
+  .sitesearch { grid-column: 1 / -1; grid-row: 2; }
+  .sitesearch input { width: 100%; }
+  .sres { left: 0; right: 0; width: auto; }
+  .top nav { grid-column: 1 / -1; grid-row: 3; margin: 0 -16px; padding: 0 6px; }
   .top nav a { padding: 10px; }
 }
 
