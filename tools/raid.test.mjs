@@ -128,6 +128,10 @@ assert.match(await p.getAttribute(`${card('Dimensional Hypotrochoid')} .dropart 
 await p.goto(`http://localhost:8765/#/weapon/${yasmin.h}`); await p.waitForSelector('#mine .badge.good:text-is("In Collections")');
 await p.goto(`http://localhost:8765/#/weapon/${doom.h}`); await p.waitForSelector('#mine .badge:text-is("Not in Collections")');
 await p.goto(`http://localhost:8765/#/armor/${grasps.h}`); await p.waitForSelector('#mine .badge.good:text-is("In Collections")');
+// a reissue with no Collections entry of its own (today's Adamantite) says nothing, rather than borrowing the old release's entry
+const ada = W.find(w => w.n === 'Adamantite' && !w.old && !w.c);
+await p.goto(`http://localhost:8765/#/weapon/${ada.h}`); await p.waitForSelector('#mine p.muted:has-text("own this weapon")');
+assert.equal(await p.$('#mine .badge'), null);
 
 assert.deepEqual(errs, []);
 await b.close();

@@ -73,10 +73,9 @@ const tierOrder = r => r ? (TIERS.indexOf(r.t) + 1 || 9) * 1000 + r.r : 1e5;
 // craftable guns: signed in, the pattern's red-border progress (3/5) from profile records, else just "Craftable"
 const craftBadge = (w, p) => { if (!w || !('rc' in w)) return ''; const o = p?.records?.[w.rc]?.objectives?.[0];
   return `<span class="badge craft${o && o.progress >= o.completionValue ? ' good' : ''}">${!o ? 'Craftable' : o.progress >= o.completionValue ? 'Pattern unlocked' : `Pattern ${o.progress}/${o.completionValue}`}</span>`; };
-// unlocked in Collections (profile component 800), which is what a raid or dungeon secret chest picks from. A version without a collectible
-// borrows the ones of its other versions (same name, via same). null when signed out or there is nothing to check.
-const inCollections = (p, list, x, same) => { const cs = x.c ? [x.c] : list.filter(y => y.c && same(y)).map(y => y.c);
-  return p?.collected && cs.length ? cs.some(c => p.collected.has(c)) : null; };
+// unlocked in Collections (profile component 800), which is what a raid or dungeon secret chest picks from. Only this version's own entry
+// counts: a reissue (Adamantite) has its own or none, and owning the old one doesn't unlock it. null when signed out or it has no entry.
+const inCollections = (p, x) => p?.collected && x.c ? p.collected.has(x.c) : null;
 const colBadge = c => c === true ? '<span class="badge good">In Collections</span>' : c === false ? '<span class="badge">Not in Collections</span>' : '';
 const colLine = c => c === null ? '' : `<p>${colBadge(c)} ${c ? 'Unlocked, so secret chests in the activity it comes from can drop it.'
   : 'Not unlocked yet. Get it once from its encounter before a secret chest can drop it.'}</p>`;
@@ -421,7 +420,7 @@ async function showCopies(d, w, er, mwPicks, goal) {  // goal(): the selected bu
       const shown = traitCols.map(ns => [...i.socketed].map(h => d.plugs[h]).find(p => p && ns.has(p.n))).filter(Boolean);
       return { i, n, missing, fit: rollFit(d, er, i.plugs), shown };
     });
-    const col = colLine(inCollections(prof, d.weapons, w, y => baseName(y.n) === baseName(w.n) && y.ty === w.ty));
+    const col = colLine(inCollections(prof, w));
     if (!mine.length) { box.innerHTML = `<h3>Your copies</h3>${col}<p class="muted">You don't own this weapon.</p>`; return; }
     let pinned = null;
     const render = () => {
@@ -687,7 +686,7 @@ async function armorPage(hash) {
   if (Bungie.token()) {
     try {
       const prof = await profile(); renderAccount();
-      const mine = prof.items.filter(i => i.itemHash === x.h), col = inCollections(prof, a.armor, x, y => y.n === x.n && y.cl === x.cl);
+      const mine = prof.items.filter(i => i.itemHash === x.h), col = inCollections(prof, x);
       document.querySelector('#mine').innerHTML = `<h2>Your copies</h2>` + colLine(col) + (mine.length ? mine.map(i => armorCopy(a, i)).join('') : '<p class="muted">You don\'t own this version.</p>');
     } catch (e) { document.querySelector('#mine').innerHTML = `<h2>Your copies</h2><p>${esc(e.message)}</p>`; }
   }
@@ -1856,14 +1855,14 @@ async function showRaidCopies(d, a, panel, chest) {
     for (const c of gunCards) {
       const w = d.byHash[c.dataset.h], mine = prof.items.filter(i => { const x = d.byHash[i.itemHash]; return x && baseName(x.n) === baseName(w.n) && x.ty === w.ty; });
       const best = bestFit(mine.map(i => rollFit(d, d.rolls[i.itemHash] || d.rolls[w.h], i.plugs))), adept = mine.filter(i => d.byHash[i.itemHash].n !== baseName(w.n)).length;
-      const col = inCollections(prof, d.weapons, w, y => baseName(y.n) === baseName(w.n) && y.ty === w.ty);
+      const col = inCollections(prof, w);
       c.dataset.own = mine.length ? 'have' : 'need'; c.dataset.col = col ? 'yes' : 'no'; guns += !!mine.length; god += isGod(best); gunCol += !!col;
       c.querySelector('.own').innerHTML = (mine.length ? `<span class="have">You have ${mine.length}${adept ? ` · ${adept} adept` : ''}</span>${rollPips(best)}` : '<span class="need">Not in your vault</span>') + colBadge(col);
     }
     for (const c of armorCards) {
       const x = a.byHash[c.dataset.a], mine = prof.items.filter(i => { const y = a.byHash[i.itemHash]; return y && y.n === x.n && y.cl === x.cl; });
       const tier = Math.max(0, ...mine.map(i => i.tier || 0));
-      const col = inCollections(prof, a.armor, x, y => y.n === x.n && y.cl === x.cl);
+      const col = inCollections(prof, x);
       c.dataset.own = mine.length ? 'have' : 'need'; c.dataset.col = col ? 'yes' : 'no'; worn += !!mine.length; armorCol += !!col;
       c.querySelector('.own').innerHTML = (mine.length ? `<span class="have">You have ${mine.length}</span>${tier ? `<span class="badge${tier === 5 ? ' good' : ''}">Best: Tier ${tier}</span>` : ''}` : '<span class="need">Not in your vault</span>') + colBadge(col);
     }
