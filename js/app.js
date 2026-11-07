@@ -73,6 +73,13 @@ const tierOrder = r => r ? (TIERS.indexOf(r.t) + 1 || 9) * 1000 + r.r : 1e5;
 // craftable guns: signed in, the pattern's red-border progress (3/5) from profile records, else just "Craftable"
 const craftBadge = (w, p) => { if (!w || !('rc' in w)) return ''; const o = p?.records?.[w.rc]?.objectives?.[0];
   return `<span class="badge craft${o && o.progress >= o.completionValue ? ' good' : ''}">${!o ? 'Craftable' : o.progress >= o.completionValue ? 'Pattern unlocked' : `Pattern ${o.progress}/${o.completionValue}`}</span>`; };
+// unlocked in Collections (profile component 800), which is what a raid or dungeon secret chest picks from. A version without a collectible
+// borrows the ones of its other versions (same name, via same). null when signed out or there is nothing to check.
+const inCollections = (p, list, x, same) => { const cs = x.c ? [x.c] : list.filter(y => y.c && same(y)).map(y => y.c);
+  return p?.collected && cs.length ? cs.some(c => p.collected.has(c)) : null; };
+const colBadge = c => c === true ? '<span class="badge good">In Collections</span>' : c === false ? '<span class="badge">Not in Collections</span>' : '';
+const colLine = c => c === null ? '' : `<p>${colBadge(c)} ${c ? 'Unlocked, so secret chests in the activity it comes from can drop it.'
+  : 'Not unlocked yet. Get it once from its encounter before a secret chest can drop it.'}</p>`;
 const tierBadge = r => r ? `<span class="badge tier tier-${esc(r.t)}">Tier ${esc(r.t)}</span>` : '';
 
 async function profile() {
@@ -414,14 +421,15 @@ async function showCopies(d, w, er, mwPicks, goal) {  // goal(): the selected bu
       const shown = traitCols.map(ns => [...i.socketed].map(h => d.plugs[h]).find(p => p && ns.has(p.n))).filter(Boolean);
       return { i, n, missing, fit: rollFit(d, er, i.plugs), shown };
     });
-    if (!mine.length) { box.innerHTML = '<h3>Your copies</h3><p class="muted">You don\'t own this weapon.</p>'; return; }
+    const col = colLine(inCollections(prof, d.weapons, w, y => baseName(y.n) === baseName(w.n) && y.ty === w.ty));
+    if (!mine.length) { box.innerHTML = `<h3>Your copies</h3>${col}<p class="muted">You don't own this weapon.</p>`; return; }
     let pinned = null;
     const render = () => {
       const g = goal();
       mine.forEach(c => { c.gfit = g && rollFit(d, g, c.i.plugs); });
       mine.sort((a, b) => gradeRank(a.gfit) - gradeRank(b.gfit) || gradeRank(a.fit) - gradeRank(b.fit) || a.missing.length - b.missing.length);
       pinned = null;
-      box.innerHTML = `<h3>Your copies <span class="count">${mine.length}</span></h3>${mine.map((c, k) => `<button type="button" class="copy" data-k="${k}" aria-pressed="false">
+      box.innerHTML = `<h3>Your copies <span class="count">${mine.length}</span></h3>${col}${mine.map((c, k) => `<button type="button" class="copy" data-k="${k}" aria-pressed="false">
         <span class="where">${c.gfit ? rollPips(c.gfit) : ''}${rollPips(c.fit)}${esc(c.i.location)}${c.i.power ? ` · ${c.i.power}` : ''}${c.i.itemHash !== w.h ? ' · other version' : ''}${c.i.crafted ? ' · crafted' : ''}</span>
         <span class="minis">${c.shown.map(p => `<img src="${BNET}${p.i}" alt="${esc(p.n)}" title="${esc(p.n)}">`).join('')}</span>
         ${er?.p ? `<small class="${c.missing.length ? 'miss' : 'full'}">${c.missing.length ? 'Missing: ' + esc(c.missing.join(', ')) : 'Has every recommended pick'}</small>` : ''}</button>`).join('')}
@@ -679,8 +687,8 @@ async function armorPage(hash) {
   if (Bungie.token()) {
     try {
       const prof = await profile(); renderAccount();
-      const mine = prof.items.filter(i => i.itemHash === x.h);
-      document.querySelector('#mine').innerHTML = `<h2>Your copies</h2>` + (mine.length ? mine.map(i => armorCopy(a, i)).join('') : '<p class="muted">You don\'t own this version.</p>');
+      const mine = prof.items.filter(i => i.itemHash === x.h), col = inCollections(prof, a.armor, x, y => y.n === x.n && y.cl === x.cl);
+      document.querySelector('#mine').innerHTML = `<h2>Your copies</h2>` + colLine(col) + (mine.length ? mine.map(i => armorCopy(a, i)).join('') : '<p class="muted">You don\'t own this version.</p>');
     } catch (e) { document.querySelector('#mine').innerHTML = `<h2>Your copies</h2><p>${esc(e.message)}</p>`; }
   }
 }
@@ -1765,7 +1773,7 @@ function lootPage(act, d, a, rot, place) {
     .map(x => { const epic = /epic/i.test(x.src), row = armor.find(r => r.slot === slotOf(x.ty) && r.epic === epic);
       return { x, epic, slot: slotOf(x.ty), encs: row?.encs || [], notes: row ? [...row.how, row.note] : [] }; })
     .sort((p, q) => p.epic - q.epic || setOf(p.x) - setOf(q.x) || order.indexOf(p.slot) - order.indexOf(q.slot));
-  const strike = act.kind === 'Strike', list = { Raid: 'raids', Dungeon: 'dungeons' }[act.kind], { weeks, cur } = rotationWeeks(rot);
+  const strike = act.kind === 'Strike', chest = /Raid|Dungeon/.test(act.kind), list = { Raid: 'raids', Dungeon: 'dungeons' }[act.kind], { weeks, cur } = rotationWeeks(rot);
   // Pantheon is scheduled by its reprise and encore bosses, never as a featured raid
   const pantheon = act.name === 'Pantheon', on = w => strike ? w.gm === act.name : pantheon ? w.pantheon.length > 0 : list && w[list].find(n => fold(act.name).startsWith(fold(n)));
   const next = weeks.find(w => w.start > cur.start && on(w));
@@ -1788,7 +1796,7 @@ function lootPage(act, d, a, rot, place) {
   const buttons = (attr, label, l, cur) => `<div class="dropfilter" role="group" aria-label="${label}">${l.map(([v, t]) => `<button type="button" data-${attr}="${esc(v)}" aria-pressed="${v === cur}">${t}</button>`).join('')}</div>`;
   const main = `<section class="panel"><h2>Drops</h2>
       ${R.encs.length ? buttons('enc', 'Show drops from', [['', 'Every encounter'], ...R.encs.map((e, i) => [e, `<small>${i + 1}</small>${esc(e)} <span class="count">${count(e)}</span>`])], '') : ''}
-      <div id="ownfilter" hidden>${buttons('own', 'Show', [['', 'All'], ['need', 'Missing'], ['have', 'Owned']], '')}</div>
+      <div id="ownfilter" hidden>${buttons('own', 'Show', [['', 'All'], ['need', 'Missing'], ['have', 'Owned'], ['col', chest ? 'Secret chest pool' : 'In Collections']], '')}</div>
       <h3 class="drophead">Weapons <span class="count">${drops.length}</span></h3><div class="drops">${drops.map(gunCard).join('')}</div>
       ${pieces.length ? `<h3 class="drophead">Armor</h3>${buttons('cls', 'Armor for', CLASSES.map(c => [c, c]), 'Hunter')}<div class="drops">${pieces.map(armorCard).join('')}</div>`
         : armor.length ? `<h3 class="drophead">Armor</h3><dl class="armordrops">${armor.map(it => `<dt>${esc(it.n)}</dt><dd>${chips(it.encs)}</dd>`).join('')}</dl>` : ''}</section>
@@ -1804,12 +1812,12 @@ function lootPage(act, d, a, rot, place) {
     // a few of Bungie's screenshots are missing; leave the card's plain background instead of a broken image
     $app.querySelectorAll('.dropart img').forEach(i => i.addEventListener('error', () => i.remove()));
     const apply = () => panel.querySelectorAll('.drop').forEach(c => c.hidden = (filt.enc && !c.dataset.encs.split('|').includes(filt.enc))
-      || (c.dataset.class && c.dataset.class !== filt.cls) || (filt.own && c.dataset.own !== filt.own));
+      || (c.dataset.class && c.dataset.class !== filt.cls) || (filt.own === 'col' ? c.dataset.col !== 'yes' : filt.own && c.dataset.own !== filt.own));
     const pick = (attr, v) => { filt[attr] = v; panel.querySelectorAll(`[data-${attr}]`).forEach(x => x.setAttribute('aria-pressed', String(x.dataset[attr] === v))); apply(); };
     panel.addEventListener('click', e => { const b = e.target.closest('.dropfilter button'); if (b) for (const k of ['enc', 'own', 'cls']) if (k in b.dataset) pick(k, b.dataset[k]); });
     apply();
     // signed in, armor starts on your first character's class
-    if (Bungie.token()) showRaidCopies(d, a, panel).then(cls => CLASSES.includes(cls) && pick('cls', cls));
+    if (Bungie.token()) showRaidCopies(d, a, panel, chest).then(cls => CLASSES.includes(cls) && pick('cls', cls));
   };
   return { main, side, wire, flavor: place ? (place.art?.d.length > 40 ? place.art.d : '') : [R.launched && `Launched ${R.launched}`, R.refreshed && `refreshed ${R.refreshed}`].filter(Boolean).join(' · '),
     badge: on(cur) ? '<span class="badge good">Featured this week</span>' : place?.distorted ? '<span class="badge">Distortions</span>' : '' };
@@ -1838,28 +1846,32 @@ function placePanels(place) {
 
 // On a raid's drop cards: how many copies you own (any version, adept included) with the best weapon roll or armor tier.
 // Returns your first character's class.
-async function showRaidCopies(d, a, panel) {
+async function showRaidCopies(d, a, panel, chest) {
   const box = $app.querySelector('#raidmine');
   try {
     const prof = await profile(); renderAccount();
     if (!panel.isConnected) return;
-    let guns = 0, god = 0, worn = 0;
+    let guns = 0, god = 0, worn = 0, gunCol = 0, armorCol = 0;
     const gunCards = [...panel.querySelectorAll('.drop[data-h]')], armorCards = [...panel.querySelectorAll('.drop[data-a]')];
     for (const c of gunCards) {
       const w = d.byHash[c.dataset.h], mine = prof.items.filter(i => { const x = d.byHash[i.itemHash]; return x && baseName(x.n) === baseName(w.n) && x.ty === w.ty; });
       const best = bestFit(mine.map(i => rollFit(d, d.rolls[i.itemHash] || d.rolls[w.h], i.plugs))), adept = mine.filter(i => d.byHash[i.itemHash].n !== baseName(w.n)).length;
-      c.dataset.own = mine.length ? 'have' : 'need'; guns += !!mine.length; god += isGod(best);
-      c.querySelector('.own').innerHTML = mine.length ? `<span class="have">You have ${mine.length}${adept ? ` · ${adept} adept` : ''}</span>${rollPips(best)}` : '<span class="need">Not in your vault</span>';
+      const col = inCollections(prof, d.weapons, w, y => baseName(y.n) === baseName(w.n) && y.ty === w.ty);
+      c.dataset.own = mine.length ? 'have' : 'need'; c.dataset.col = col ? 'yes' : 'no'; guns += !!mine.length; god += isGod(best); gunCol += !!col;
+      c.querySelector('.own').innerHTML = (mine.length ? `<span class="have">You have ${mine.length}${adept ? ` · ${adept} adept` : ''}</span>${rollPips(best)}` : '<span class="need">Not in your vault</span>') + colBadge(col);
     }
     for (const c of armorCards) {
       const x = a.byHash[c.dataset.a], mine = prof.items.filter(i => { const y = a.byHash[i.itemHash]; return y && y.n === x.n && y.cl === x.cl; });
       const tier = Math.max(0, ...mine.map(i => i.tier || 0));
-      c.dataset.own = mine.length ? 'have' : 'need'; worn += !!mine.length;
-      c.querySelector('.own').innerHTML = mine.length ? `<span class="have">You have ${mine.length}</span>${tier ? `<span class="badge${tier === 5 ? ' good' : ''}">Best: Tier ${tier}</span>` : ''}` : '<span class="need">Not in your vault</span>';
+      const col = inCollections(prof, a.armor, x, y => y.n === x.n && y.cl === x.cl);
+      c.dataset.own = mine.length ? 'have' : 'need'; c.dataset.col = col ? 'yes' : 'no'; worn += !!mine.length; armorCol += !!col;
+      c.querySelector('.own').innerHTML = (mine.length ? `<span class="have">You have ${mine.length}</span>${tier ? `<span class="badge${tier === 5 ? ' good' : ''}">Best: Tier ${tier}</span>` : ''}` : '<span class="need">Not in your vault</span>') + colBadge(col);
     }
     $app.querySelector('#ownfilter').hidden = false;
     box.innerHTML = `<h2>Your collection</h2><p><b>${guns}</b> of ${gunCards.length} weapons${god ? `, <b>${god}</b> with a god roll` : ''}.</p>
-      ${armorCards.length ? `<p><b>${worn}</b> of ${armorCards.length} armor pieces (all classes).</p>` : ''}<p class="hint">${rollLegend}</p>`;
+      ${armorCards.length ? `<p><b>${worn}</b> of ${armorCards.length} armor pieces (all classes).</p>` : ''}
+      ${chest ? `<p>Secret chests here only drop what you've unlocked in Collections: <b>${gunCol}</b> of ${gunCards.length} weapons${armorCards.length ? ` and <b>${armorCol}</b> of ${armorCards.length} armor pieces` : ''}. Pick “Secret chest pool” to see them.</p>`
+        : `<p><b>${gunCol + armorCol}</b> of ${gunCards.length + armorCards.length} drops unlocked in Collections.</p>`}<p class="hint">${rollLegend}</p>`;
     return prof.chars[0]?.cls;
   } catch (e) { box.innerHTML = `<h2>Your collection</h2><p>${esc(e.message)}</p>`; }
 }

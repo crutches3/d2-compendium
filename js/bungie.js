@@ -71,7 +71,7 @@ const Bungie = (() => {
     const primary = m.primaryMembershipId;
     const dm = m.destinyMemberships.find(x => x.membershipId === primary) || m.destinyMemberships[0];
     if (!dm) throw new Error('No Destiny account found on this Bungie profile.');
-    const p = await call(`/Destiny2/${dm.membershipType}/Profile/${dm.membershipId}/?components=102,200,201,205,206,300,304,305,310,900`);
+    const p = await call(`/Destiny2/${dm.membershipType}/Profile/${dm.membershipId}/?components=102,200,201,205,206,300,304,305,310,800,900`);
     const items = [];
     const push = (list, owner, equipped) => list.forEach(i => i.itemInstanceId && items.push({ itemHash: i.itemHash, instanceId: i.itemInstanceId, owner, equipped,
       postmaster: i.bucketHash === POSTMASTER, crafted: !!(i.state & 8) }));
@@ -84,7 +84,10 @@ const Bungie = (() => {
         items: l.items.filter(i => +i.itemInstanceId).length })) }));
     // Postmaster slots used per character (it holds 21), counting engrams and materials the site doesn't list
     const postmasterUsed = Object.fromEntries(Object.entries(p.characterInventories.data || {}).map(([cid, inv]) => [cid, inv.items.filter(i => i.bucketHash === POSTMASTER).length]));
-    const profile = { name: m.bungieNetUser.uniqueName || m.bungieNetUser.displayName, membershipType: dm.membershipType, membershipId: dm.membershipId, chars, items, postmasterUsed, records: p.profileRecords?.data?.records || {} };
+    const profile = { name: m.bungieNetUser.uniqueName || m.bungieNetUser.displayName, membershipType: dm.membershipType, membershipId: dm.membershipId, chars, items, postmasterUsed, records: p.profileRecords?.data?.records || {},
+      // Collections: a collectible is unlocked on the account when any scope lacks the NotAcquired bit (1); armor sits in the character scope
+      collected: new Set([p.profileCollectibles?.data, ...Object.values(p.characterCollectibles?.data || {})].flatMap(c => Object.entries(c?.collectibles || {}))
+        .filter(([, c]) => !(c.state & 1)).map(([h]) => +h)) };
     const sockets = p.itemComponents.sockets.data || {}, reusable = p.itemComponents.reusablePlugs.data || {}, inst = p.itemComponents.instances.data || {};
     const stats = p.itemComponents.stats?.data || {};
     for (const it of items) {

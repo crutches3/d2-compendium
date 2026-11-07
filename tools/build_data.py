@@ -115,7 +115,7 @@ def build(d):
                         'ty': it.get('itemTypeDisplayName', ''), 'ti': it['inventory'].get('tierTypeName', ''),
                         'dm': DMG.get(str(it.get('defaultDamageTypeHash')), {}).get('displayProperties', {}).get('name', ''),
                         'am': AMMO.get(it.get('equippingBlock', {}).get('ammoType'), ''), 'sl': SLOT.get(it['inventory'].get('bucketTypeHash'), ''),
-                        'fl': it.get('flavorText', ''), 'src': col.get('sourceString', ''), 'lore': lore, 'st': stats, 'cols': columns,
+                        'fl': it.get('flavorText', ''), 'src': col.get('sourceString', ''), 'c': it.get('collectibleHash', 0), 'lore': lore, 'st': stats, 'cols': columns,
                         **({'rc': pattern.get(re.sub(r'\s*\((Adept|Timelost|Harrowed)\)$', '', dp['name']), 0)} if it['inventory'].get('recipeItemHash') else {})})
     # retired versions: a gun reissued later (e.g. Y1 Midnight Coup, pre-Edge of Fate Hung Jury) only drops in its newest release (the item's
     # releases.vNNN trait); craftable versions stay because the Enclave can still make them. Flagged, not dropped, so copies you own still show.
@@ -231,7 +231,7 @@ def build_armor(d):
         set_hash = str(it.get('equippingBlock', {}).get('equipableItemSetHash') or '')
         armor.append({'h': it['hash'], 'n': dp(it)['name'], 'i': dp(it).get('icon', ''), 'wm': it.get('iconWatermark', ''), 'ss': it.get('screenshot', ''),
                       'ty': it.get('itemTypeDisplayName', ''), 'ti': it['inventory'].get('tierTypeName', ''), 'cl': CLASS.get(it.get('classType'), ''),
-                      'set': set_hash if set_hash in sets else '', 'src': COL.get(str(it.get('collectibleHash')), {}).get('sourceString', ''),
+                      'set': set_hash if set_hash in sets else '', 'src': COL.get(str(it.get('collectibleHash')), {}).get('sourceString', ''), 'c': it.get('collectibleHash', 0),
                       'fl': it.get('flavorText', ''), 'ex': ex, 'a3': a3})
     armor.sort(key=lambda a: (a['n'], -a['h']))
     stats = {str(h): dp(ST[str(h)])['name'] for h in (2996146975, 392767087, 1943323491, 1735777505, 144602215, 4244567218)}  # Weapons, Health, Class, Grenade, Super, Melee
@@ -333,6 +333,7 @@ def main():
           len(armor['armor']), 'armor', len(armor['sets']), 'sets', len(armor['archetypes']), 'archetypes')
     assert len(weapons) > 1000 and len(rolls) > 500 and sum(bool(r.get('c')) for r in rolls.values()) > 300, 'manifest or Endgame Analysis parse looks broken'
     assert len(armor['armor']) > 1000 and len(armor['sets']) > 20 and len(armor['archetypes']) >= 6, 'armor parse looks broken'
+    assert sum(bool(x['c']) for x in armor['armor']) > 1000 and sum(bool(w['c']) for w in weapons) > 1000, 'collectible hashes look broken'
     assert sum(w.get('rc', 0) > 0 for w in weapons) > 150, 'craftable pattern parse looks broken'
     assert 200 < sum('old' in w for w in weapons) < len(weapons) / 2, 'retired version check looks broken'
     assert len(scales) > 10 and "king's fall" in wiki['img'] and 'arc' in wiki['icon'], 'stat curve or wiki art parse looks broken'
