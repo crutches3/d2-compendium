@@ -110,5 +110,8 @@
         "An augment timer runs out, or trip mines in the lower corridors catch someone running."
       ]
     }
+  ],
+  "quests": [
+    {"q": "Rogue Network", "w": "Ice Breaker", "note": "Spider's quest, from Hawthorne after a first clear. Find the beacon on Vesper Station's outer hull, then two sets of three hidden messages; each set opens a BrayTech storage module, the dungeon's two secret chests. Picking Dr. Bray's final lock gives the second-level module, which lets you focus armor (Bungie's Access Override and Director Access triumphs)."}
   ]
 }

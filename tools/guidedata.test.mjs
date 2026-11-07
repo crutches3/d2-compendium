@@ -36,7 +36,10 @@ const bad = [], need = (ok, msg) => ok || bad.push(msg);
 const text = (v, max = 400) => typeof v === 'string' && v.trim().length > 0 && v === v.trim() && v.length <= max && !/[<>\n\r\t]|&(#\d+|#x[0-9a-f]+|[a-z]+);|\*\*|__|\]\(|^#|^- /i.test(v);
 const list = v => Array.isArray(v) && v.length > 0 && v.every(x => text(x));
 const pairs = v => Array.isArray(v) && v.length > 0 && v.every(p => Array.isArray(p) && p.length === 2 && p.every(x => text(x)));
-const TOP = ['name', 'checked', 'about', 'caveat', 'master', 'epic', 'sources', 'encounters'];
+const TOP = ['name', 'checked', 'about', 'caveat', 'master', 'epic', 'sources', 'encounters', 'quests', 'catalysts', 'secrets'];
+// the Secrets tab's extras: each names something Bungie's manifest has (data/secrets.json, built by tools/build_secrets.py) or a weapon page
+const SX = fs.existsSync('data/secrets.json') ? JSON.parse(fs.readFileSync('data/secrets.json')) : {}, GUNS = new Set(JSON.parse(fs.readFileSync('data/weapons.json')).weapons.map(w => w.n));
+const obj = (v, keys, need) => v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).every(k => keys.includes(k)) && need.every(k => k in v);
 const ENC = ['name', 'title', 'what', 'before', 'steps', 'roles', 'wipes', 'chests', 'master', 'epic'];
 const masters = new Set(rot.weeks.flatMap(w => w.master));
 for (const x of guides) need(!x.broken && x.g && typeof x.g === 'object' && !Array.isArray(x.g), `${x.f}: ${x.broken || 'not an object'}`);
@@ -57,6 +60,17 @@ for (const { f, g } of ok) {
   for (const k of ['about', 'caveat']) if (k in g) need(text(g[k]), `${at}: ${k}`);
   for (const k of ['master', 'epic']) if (k in g) need(list(g[k]), `${at}: ${k} is there but empty or not plain strings`);
   need(Array.isArray(g.encounters) && g.encounters.length > 0, `${at}: no encounters`);
+  const sx = SX[g.name] || {};
+  for (const [k, keys, req] of [['quests', ['q', 'w', 'note'], ['q', 'note']], ['catalysts', ['w', 'note'], ['w']], ['secrets', ['name', 'how', 'triumph'], ['name', 'how']]]) if (k in g) {
+    need(Array.isArray(g[k]) && g[k].length > 0, `${at}: ${k} is there but empty`);
+    for (const x of Array.isArray(g[k]) ? g[k] : []) { const en = `${at} / ${k} ${JSON.stringify(x)?.slice(0, 40)}`;
+      if (!obj(x, keys, req)) { need(false, `${en}: fields must be ${keys.join(', ')} (${req.join(', ')} required)`); continue; }
+      for (const f of ['q', 'w', 'note', 'name', 'triumph']) if (f in x) need(text(x[f], f === 'note' ? 600 : 80), `${en}: ${f} is plain text`);
+      if ('how' in x) need(list(x.how), `${en}: how is a list of plain strings`);
+      if ('w' in x) need(GUNS.has(x.w), `${en}: no weapon named ${x.w}`);
+      if (k === 'quests') need(sx.quests?.[x.q], `${en}: Bungie has no quest line "${x.q}" (rerun tools/build_secrets.py)`);
+      if (k === 'catalysts') need(sx.catalysts?.[x.w], `${en}: Bungie has no "${x.w} Catalyst" record (rerun tools/build_secrets.py)`);
+      if ('triumph' in x) need(sx.triumphs?.some(t => t[1] === x.triumph), `${en}: no triumph "${x.triumph}" in Bungie's ${g.name} triumphs`); } }
   const encs = Array.isArray(g.encounters) ? g.encounters : [], names = encs.map(e => e?.name);
   need(new Set(names.map(n => String(n).toLowerCase())).size === names.length, `${at}: two encounters share a name`);
   for (const [i, e] of encs.entries()) {

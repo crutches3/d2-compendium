@@ -125,5 +125,8 @@
         "Not enough damage in the final stand."
       ]
     }
+  ],
+  "catalysts": [
+    {"w": "Eyes of Tomorrow"}
   ]
 }

@@ -77,5 +77,8 @@
       ],
       "wipes": ["Getting frozen by Praksis's Stasis attacks while out in the open."]
     }
+  ],
+  "catalysts": [
+    {"w": "Revision Zero"}
   ]
 }

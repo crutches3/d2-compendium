@@ -126,5 +126,8 @@
         "In each matching room shoot the switch, then the panel; a second shot turns it off. The rooms run from the Pyramid entrance to the platforming before Rhulk. The chest appears when he dies, once per week per account."
       ]
     }
+  ],
+  "catalysts": [
+    {"w": "Collective Obligation"}
   ]
 }

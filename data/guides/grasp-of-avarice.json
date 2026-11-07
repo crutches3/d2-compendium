@@ -118,5 +118,14 @@
         "In 2021 guides, Barrier Servitors spawn while the team collects. Group up behind a pod and kill them together."
       ]
     }
+  ],
+  "quests": [
+    {"q": "And Out Fly the Wolves", "w": "Gjallarhorn", "note": "Gjallarhorn's quest for Shaw Han in the Cosmodrome. It starts with a clear of this dungeon and ends in the Lost Sector Exodus Garden 2A and Shaw Han's hideout."}
+  ],
+  "catalysts": [
+    {"w": "Gjallarhorn"}
+  ],
+  "secrets": [
+    {"name": "Wilhelm-7's messages", "triumph": "The Richest Dead Man Alive", "how": ["Bungie's triumph: recover Wilhelm-7's messages, hidden along the dungeon's route. They unlock lore only."]}
   ]
 }

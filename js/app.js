@@ -1648,7 +1648,9 @@ async function wikiPage(raw, pane, n) {
   const guide = act && /Raid|Dungeon|mission|Strike/.test(act.kind) ? await load('guides/' + guideFile(act.name)).catch(() => null) : null;
   const step = /^\d+$/.test(n) && n >= 1 && n <= (guide?.encounters?.length || 0) ? n - 1 : 0;
   // so is one that parses but breaks the format (a hand edit): drawn once here, a throw leaves the page as it would be with no guide
-  let gh = ''; try { gh = guide ? guideHtml(W, act, guide, step) : '' } catch (e) { console.error(e) }
+  let gh = '', sh = ''; try { gh = guide ? guideHtml(W, act, guide, step) : '' } catch (e) { console.error(e) }
+  // the Secrets tab: the guide's chests, quests and catalysts with Bungie's own triumphs and quest steps (data/secrets.json); strikes have none
+  if (gh && act.kind !== 'Strike') try { sh = secretsHtml(W, d, act, guide, (await load('secrets').catch(() => ({})))[guide.name] || {}) } catch (e) { console.error(e) }
   const weapon = d.weapons.find(w => w.n.toLowerCase() === key), armor = a.armor.find(x => x.n.toLowerCase() === key);
   // weapons that can roll a perk or frame of this name, one per weapon name, best rated first
   const plugs = new Set(Object.keys(d.plugs).filter(h => d.plugs[h].n.toLowerCase() === key).map(Number)), rank = w => 'SABCDF'.indexOf(d.rolls[w.h]?.t) + 1 || 9;
@@ -1689,13 +1691,15 @@ async function wikiPage(raw, pane, n) {
     ${champ ? `<section class="panel"><h2>Counters</h2><p>Everything here mentions ${esc(champ)} champions.${counters ? ` Court's full list of what stuns them is in the <a href="${esc(counters)}" target="_blank" rel="noopener">Champion counters sheet ↗</a>.` : ''}</p></section>` : ''}`.trim();
   const found = main || side, grid = main && side ? `<div class="wtop wiki"><div>${main}</div><div class="wside">${side}</div></div>` : main || side;
   // a guide gets its own tab beside Drops, above the whole layout (phones move the side panels up); Drops opens first and is drawn as before
-  const tabbed = gh && act.kind !== 'Strike', open = tabbed && pane === 'guide';
+  const tabbed = gh && act.kind !== 'Strike', tabs = [['drops', 'Drops'], ['guide', 'Guide'], ...sh ? [['secrets', 'Secrets']] : []];
+  const cur = tabbed && tabs.some(([k]) => k === pane) ? pane : 'drops';
   $app.innerHTML = `<p class="crumbs"><a href="#/wiki">Wiki</a></p>${found ? hero({ ...art, n: title }, `<span class="wikitags">${tags.map(t => `<span class="badge">${esc(t)}</span>`).join('')}${raid?.badge || ''}</span>`) : `<h1>${esc(title)}</h1>`}
-    ${tabbed ? `<div class="tabs typetabs" role="group" aria-label="Page">${[['drops', 'Drops'], ['guide', 'Guide']].map(([k, t]) => `<button type="button" data-pane="${k}"${(k === 'guide') === open ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${t}</button>`).join('')}</div>
-      <div id="dropspane"${open ? ' hidden' : ''}>${grid}</div><div id="guidepane"${open ? '' : ' hidden'}>${gh}</div>` : grid}
+    ${tabbed ? `<div class="tabs typetabs" role="group" aria-label="Page">${tabs.map(([k, t]) => `<button type="button" data-pane="${k}"${k === cur ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}>${t}</button>`).join('')}</div>
+      <div id="dropspane"${cur === 'drops' ? '' : ' hidden'}>${grid}</div><div id="guidepane"${cur === 'guide' ? '' : ' hidden'}>${gh}</div>${sh ? `<div id="secretspane"${cur === 'secrets' ? '' : ' hidden'}>${sh}</div>` : ''}` : grid}
     ${found ? '' : `<p class="empty">The wiki has nothing on “${esc(name)}” yet. <a href="#/wiki">Search the wiki</a></p>`}`;
   raid?.wire();
   if (gh) wireGuide(act, step);
+  if (sh) secretProgress();
   const showRollers = n => { const box = $app.querySelector('#rollers'); if (box) box.innerHTML = rollers.slice(0, n).map(w => card(w, `<small>${tierBadge(d.rolls[w.h])}${esc(w.ty)}</small>`)).join(''); };
   showRollers(24);
   $app.querySelector('#morerollers')?.addEventListener('click', e => { showRollers(Infinity); e.target.remove(); });
@@ -1723,12 +1727,59 @@ function guideHtml(W, act, g, step) {
 function wireGuide(act, step) {
   const press = (l, on) => l.forEach(x => x.setAttribute('aria-pressed', String(on(x)))), pane = $app.querySelector('#guidepane');
   // Drops keeps the encounter too (#/wiki/X/drops/5), so a reload there still has the guide on it
-  const url = () => history.replaceState(null, '', wikiHref(act.name) + (!pane || !pane.hidden ? '/guide' + (step ? '/' + (step + 1) : '') : step ? '/drops/' + (step + 1) : ''));
+  const sec = $app.querySelector('#secretspane');
+  const url = () => history.replaceState(null, '', wikiHref(act.name) + (sec && !sec.hidden ? '/secrets' : !pane || !pane.hidden ? '/guide' + (step ? '/' + (step + 1) : '') : step ? '/drops/' + (step + 1) : ''));
   $app.querySelector('.typetabs[aria-label="Page"]')?.addEventListener('click', e => { const b = e.target.closest('button[data-pane]'); if (!b) return;
     const tabs = $app.querySelectorAll('.typetabs [data-pane]'); press(tabs, x => x === b); tabs.forEach(x => x.classList.toggle('on', x === b));
-    $app.querySelector('#dropspane').hidden = b.dataset.pane !== 'drops'; pane.hidden = b.dataset.pane !== 'guide'; url(); });
+    $app.querySelector('#dropspane').hidden = b.dataset.pane !== 'drops'; pane.hidden = b.dataset.pane !== 'guide'; if (sec) sec.hidden = b.dataset.pane !== 'secrets'; url(); });
   $app.querySelector('#guide').addEventListener('click', e => { const b = e.target.closest('button[data-step]'); if (!b) return;
     step = +b.dataset.step; press($app.querySelectorAll('#guide button[data-step]'), x => x === b); $app.querySelectorAll('#guide .gstep').forEach(x => x.hidden = x.dataset.step !== b.dataset.step); url(); });
+}
+
+// An activity's Secrets tab: every encounter's secret chests in one list (tied to the Collections pool they drop from, with the picture
+// guides among the sources), then the quests, catalysts and puzzles the guide names, pictured with Bungie's own art (the weapon's
+// screenshot, the quest's icon) and Bungie's quest steps, then all of Bungie's triumphs for it. Signed in, secretProgress() marks each
+// triumph and catalyst done or not from profile records. '' when there is nothing to show.
+function secretsHtml(W, d, act, g, x) {
+  const prose = t => linkify(W, esc(t), act.name), gun = n => d.weapons.find(w => w.n === n && w.ss) || d.weapons.find(w => w.n === n);
+  const rec = h => h ? `<span class="rec" data-r="${+h}"></span>` : '', tri = n => (x.triumphs || []).find(t => t[1] === n);
+  const chests = g.encounters.flatMap((e, i) => (e.chests || []).map(t => ({ e, i, t }))), pics = g.sources.filter(([t]) => /chest/i.test(t));
+  const chestTri = (x.triumphs || []).filter(t => /hidden chests|secret chests/i.test(t[2]));
+  const item = (pic, head, body) => `<div class="secret">${pic}<div>${head}${body}</div></div>`;
+  const wlink = w => w ? `<a href="#/weapon/${w.h}">${esc(w.n)}</a>` : '';
+  const triLine = t => t ? `<p class="refsrc">${img(t[3], 'ticon')}Triumph: <b>${esc(t[1])}</b> · ${esc(t[2])} ${rec(t[0])}</p>` : '';
+  const quests = (g.quests || []).map(q => { const b = x.quests?.[q.q], w = q.w && gun(q.w);
+    return item(w?.ss ? img(w.ss, 'secretart') : img(b?.i, 'secretart icon'), `<h4>${esc(q.q)}${w ? ` · ${wlink(w)}` : ''}</h4>`, `<p>${prose(q.note)}</p>
+      ${b?.steps.length ? `<details><summary>Bungie's quest steps (${b.steps.length})</summary><ol>${b.steps.map(([t, o]) => `<li>${esc(t)}${o.length ? `<small>${o.map(esc).join(' · ')}</small>` : ''}</li>`).join('')}</ol></details>` : ''}`); });
+  // a weapon already pictured by its quest gets its small icon here
+  const cats = (g.catalysts || []).map(c => { const r = x.catalysts?.[c.w], w = gun(c.w), big = w?.ss && !(g.quests || []).some(q => q.w === c.w);
+    return item(w ? `<a href="#/weapon/${w.h}">${img(big ? w.ss : w.i, big ? 'secretart' : 'secretart icon')}</a>` : '', `<h4>${wlink(w) || esc(c.w)} catalyst ${rec(r?.[0])}</h4>`,
+      `${r?.[1] ? `<p>Bungie: ${esc(r[1])}</p>` : ''}${c.note ? `<p>${prose(c.note)}</p>` : ''}${w ? `<p class="refsrc">Where the weapon drops is on <a href="#/weapon/${w.h}">its page</a>.</p>` : ''}`); });
+  const others = (g.secrets || []).map(s => { const t = s.triumph && tri(s.triumph);
+    return item(t ? img(t[3], 'secretart icon') : '', `<h4>${esc(s.name)}</h4>`, `${s.how.map(h => `<p>${prose(h)}</p>`).join('')}${t ? `<p class="refsrc">Triumph: <b>${esc(t[1])}</b> ${rec(t[0])}</p>` : ''}`); });
+  const all = x.triumphs || [];
+  if (!chests.length && !quests.length && !cats.length && !others.length && !all.length) return '';
+  return `<section class="panel" id="secrets"><h2>Secrets</h2>
+    ${chests.length ? `<h3>Secret chests <span class="count">${chests.length}</span></h3>
+      <p>Secret chests only drop weapons and armor you've already unlocked in Collections. Signed in, pick “Secret chest pool” on the Drops tab to see what yours can give.</p>
+      <ul class="chestlist">${chests.map(c => `<li><b><a href="${wikiHref(act.name)}/guide/${c.i + 1}">${esc(c.e.name)}</a></b> · ${prose(c.t)}</li>`).join('')}</ul>
+      ${chestTri.map(triLine).join('')}
+      ${pics.length ? `<p class="refsrc">Pictures of each spot: ${pics.map(([t, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} ↗</a>`).join(' · ')}</p>` : ''}` : ''}
+    ${quests.length ? `<h3>Quests</h3>${quests.join('')}` : ''}
+    ${others.length ? `<h3>Puzzles and collectibles</h3>${others.join('')}` : ''}
+    ${cats.length ? `<h3>Catalysts</h3>${cats.join('')}` : ''}
+    ${all.length ? `<details class="triumphs"><summary>All ${all.length} triumphs, from Bungie</summary><ul>${all.map(t => `<li>${img(t[3], 'ticon')}<span><b>${esc(t[1])}</b> ${rec(t[0])}<small>${esc(t[2])}</small></span></li>`).join('')}</ul></details>` : ''}
+    <p class="refsrc">Triumphs, quest steps, catalyst text and pictures from the Bungie API; the rest from the guide's sources.</p></section>`;
+}
+// Signed in, each triumph and catalyst on the Secrets tab gets Done or its progress (profile records, state bit 4 = objective not complete).
+// Records kept per character aren't in profile records, so those stay blank.
+async function secretProgress() {
+  if (!Bungie.token()) return;
+  try { const p = await profile(); renderAccount();
+    for (const el of $app.querySelectorAll('#secrets .rec')) { const r = p.records?.[el.dataset.r]; if (!r) continue;
+      const o = r.objectives?.length === 1 && r.objectives[0], done = !(r.state & 4);
+      el.outerHTML = done ? '<span class="badge good">Done</span>' : `<span class="badge">${o && o.completionValue > 1 ? `${o.progress}/${o.completionValue}` : 'Not done'}</span>`; }
+  } catch (e) { console.error(e) }
 }
 
 // Llama's sheets list raid and dungeon armor by slot ("Helm", "Class Item")

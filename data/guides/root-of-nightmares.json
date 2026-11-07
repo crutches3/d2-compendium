@@ -135,5 +135,8 @@
         "2023 guides: Barrier champions replace the Colossi around the arena."
       ]
     }
+  ],
+  "catalysts": [
+    {"w": "Conditional Finality"}
   ]
 }

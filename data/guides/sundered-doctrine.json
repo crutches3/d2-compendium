@@ -93,5 +93,11 @@
         "Secret chest 2 is in the lens room just before Kerrev: high on the right-hand wall as you come in, a worm juts out with the chest inside its mouth. Get there from the middle platform by way of the small ledge just under the worm."
       ]
     }
+  ],
+  "quests": [
+    {"q": "The Drowning Labyrinth", "w": "Finality's Auger", "note": "Picked up from Ikora after a first clear. Three times over, a Hidden report sends you back in for Rhulk's laboratory worms and a hidden room, then the door to Rhulk's vault opens. Guides say the Finality's Auger catalyst drops from that secret vault and the quest unlocks loot focusing (Bungie's Hidden Treasures triumph)."}
+  ],
+  "catalysts": [
+    {"w": "Finality's Auger"}
   ]
 }

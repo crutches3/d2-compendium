@@ -87,5 +87,11 @@
         "After Vorgeth, at the first elevator: stay to the right of the elevator and drink a Tincture of Queensfoil (you need one). Platforms appear beside a large pillar; follow them to the chest."
       ]
     }
+  ],
+  "quests": [
+    {"q": "Hunters' Remembrance", "w": "Wish-Ender", "note": "Wish-Ender's quest from Petra Venj in the Dreaming City: hunt three Taken in this dungeon (a Minotaur in Erebus, a Captain in The Descent and an Ogre in Eleusinia), present the mementos at Sjur Eido's statue, then return to Petra."}
+  ],
+  "catalysts": [
+    {"w": "Wish-Ender"}
   ]
 }

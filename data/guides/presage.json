@@ -69,5 +69,8 @@
         "Getting caught by the maul at close range."
       ]
     }
+  ],
+  "catalysts": [
+    {"w": "Dead Man's Tale"}
   ]
 }

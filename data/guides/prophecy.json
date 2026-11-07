@@ -85,5 +85,8 @@
         "Singularity, before the boss: on the ribbon road, enter the last diamond before the large one, turn right, drop into the hole and follow the path across a gap to the chest. Then go back to the main diamond. Shacknews calls it a weekly chest."
       ]
     }
+  ],
+  "secrets": [
+    {"name": "Hidden urns", "triumph": "Urn It", "how": ["Twelve urns are hidden through the dungeon, and collecting all twelve gives Bungie's Urn It triumph (no gear).", "Guides put the first at the landing spot on the Drifter's ship, one behind rubble by the third blight in the derelict portal area, one beside the Taken eye on the ceiling after the Hexahedron, and two on platforms where Rainbow Road starts (go up the road, not down)."]}
   ]
 }

@@ -178,5 +178,8 @@
         "End chests: after the Heart is delivered, extra chests open with an Ethereal Key. Keys drop from Riven, and the first wish on the Wall of Wishes also grants one."
       ]
     }
+  ],
+  "secrets": [
+    {"name": "Wall of Wishes", "triumph": "Habitual Wisher", "how": ["The Wall of Wishes is in a hidden cave near the start (see Kalli's Getting there). The first wish grants an Ethereal Key for the end chests and the second spawns the Glittering Key chest after Morgeth; later wishes skip to encounters or turn on novelty effects. Making ten wishes gives Bungie's Habitual Wisher triumph."]}
   ]
 }

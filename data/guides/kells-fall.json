@@ -149,5 +149,8 @@
         "In Diffraction, missing the archway stun while he casts."
       ]
     }
+  ],
+  "catalysts": [
+    {"w": "Slayer's Fang"}
   ]
 }

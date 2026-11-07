@@ -158,5 +158,11 @@
         "Between the third and fourth encounters, climb the big tree on the right of the field and go on up the hill. Enter the left of the two openings into the tree, turn to face the way you came in, and jump from the thin stump on the right to the platform above the entrance."
       ]
     }
+  ],
+  "quests": [
+    {"q": "Divine Fragmentation", "w": "Divinity", "note": "Divinity's quest. It starts from an Exotic engram dropped by Zeteon, Redemptive Mind, the Vex boss at the Vex gate in the Moon's Lunar Battlegrounds. The last step is in the raid: solve its seven tether puzzles in one run, then a laser puzzle in hidden rooms at the end. Guides say it needs a full, coordinated team."}
+  ],
+  "catalysts": [
+    {"w": "Divinity"}
   ]
 }
