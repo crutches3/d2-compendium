@@ -58,7 +58,7 @@ await p.fill('#q', '');
 // ?cl= opens on a class; leaving and coming back doesn't double up the click handling
 await p.goto('http://localhost:8765/#/armor?cl=Warlock'); await p.waitForSelector('.classhead');
 assert.deepEqual(await classesShown(), ['Warlock']);
-await p.goto('http://localhost:8765/#/sets'); await p.goto('http://localhost:8765/#/armor'); await p.waitForSelector('.classhead');
+await p.goto('http://localhost:8765/#/images'); await p.goto('http://localhost:8765/#/armor'); await p.waitForSelector('.classhead');
 await p.click('.classpick [data-cl="Titan"]'); assert.deepEqual(await classesShown(), ['Titan']);
 
 await p.setViewportSize({ width: 390, height: 844 }); await p.click('.classpick [data-cl="Titan"]'); await p.waitForTimeout(200);

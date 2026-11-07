@@ -93,9 +93,6 @@ assert.deepEqual(await p.evaluate(async () => { const W = await wikiData();
 await p.goto('http://localhost:8765/#/wiki/Fatebringer'); await p.waitForSelector('.obtains .obtain');
 assert.equal(await p.$('a.card a'), null);
 assert.equal(await p.getAttribute('.obtains a.obtain', 'href'), '#/wiki/Vault%20of%20Glass');
-// armor sets link their source's activity
-await p.goto('http://localhost:8765/#/sets'); await p.waitForSelector('#list section');
-assert.equal(await p.getAttribute('#list section:has(h2 a:text-is("Apostate\'s Blade")) p.muted a', 'href'), '#/wiki/Pit%20of%20Heresy');
 
 // pages look like gun pages: a banner with the raid's art, or the perk's icon and Bungie's description, and a perk's stat changes
 await p.goto("http://localhost:8765/#/wiki/King's%20Fall"); await p.waitForSelector('.hero h1');

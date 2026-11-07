@@ -691,37 +691,6 @@ function armorCopy(a, i) {
     ${Object.entries(a.stats).map(([h, n]) => `<div class="stat"><span class="muted">${esc(n)}</span><div class="bar"><span style="width:${Math.min(100, (i.stats[h] || 0) / 45 * 100)}%"></span></div><b>${i.stats[h] || 0}</b></div>`).join('')}</div>`;
 }
 
-async function setsPage() {
-  const a = await armorData();
-  const p = Bungie.token() ? await needProfile() : null;
-  // what you own of each set, per class: distinct slots and best tier
-  const owned = {};
-  for (const i of p?.items || []) {
-    const x = a.byHash[i.itemHash];
-    if (!x?.set) continue;
-    const o = ((owned[x.set] ||= {})[x.cl] ||= { slots: new Set(), tier: 0 });
-    o.slots.add(x.ty); o.tier = Math.max(o.tier, i.tier);
-  }
-  const W = await wikiData();
-  const sets = await Promise.all(Object.entries(a.sets).map(async ([h, st]) => {
-    const first = a.armor.find(x => x.set === h);
-    return { h, ...st, src: first ? (await armorSource(a, first))[0] || '' : '' };
-  }));
-  sets.sort((x, y) => x.n.localeCompare(y.n));
-  $app.innerHTML = `<h1>Armor sets</h1><p class="muted">Every armor set and its 2- and 4-piece bonuses${p ? ', with what you own of each' : ''}. ${p ? '' : 'Sign in to see which pieces you have.'}</p>
-    <div class="filters"><input type="search" id="q" aria-label="Filter sets" placeholder="Filter by set, bonus or source (e.g. grenade, Iron Banner)"></div><div id="list"></div>`;
-  const draw = () => {
-    const q = $app.querySelector('#q').value.toLowerCase();
-    $app.querySelector('#list').innerHTML = sets.filter(st => !q || [st.n, st.src, ...st.perks.flatMap(pk => [pk[1], pk[2]])].some(t => t.toLowerCase().includes(q)))
-      .map(st => `<section class="panel"><h2><a href="#/armor?set=${st.h}">${esc(st.n)}</a></h2>${st.src ? `<p class="muted">${sourceLink(W, st.src)}</p>` : ''}${setBonus(st)}
-        ${p ? `<p class="owned">${['Titan', 'Hunter', 'Warlock'].map(cl => { const o = owned[st.h]?.[cl];
-          return `<span class="badge${o?.slots.size === 5 ? ' good' : ''}">${cl}: ${o ? `${o.slots.size}/5 pieces${o.tier ? `, best Tier ${o.tier}` : ''}` : 'none'}</span>`; }).join('')}</p>` : ''}</section>`).join('')
-      || '<p class="empty">No set matches this filter.</p>';
-  };
-  $app.querySelector('#q').addEventListener('input', draw);
-  draw();
-}
-
 async function needProfile() {
   if (!Bungie.token()) {
     $app.innerHTML = `<h1>Sign in</h1><p>Sign in with your Bungie account to load your vault and characters. Your login stays in this browser.</p><button class="primary" id="go">Sign in with Bungie</button>`;
@@ -1406,7 +1375,7 @@ async function farm() {
 }
 
 // The sheet tabs worth reading on their own, by topic. Landing pages, link lists, empty tabs and raw graph data are left out, and so are
-// loot sources, the weekly reset, set bonuses and artifact perks, which Weapons, Farming, Armor sets and Builds already show.
+// loot sources, the weekly reset, set bonuses and artifact perks, which Weapons, Armor, Farming and Builds already show.
 const REF_TOPICS = {
   Weapons: { 'Weapon Perks': 'Weapon perks', 'Exotic Weapons': 'Exotic weapons' },
   Armor: { 'Armor Mods': 'Armor mods', 'Exotic Armors': 'Exotic armor', 'Exotic Class': 'Exotic class items', 'Armor Archetypes': 'Armor archetypes' },
@@ -1895,8 +1864,6 @@ async function showRaidCopies(d, a, panel) {
   } catch (e) { box.innerHTML = `<h2>Your collection</h2><p>${esc(e.message)}</p>`; }
 }
 
-// a source as text, linked to its activity's wiki page
-const sourceLink = (W, s) => { const { act } = sourceAct(W, s); return act ? `<a href="${wikiHref(act.name)}">${esc(s)}</a>` : esc(s); };
 
 // The activities Bungie's source text names ("Complete Iron Banner matches…", "Xûr", "Exploring the Pale Heart"), first named first.
 // Wiki names lose their extras ("Banshee-44 | Gunsmith", "Desert Perpetual & Epic DP"); "World" and "Ghost" are too common a word to link.
@@ -2080,7 +2047,6 @@ async function route() {
     else if (parts[0] === 'weapon') await weaponPage(+parts[1]);
     else if (parts[0] === 'inventory') await inventory(parts[1]);
     else if (parts[0] === 'armor') await (parts[1] ? armorPage(+parts[1]) : armorList(params));
-    else if (parts[0] === 'sets') await setsPage();
     else if (parts[0] === 'build') await buildPage(parts[1]);
     else if (parts[0] === 'farm') await farm();
     else if (parts[0] === 'vendors') await vendorsPage(parts[1]);
