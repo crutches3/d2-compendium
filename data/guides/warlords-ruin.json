@@ -101,5 +101,11 @@
         "Chest 1, spot 6: past the large Taken orb on the way to Hefnd, find a gap in the mountain with a smaller floating Taken orb. A sheltered passage near its bottom leads to a hidden cliff ledge with the chest."
       ]
     }
+  ],
+  "quests": [
+    {"q": "In the Shadow of the Mountain", "w": "Buried Bloodline", "note": "Buried Bloodline's catalyst quest. Bungie's own steps below give a clue for each of the ten Bones of Hefnd hidden through the castle; Dark Ether Tinctures and Blighted Wishing Glass drop along the way."}
+  ],
+  "catalysts": [
+    {"w": "Buried Bloodline"}
   ]
 }

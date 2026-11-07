@@ -201,5 +201,11 @@
         "The Chalice holder can't reach a pool of light in time to pass it."
       ]
     }
+  ],
+  "quests": [
+    {"q": "Bottomless Pit", "w": "Necrochasm", "note": "Turns Husk of the Pit into Necrochasm: Hive kills with Husk of the Pit (kills inside the raid count extra), 20 Essence of the Oversoul from the raid, then defeat Crota."}
+  ],
+  "catalysts": [
+    {"w": "Necrochasm", "note": "Bungie's catalyst text: collect Essence of the Oversoul from the raid and its related triumphs."}
   ]
 }

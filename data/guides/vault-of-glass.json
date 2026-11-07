@@ -293,5 +293,8 @@
         "In 2021 guides, Barrier Hobgoblins spawn on Mars and Venus and Atheon hits harder; a Well of Radiance does not keep you safe from his attacks."
       ]
     }
+  ],
+  "catalysts": [
+    {"w": "Vex Mythoclast"}
   ]
 }

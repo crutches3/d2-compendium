@@ -147,5 +147,8 @@
         "On the Malphas Contemptus before Sere: entering the open room with the Shadow and switch platforming puzzle, look left; the chest is behind a stack of tall crates. Only one guide (Destructoid) gives this spot."
       ]
     }
+  ],
+  "quests": [
+    {"q": "The Way Between", "note": "From Aunor. Return the Praxic relics the Barant Imperium stole to the Praxic Temple (one is in each run of the dungeon), then open the Taken portal in the inner temple and beat the lingering shade of Dredgen Sere."}
   ]
 }

@@ -126,5 +126,8 @@
         "Coda has two more chests, described by The Backdash alone: one through the left portal to the Planetary Core, where the central pillar starts a timer to kill five Minotaurs around the edge, and one through the right portal in the lab, where you bounce an Arc Cranium's beam off glowing plates four times."
       ]
     }
+  ],
+  "catalysts": [
+    {"w": "Choir of One"}
   ]
 }

@@ -70,7 +70,7 @@ const checkGuide = async (name, m = p, g = G.get(name)) => {
 // King's Fall: Drops opens first and works as before; Guide sits beside it and hides the whole Drops view, side column included
 await openWiki("King's Fall");
 const len = await p.evaluate(() => history.length);
-assert.deepEqual(await p.$$eval('.typetabs button[data-pane]', bs => bs.map(x => x.textContent.trim())), ['Drops', 'Guide']);
+assert.deepEqual(await p.$$eval('.typetabs button[data-pane]', bs => bs.map(x => x.textContent.trim())), ['Drops', 'Guide', 'Secrets']);
 assert.deepEqual(await paneTab(), ['Drops']);
 assert.ok(await p.isVisible('.drops') && !(await p.isVisible('#guide')));
 await p.click('.dropfilter button[data-enc="Golgoroth"]');

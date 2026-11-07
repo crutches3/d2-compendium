@@ -434,12 +434,27 @@ h2.wikihead { font-size: 18px; letter-spacing: -.01em; margin: 28px 0 0; padding
 .wikitags { margin: 4px 0 4px; }
 .entry dt b a { color: var(--text); }
 .entry dt b a:hover { color: var(--accent); }
-.entry dd a, .refnote a, #guide a { color: var(--accent); text-decoration: underline; text-decoration-color: rgba(108, 184, 255, .35); text-underline-offset: 3px; }
-.entry dd a:hover, .refnote a:hover, #guide a:hover { text-decoration-color: currentColor; }
+.entry dd a, .refnote a, #guide a, #secrets a { color: var(--accent); text-decoration: underline; text-decoration-color: rgba(108, 184, 255, .35); text-underline-offset: 3px; }
+.entry dd a:hover, .refnote a:hover, #guide a:hover, #secrets a:hover { text-decoration-color: currentColor; }
 /* an activity's guide (its own tab): reading width for the text, numbered steps */
 #guide p, #guide ol, #guide .entries { max-width: 70ch; }
 #guide ol { padding-left: 22px; }
 #guide li + li { margin-top: 4px; }
+/* the Secrets tab: chests, quests, catalysts and puzzles, each a picture beside its text (no box), then the triumph list */
+#secrets p, #secrets ul, #secrets ol { max-width: 70ch; }
+#secrets h4 { margin: 0 0 4px; font-size: 16px; }
+#secrets details summary { cursor: pointer; color: var(--accent); margin: 6px 0; }
+#secrets ol small, .triumphs small { display: block; color: var(--muted); font-size: 13px; }
+.chestlist li + li { margin-top: 6px; }
+.secret { display: flex; gap: 16px; align-items: flex-start; margin: 12px 0 22px; max-width: 900px; }
+.secret > div { min-width: 0; flex: 1; }
+.secretart { width: 240px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 6px; flex: none; display: block; }
+.secretart.icon { width: 64px; height: 64px; aspect-ratio: 1; }
+.ticon { width: 20px; height: 20px; vertical-align: -5px; margin-right: 6px; border-radius: 3px; }
+.triumphs ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px 18px; max-width: none !important; }
+.triumphs li { display: flex; gap: 8px; align-items: flex-start; }
+.triumphs li .ticon { width: 32px; height: 32px; flex: none; margin: 0; }
+@media (max-width: 640px) { .secret { flex-direction: column; } .secretart { width: 100%; } .secretart.icon { width: 56px; height: 56px; } }
 .lootname { display: inline-flex; align-items: center; gap: 8px; color: var(--text); font-weight: 600; }
 .lootname img { width: 28px; height: 28px; border-radius: 4px; flex: none; background: var(--panel2); }
 h3.mentionhead { font-size: 13px; color: var(--muted); font-weight: 600; margin: 18px 0 4px; }

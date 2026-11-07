@@ -103,5 +103,11 @@
         "In 2023 guides, Barrier champion Knights replace the three standard Knights on Master, and Vorlog carries an Arc shield."
       ]
     }
+  ],
+  "catalysts": [
+    {"w": "The Navigator", "note": "Bungie's catalyst text asks for kills with The Navigator and the secret encounter cleared again. Guides describe that encounter as three Hive statues in the dungeon, each a fight with Thul-Ar, Acolyte of Nokris; crush his Ghost in the last one or he comes back at full health."}
+  ],
+  "secrets": [
+    {"name": "Memories of Darkness", "triumph": "In Memoriam", "how": ["Twelve Memories of Darkness are hidden through the dungeon; find and listen to each for Bungie's In Memoriam triumph. Guides put the first in a secret room in the opening encounter."]}
   ]
 }

@@ -170,5 +170,8 @@
         "Bonus chest after the Witness: in the first enclosed room, read the third column of wall shapes from the bottom up. Each shape is the Resonance a hidden Conductor on the route needs. Destinypedia ties this chest to the 1st, 3rd and 5th shapes (the other two are for a raid mod), while another guide says the active rooms change each run, so feed any glowing Conductor plate its Resonance."
       ]
     }
+  ],
+  "catalysts": [
+    {"w": "Euphony"}
   ]
 }

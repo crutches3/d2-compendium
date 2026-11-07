@@ -75,5 +75,11 @@
         "Standing in his fire line or the flame pool it leaves."
       ]
     }
+  ],
+  "quests": [
+    {"q": "The Journey", "w": "Xenophage", "note": "Xenophage's quest. Bungie's step text is cryptic: in short, find the four Path Fragments on the Moon (Archer's Line, Sorrow's Harbor, Hellmouth and the Anchor of Light), follow the hidden path in Pit of Heresy past the Necropolis to a secret boss, Volmâr, the Tempted, and bring the Hive bug back to Eris Morn."}
+  ],
+  "catalysts": [
+    {"w": "Xenophage"}
   ]
 }

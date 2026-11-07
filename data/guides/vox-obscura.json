@@ -69,5 +69,8 @@
         "A full team wipe sends you back to the start of the control room section."
       ]
     }
+  ],
+  "catalysts": [
+    {"w": "Dead Messenger"}
   ]
 }

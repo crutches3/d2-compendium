@@ -112,5 +112,11 @@
         "Secret chest 2 is in Descend, in the room with a Hydra and an electrified floor reached after Akelous. Clear it, then shoot the grates under the staircases: one breaks open into a vent that leads down to the chest."
       ]
     }
+  ],
+  "catalysts": [
+    {"w": "Hierarchy of Needs"}
+  ],
+  "secrets": [
+    {"name": "Devilish recordings", "triumph": "Devil in the Details", "how": ["Recordings are hidden through the dungeon; find and listen to each for Bungie's Devil in the Details triumph. Lore only."]}
   ]
 }
