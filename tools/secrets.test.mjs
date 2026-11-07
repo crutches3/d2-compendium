@@ -38,8 +38,15 @@ await p.evaluate(() => localStorage.setItem('d2c_token', JSON.stringify({ access
 await open('/secrets'); await p.waitForSelector('#secrets .badge');
 assert.ok(await p.$$eval('#secrets .triumphs li', (l, n) => l.some(x => x.textContent.includes(n) && x.querySelector('.badge.good')?.textContent === 'Done'), tri[1]));
 assert.ok((await p.$$eval('#secrets h4', l => l.map(h => h.textContent))).some(t => t.includes('catalyst') && t.includes('120/500')));
+// grindout's walkthrough: each encounter it covers shows its text and pictures (copied into img/grindout), its secrets on this tab
+const go = JSON.parse(fs.readFileSync('data/grindout/warlords-ruin.json'));
+assert.equal(await p.$$eval('#secrets .gout img', l => l.length), go.secrets.filter(x => x[0] === 'img').length);
+await p.click('.typetabs button[data-pane="guide"]');
+const pics = await p.$$eval('#guide .gstep:not([hidden]) .gout img', l => l.map(i => i.getAttribute('src')));
+assert.deepEqual(pics, go.enc['0'].filter(x => x[0] === 'img').map(x => x[1]));
+assert.ok(pics.every(f => fs.existsSync(f)) && pics.length > 0, 'pictures are in the repo');
 // a strike has no Secrets tab; text is escaped (a guide's note can't inject markup)
-await p.goto('http://localhost:8765/#/wiki/Warden%20of%20Nothing'); await p.waitForSelector('.hero h1');
+await p.goto('about:blank'); await p.goto('http://localhost:8765/#/wiki/Warden%20of%20Nothing'); await p.waitForSelector('.hero h1');
 assert.equal(await p.$('#secrets'), null);
 assert.deepEqual(errs, []);
 await b.close();

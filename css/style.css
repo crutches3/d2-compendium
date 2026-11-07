@@ -440,6 +440,11 @@ h2.wikihead { font-size: 18px; letter-spacing: -.01em; margin: 28px 0 0; padding
 #guide p, #guide ol, #guide .entries { max-width: 70ch; }
 #guide ol { padding-left: 22px; }
 #guide li + li { margin-top: 4px; }
+/* grindout's walkthrough under each encounter: their pictures full reading width, text as written */
+.gout { margin-top: 18px; max-width: 900px; }
+.gout h4 { margin: 16px 0 4px; font-size: 16px; }
+.gout p, .gout ul { max-width: 70ch; }
+.gimg { display: block; width: 100%; max-width: 900px; height: auto; border-radius: 6px; margin: 10px 0; }
 /* the Secrets tab: chests, quests, catalysts and puzzles, each a picture beside its text (no box), then the triumph list */
 #secrets p, #secrets ul, #secrets ol { max-width: 70ch; }
 #secrets h4 { margin: 0 0 4px; font-size: 16px; }

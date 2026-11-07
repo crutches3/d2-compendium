@@ -1648,9 +1648,11 @@ async function wikiPage(raw, pane, n) {
   const guide = act && /Raid|Dungeon|mission|Strike/.test(act.kind) ? await load('guides/' + guideFile(act.name)).catch(() => null) : null;
   const step = /^\d+$/.test(n) && n >= 1 && n <= (guide?.encounters?.length || 0) ? n - 1 : 0;
   // so is one that parses but breaks the format (a hand edit): drawn once here, a throw leaves the page as it would be with no guide
-  let gh = '', sh = ''; try { gh = guide ? guideHtml(W, act, guide, step) : '' } catch (e) { console.error(e) }
+  // grindout.com's walkthrough for the same activity (data/grindout, copied with Randy's say-so for his own use): text and pictures per encounter
+  const gout = guide && await load('grindout/' + guideFile(act.name)).catch(() => null);
+  let gh = '', sh = ''; try { gh = guide ? guideHtml(W, act, guide, step, gout) : '' } catch (e) { console.error(e) }
   // the Secrets tab: the guide's chests, quests and catalysts with Bungie's own triumphs and quest steps (data/secrets.json); strikes have none
-  if (gh && act.kind !== 'Strike') try { sh = secretsHtml(W, d, act, guide, (await load('secrets').catch(() => ({})))[guide.name] || {}) } catch (e) { console.error(e) }
+  if (gh && act.kind !== 'Strike') try { sh = secretsHtml(W, d, act, guide, (await load('secrets').catch(() => ({})))[guide.name] || {}, gout) } catch (e) { console.error(e) }
   const weapon = d.weapons.find(w => w.n.toLowerCase() === key), armor = a.armor.find(x => x.n.toLowerCase() === key);
   // weapons that can roll a perk or frame of this name, one per weapon name, best rated first
   const plugs = new Set(Object.keys(d.plugs).filter(h => d.plugs[h].n.toLowerCase() === key).map(Number)), rank = w => 'SABCDF'.indexOf(d.rolls[w.h]?.t) + 1 || 9;
@@ -1709,7 +1711,14 @@ async function wikiPage(raw, pane, n) {
 // one encounter at a time), that encounter's mechanics, roles, common wipes, secret chests and Master or Epic changes, then the sources.
 // Prose links wiki names as sheet notes do; names, titles and source titles are only escaped. No whitespace between list tags, since
 // .entry dd keeps line breaks (pre-line).
-function guideHtml(W, act, g, step) {
+// grindout's items for one part: headings, paragraphs, list items (runs of them make one list) and pictures, in their order
+function goutHtml(l, url, what) {
+  if (!l?.length) return '';
+  const h = l.map(([k, v]) => k === 'h' ? `<h4>${esc(v)}</h4>` : k === 'p' ? `<p>${esc(v)}</p>` : k === 'li' ? `<li>${esc(v)}</li>`
+    : `<a href="${esc(v)}" target="_blank" rel="noopener"><img class="gimg" loading="lazy" src="${esc(v)}" alt=""></a>`).join('').replace(/(<li>.*?<\/li>)+/g, m => `<ul>${m}</ul>`);
+  return `<div class="gout"><h3 class="drophead">${what} from Grindout</h3>${h}<p class="muted gsrc">From <a href="${esc(url)}" target="_blank" rel="noopener">grindout.com's guide ↗</a></p></div>`;
+}
+function guideHtml(W, act, g, step, gout) {
   const prose = t => linkify(W, esc(t), act.name), ul = l => `<ul>${l.map(t => `<li>${t}</li>`).join('')}</ul>`;
   const rows = l => l.filter(([, x]) => x?.length).map(([k, x]) => `<div class="entry"><dt><b>${k}</b></dt><dd>${ul(x)}</dd></div>`).join('');
   const all = rows([['Master, every encounter', g.master?.map(prose)], ['Epic, every encounter', g.epic?.map(prose)]]);
@@ -1718,7 +1727,7 @@ function guideHtml(W, act, g, step) {
     ${g.encounters.map((e, i) => `<div class="gstep" data-step="${i}"${i === step ? '' : ' hidden'}><h3>${i + 1}. ${esc(e.title || e.name)}</h3><p>${prose(e.what)}</p>
       ${e.before ? `<p><b>Getting there.</b> ${prose(e.before)}</p>` : ''}<h3 class="drophead">Mechanics</h3><ol>${e.steps.map(t => `<li>${prose(t)}</li>`).join('')}</ol>
       <dl class="entries">${rows([['Roles', e.roles.map(([r, t]) => `<b>${esc(r)}</b> ${prose(t)}`)], ['Common wipes', e.wipes.map(prose)], ['Secret chests', e.chests?.map(prose)],
-        ['Master', e.master?.map(prose)], ['Epic', e.epic?.map(prose)]])}</dl></div>`).join('')}
+        ['Master', e.master?.map(prose)], ['Epic', e.epic?.map(prose)]])}</dl>${goutHtml(gout?.enc?.[i], gout?.url, 'Walkthrough and pictures')}</div>`).join('')}
     ${all ? `<dl class="entries">${all}</dl>` : ''}
     <p class="refsrc">Written from ${g.sources.map(([t, u]) => /^https:\/\//.test(u) ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} ↗</a>` : esc(t)).join(' · ')} · checked ${esc(g.checked)}</p></section>`;
 }
@@ -1740,7 +1749,7 @@ function wireGuide(act, step) {
 // guides among the sources), then the quests, catalysts and puzzles the guide names, pictured with Bungie's own art (the weapon's
 // screenshot, the quest's icon) and Bungie's quest steps, then all of Bungie's triumphs for it. Signed in, secretProgress() marks each
 // triumph and catalyst done or not from profile records. '' when there is nothing to show.
-function secretsHtml(W, d, act, g, x) {
+function secretsHtml(W, d, act, g, x, gout) {
   const prose = t => linkify(W, esc(t), act.name), gun = n => d.weapons.find(w => w.n === n && w.ss) || d.weapons.find(w => w.n === n);
   const rec = h => h ? `<span class="rec" data-r="${+h}"></span>` : '', tri = n => (x.triumphs || []).find(t => t[1] === n);
   const chests = g.encounters.flatMap((e, i) => (e.chests || []).map(t => ({ e, i, t }))), pics = g.sources.filter(([t]) => /chest/i.test(t));
@@ -1758,13 +1767,15 @@ function secretsHtml(W, d, act, g, x) {
   const others = (g.secrets || []).map(s => { const t = s.triumph && tri(s.triumph);
     return item(t ? img(t[3], 'secretart icon') : '', `<h4>${esc(s.name)}</h4>`, `${s.how.map(h => `<p>${prose(h)}</p>`).join('')}${t ? `<p class="refsrc">Triumph: <b>${esc(t[1])}</b> ${rec(t[0])}</p>` : ''}`); });
   const all = x.triumphs || [];
-  if (!chests.length && !quests.length && !cats.length && !others.length && !all.length) return '';
+  const gsec = goutHtml(gout?.secrets, gout?.url, 'Secrets, chests and exotics');
+  if (!chests.length && !quests.length && !cats.length && !others.length && !all.length && !gsec) return '';
   return `<section class="panel" id="secrets"><h2>Secrets</h2>
     ${chests.length ? `<h3>Secret chests <span class="count">${chests.length}</span></h3>
       <p>Secret chests only drop weapons and armor you've already unlocked in Collections. Signed in, pick “Secret chest pool” on the Drops tab to see what yours can give.</p>
       <ul class="chestlist">${chests.map(c => `<li><b><a href="${wikiHref(act.name)}/guide/${c.i + 1}">${esc(c.e.name)}</a></b> · ${prose(c.t)}</li>`).join('')}</ul>
       ${chestTri.map(triLine).join('')}
       ${pics.length ? `<p class="refsrc">Pictures of each spot: ${pics.map(([t, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)} ↗</a>`).join(' · ')}</p>` : ''}` : ''}
+    ${gsec}
     ${quests.length ? `<h3>Quests</h3>${quests.join('')}` : ''}
     ${others.length ? `<h3>Puzzles and collectibles</h3>${others.join('')}` : ''}
     ${cats.length ? `<h3>Catalysts</h3>${cats.join('')}` : ''}
