@@ -27,7 +27,7 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
   // arrows move through results, a click opens one
   await find('vault of glass'); await p.press(q, 'ArrowDown');
   assert.equal(await p.evaluate(() => document.activeElement.closest('.sres') !== null), true);
-  await p.click('.sres a >> nth=0'); await p.waitForFunction(() => location.hash.startsWith('#/wiki/'));
+  await p.click('.sres a >> nth=0'); await p.waitForFunction(() => location.hash.startsWith('#/wiki/')); await p.waitForSelector('.hero h1');
   // nothing found
   await find('zzqqx'); assert((await p.textContent('.sres')).includes('Nothing called'));
   // "/" focuses the box

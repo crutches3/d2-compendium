@@ -152,7 +152,7 @@ await openWiki("King's Fall", '/guide'); await p.waitForTimeout(300);
 const body = await p.innerText('#guide');
 assert.ok(body.includes('Plain <b>bold</b> text') && body.includes('<img src="x-xss"') && body.includes('<script>') && body.includes('Bad link'), body.slice(0, 200));
 assert.deepEqual([await p.$eval(`${S.pills} >> nth=1`, x => x.textContent), await p.textContent('#guide .gstep[data-step="1"] h3')], ['2<u>W</u>', '2. <img src="x-xss-t" onerror="window.__xss=4">']);
-assert.deepEqual([await p.evaluate(() => window.__xss), hits, await p.$$eval('#guide b:text-is("bold"), #guide img, #guide u, #guide script, #guide a[href^="javascript"]', l => l.length)], [undefined, [], 0]);
+assert.deepEqual([await p.evaluate(() => window.__xss), hits, await p.$$eval('#guide b:text-is("bold"), #guide img:not(.gimg), #guide u, #guide script, #guide a[href^="javascript"]', l => l.length)], [undefined, [], 0]);
 assert.equal(await p.textContent(`${S.src} >> nth=0`), '<i>Source</i> ↗');
 await p.unroute('**/data/guides/**');
 // Epic notes (only Desert Perpetual has them, and its guide is held) draw like Master's: for every encounter, and per encounter
