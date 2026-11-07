@@ -2033,6 +2033,68 @@ async function vendorStock(ci = 0) {
   } catch (e) { if (box.isConnected) box.innerHTML = `<p class="muted">Couldn't load vendors: ${esc(e.message)}</p>`; }
 }
 
+// ---------- site-wide search in the header ----------
+// Everything with a page, by name: the nav pages, saved builds (read fresh, they change), weapons, armor, and every wiki page
+// (raids, dungeons, vendors, perks, exotics...). Built on first use, since the wiki needs the 1.4 MB sheets file.
+let searchIdx, searchWait, searchSeq;
+function searchIndex() {
+  if (searchIdx) return searchIdx;
+  // load() hangs once the page changes (see live), so a build cut short by navigating starts again next time
+  if (searchWait && searchSeq === routeSeq) return searchWait;
+  searchSeq = routeSeq;
+  return searchWait = Promise.all([data(), armorData(), wikiData()]).then(([d, a, W]) => {
+    const seen = new Set(), out = [];
+    const add = (n, kind, href, x, sub = kind) => { const k = kind + fold(n) + sub; if (!seen.has(k)) { seen.add(k); out.push({ n, f: fold(n), kind, href, x, sub }); } };
+    document.querySelectorAll('.top nav a').forEach(l => add(l.textContent, 'Page', l.getAttribute('href')));
+    d.weapons.forEach(w => add(w.n, 'Weapon', `#/weapon/${w.h}`, w, w.ty));
+    a.armor.forEach(x => add(x.n, 'Armor', `#/armor/${x.h}`, x, slotLabel(x)));
+    W.names.forEach(n => { const act = W.acts.get(n.toLowerCase());
+      add(n, 'Wiki', wikiHref(n), null, act ? act.kind : CHAMPIONS.includes(n) ? 'Champion' : W.terms.get(n.toLowerCase())?.[0].where || 'Wiki'); });
+    return searchIdx = out;
+  });
+}
+// best first: the whole name, then names starting with it, then a word starting with it, then anywhere in the name; every word typed must appear
+function searchHits(idx, q) {
+  const f = fold(q), words = f.split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  const builds = savedBuilds().map(b => ({ n: b.name, f: fold(b.name), kind: 'Build', sub: 'Saved build', href: `#/build/${b.key}`, x: b.sub }));
+  const order = ['Page', 'Build', 'Weapon', 'Armor', 'Wiki'];
+  const score = x => x.f === f ? 0 : x.f.startsWith(f) ? 1 : new RegExp(`(^|[^a-z0-9])${rxEsc(f)}`).test(x.f) ? 2 : 3;
+  return [...builds, ...idx].filter(x => words.every(w => x.f.includes(w))).map(x => [score(x), x])
+    .sort(([s, x], [t, y]) => s - t || order.indexOf(x.kind) - order.indexOf(y.kind) || x.n.length - y.n.length).map(([, x]) => x);
+}
+function wireSearch() {
+  const form = document.querySelector('.sitesearch'), q = form.querySelector('input'), box = form.querySelector('.sres');
+  let hits = [];
+  const close = () => { box.hidden = true; q.setAttribute('aria-expanded', 'false'); };
+  const draw = async () => {
+    const text = q.value.trim();
+    if (!text) return close();
+    if (!searchIdx) { box.innerHTML = '<p class="muted">Loading…</p>'; box.hidden = false; }
+    const idx = await searchIndex();
+    if (q.value.trim() !== text) return;  // typed on while loading
+    hits = searchHits(idx, text);
+    const more = hits.some(x => x.kind === 'Weapon') ? `<a class="more" href="#/weapons?q=${encodeURIComponent(text)}">All weapons matching “${esc(text)}”</a>` : '';
+    box.innerHTML = hits.length ? hits.slice(0, 12).map(x => `<a href="${esc(x.href)}">${x.x?.i ? icon(x.x) : '<span class="icon"></span>'}<span><b>${esc(x.n)}</b><small>${esc(x.sub === x.kind ? x.kind : `${x.kind} · ${x.sub}`)}</small></span></a>`).join('') + more
+      : `<p class="muted">Nothing called “${esc(text)}”.</p>`;
+    box.hidden = false; q.setAttribute('aria-expanded', 'true');
+  };
+  q.addEventListener('input', draw);
+  q.addEventListener('focus', () => q.value.trim() && draw());
+  form.addEventListener('submit', e => { e.preventDefault(); const a = box.querySelector('a'); if (!box.hidden && a) location.hash = a.getAttribute('href'); });
+  form.addEventListener('keydown', e => {
+    const links = [...box.querySelectorAll('a')], at = links.indexOf(document.activeElement);
+    if (e.key === 'Escape') { close(); q.focus(); }
+    else if (e.key === 'ArrowDown' && links.length) { e.preventDefault(); links[Math.min(at + 1, links.length - 1)].focus(); }
+    else if (e.key === 'ArrowUp' && at >= 0) { e.preventDefault(); (at ? links[at - 1] : q).focus(); }
+  });
+  box.addEventListener('mousedown', e => e.preventDefault());  // keep focus in the box, or Safari closes the list before the click lands
+  form.addEventListener('focusout', e => form.contains(e.relatedTarget) || close());
+  // "/" jumps to the search box from anywhere but another text field
+  document.addEventListener('keydown', e => { if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); q.focus(); q.select(); } });
+  window.addEventListener('hashchange', () => { close(); q.value = ''; q.blur(); });
+}
+
 async function route() {
   routeSeq++;
   const [path, query] = (location.hash.slice(1) || '/').split('?');
@@ -2061,4 +2123,4 @@ async function route() {
 }
 
 window.addEventListener('hashchange', route);
-Bungie.handleRedirect().catch(e => alert(e.message)).finally(route);
+Bungie.handleRedirect().catch(e => alert(e.message)).finally(() => { wireSearch(); route(); });
