@@ -244,7 +244,7 @@ async function weaponPage(hash) {
   const mwPicks = (er?.mw || '').toLowerCase().split(' or ').filter(Boolean);  // "Handling or Reload"
   mw.p.forEach(h => mwPicks.some(x => mwName(h).toLowerCase().startsWith(x)) && godNames.add(d.plugs[h].n));
   const perk = (h, col, ci) => { const p = d.plugs[h];
-    return `<button type="button" class="perk${godNames.has(p.n) ? ' god' : ''}${col.cur === h ? ' cur' : ''}" data-h="${h}" data-ci="${ci}"${perkCol(w, h) && col.c === 'Weapon Perks' ? ` data-col="${perkCol(w, h)}"` : ''}>${img(p.i)}<span>${esc(mwName(h) || p.n)}${p.e ? ' <span class="enh">enhanced</span>' : ''}</span></button>`; };
+    return `<button type="button" class="perk${godNames.has(p.n) ? ' god' : ''}" data-h="${h}" data-ci="${ci}"${perkCol(w, h) && col.c === 'Weapon Perks' ? ` data-col="${perkCol(w, h)}"` : ''}>${img(p.i)}<span>${esc(mwName(h) || p.n)}${p.e ? ' <span class="enh">enhanced</span>' : ''}</span></button>`; };
   // enhanced versions share a name with the base perk, so show one entry per name (the first, usually the base);
   // "Empty ... Socket" plugs are placeholders, not choices
   const dedupe = hs => hs.filter((h, i) => d.plugs[h] && !/^Empty .*Socket$/.test(d.plugs[h].n) && hs.findIndex(x => d.plugs[x]?.n === d.plugs[h].n) === i);
@@ -280,7 +280,7 @@ async function weaponPage(hash) {
     ${w.old ? '<p class="versions">Retired version: it no longer drops, so lists show the current one.</p>' : ''}
     ${same.length ? `<p class="versions">Other versions: ${same.map((x, i) => `<a href="#/weapon/${x.h}">${esc(bungieSource(x) || 'version ' + (i + 2))}</a>`).join(' · ')}</p>` : ''}
     <div class="cols2 toprow">${obtainPanel(w.h)}<section class="panel" id="endgame"><h2>Endgame Analysis</h2>${endgameRank(d, er)}</section></div>
-    <div class="wtop"><section class="panel perkpanel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll <span class="key cur"></span> Curated roll${goalBuilds.length ? ' <span class="key goal"></span> Build roll' : ''}</p>
+    <div class="wtop"><section class="panel perkpanel"><h2>Perks</h2><p class="legend"><span class="key god"></span> In the Endgame Analysis roll${goalBuilds.length ? ' <span class="key goal"></span> Build roll' : ''}</p>
       ${goalBuilds.length ? `<div class="goalbar"><label for="goal">Build roll</label><select id="goal"><option value="">None</option>${goalBuilds.map(b => `<option value="${esc(b.key)}"${b.key === goalKey ? ' selected' : ''}>${esc(b.name)}</option>`).join('')}</select>
         <button type="button" id="editgoal"${goalKey ? '' : ' hidden'}>Pick perks</button><small class="muted" id="goalhint"></small></div>` : ''}
       <div class="perkcols">${perkCols([...w.cols.filter(c => c.c !== 'Weapon Mods'), mw])}</div>
@@ -288,7 +288,7 @@ async function weaponPage(hash) {
       <div class="perkinfo" id="perkinfo" aria-live="polite"><span class="muted">Hover a perk to preview its stats. Click one per column to build a roll.</span></div></section>
     <div class="wside">
       <section class="panel" id="stats"><h2>Stats</h2><div id="statrows">${statRows()}</div>
-        <p class="statacts">${w.cols.some(c => c.cur) ? '<button type="button" id="curated">Curated roll</button>' : ''}<button type="button" id="clearroll" disabled>Clear roll</button></p></section>
+        <p class="statacts"><button type="button" id="clearroll" disabled>Clear roll</button></p></section>
       <section class="panel copies" id="mine"><h3>Your copies</h3><p class="muted">${Bungie.token() ? 'Loading your vault…' : 'Sign in with Bungie to see your copies here.'}</p></section>
     </div></div>
     <section class="panel" id="boss" hidden><h2>Boss damage</h2><div class="cols2"></div>
@@ -380,7 +380,6 @@ async function weaponPage(hash) {
   grid.addEventListener('focusout', unpreview);
   const pickAll = els => { picked.clear(); grid.querySelectorAll('.perk.sel').forEach(x => { x.classList.remove('sel'); x.removeAttribute('aria-pressed'); });
     els.forEach(x => { picked.set(x.dataset.ci, +x.dataset.h); x.classList.add('sel'); x.setAttribute('aria-pressed', 'true'); }); drawStats(); };
-  $app.querySelector('#curated')?.addEventListener('click', () => pickAll([...grid.querySelectorAll('.perk.cur')]));
   $app.querySelector('#clearroll').addEventListener('click', () => pickAll([]));
 
   wireFarmButton();

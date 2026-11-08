@@ -38,9 +38,8 @@ assert.match(await stat('Reload Speed'), /−20$/);
 await p.hover('.perk:has-text("Accurized Rounds")'); assert.equal(await stat('Reload Speed'), 'Reload Speed 42');
 await p.click('#clearroll'); await p.hover('.hero');
 assert.equal(await stat('Magazine'), 'Magazine 4'); assert.ok(await p.isDisabled('#clearroll'));
-// the curated roll picks every curated perk
-await p.click('#curated');
-assert.equal(await p.$$eval('.perk.sel', s => s.length), await p.$$eval('.perk.cur', s => s.length));
+// no curated roll anywhere
+assert.equal(await p.$('#curated, .perk.cur'), null);
 
 // a frame with many choices (Barrow-Dyad's five Panic Responses) keeps its column to itself
 await p.goto(`http://localhost:8765/#/weapon/${W.find(w => w.n === 'Barrow-Dyad').h}`); await p.waitForSelector('.perkcol');
