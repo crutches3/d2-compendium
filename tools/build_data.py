@@ -143,7 +143,7 @@ def build_wiki(d, tabs):
     acts, vendors, icons = {}, {}, {}
     for a in A.values():
         n, pg = a.get('displayProperties', {}).get('name', ''), a.get('pgcrImage', '')
-        if n and pg and 'missing' not in pg:
+        if n and pg and 'missing' not in pg and 'placeholder' not in pg:
             for k in (fold(n), fold(n.split(':')[0])): acts.setdefault(k, pg)
     for v in V.values():
         dp = v.get('displayProperties', {})
