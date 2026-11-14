@@ -2012,7 +2012,6 @@ async function home() {
   // link 'name' links only the name, for a card that holds links of its own (the Grandmaster's weapons): links can't nest
   const act = (n, extra = '', link = true, over = '') => `<${link === true ? `a href="${wikiHref(n)}"` : 'div'} class="act"><b>${link === 'name' ? `<a href="${wikiHref(n)}">${esc(n)}</a>` : esc(n)}</b>${pic(n) ? `<span class="actart"><img loading="lazy" src="${pic(n)}" alt="">${over}</span>` : ''}${extra}</${link === true ? 'a' : 'div'}>`;
   const chips = (l, note) => `<span class="encs">${l.map(x => `<span class="enc">${esc(x)}</span>`).join('')}</span><small>${note}</small>`;
-  const master = n => cur.master.includes(n) ? '<span class="encs"><span class="badge good">Master available</span></span>' : '';
   const hourStart = t => Math.floor(t / 3600e3) * 3600e3, at = t => new Date(t).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
   const drawDistortion = () => {
     const now = Date.now(), h = hourStart(now), n = distortionAt(now);
@@ -2022,7 +2021,7 @@ async function home() {
   $app.innerHTML = `<h1>This week</h1><p class="muted">Week ${cur.week ?? ''} · reset ${new Date(cur.start + 'T17:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · next reset in <b id="rcount"></b>${cur.pvp ? ` · PvP: <a href="${wikiHref(cur.pvp)}">${esc(cur.pvp)}</a>` : ''}</p>
     <section class="panel bare"><h2>Distortions</h2><div id="distort"></div></section>
     ${[['Featured raids', 'raids', 'DestinyActivityModeDefinition_bfe80e3dafe6686a9dc42df0606bdc9b', 'raid'], ['Featured dungeons', 'dungeons', 'DestinyActivityModeDefinition_f20ebb76bee675ca429e470cec58cc7b', 'dungeon']].map(([title, key, icon, kind]) =>
-      `<section class="panel bare">${head(icon, title)}<div class="acts">${cur[key].map(n => act(n, `${rot.always[key].includes(n) ? `<small>Newest ${kind} · featured every week</small>` : ''}${master(n)}`)).join('')}</div></section>`).join('')}
+      `<section class="panel bare">${head(icon, title)}<div class="acts">${cur[key].map(n => act(n, `${rot.always[key].includes(n) ? `<small>Newest ${kind} · featured every week</small>` : ''}`)).join('')}</div></section>`).join('')}
     <div class="weekly">
       <section class="panel bare">${head('3642cf9e2acd174dcab5b5f9e3a3a45d', 'Grandmaster')}${act(cur.gm, cur.gmWeapons.length ? chips(cur.gmWeapons, 'Shiny and bonus focus weapons') : '', cur.gm ? 'name' : false, '<span class="gmguns" id="gmguns"></span>')}</section>
       ${cur.pantheon.length ? `<section class="panel bare">${head('img/pantheon.png', 'Pantheon')}<a href="${wikiHref('Pantheon')}" class="act"><b>${esc(cur.pantheon.join(' · '))}</b><img loading="lazy" src="${pic('Pantheon')}" alt=""><small>Reprise and encore bosses</small></a></section>` : ''}
