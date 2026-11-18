@@ -619,6 +619,33 @@
 ]
 },
 {
+"start": "2026-11-10",
+"week": 23,
+"gm": "Exodus Crash",
+"gmWeapons": [
+"Ouster Engine",
+"D.F.A."
+],
+"pvp": "Trials of Osiris",
+"raids": [
+"Salvation's Edge",
+"Vow of the Disciple"
+],
+"dungeons": [
+"Ghosts of the Deep",
+"Prophecy"
+],
+"pantheon": [
+"Gahlran",
+"Morgeth"
+],
+"master": [
+"Salvation's Edge",
+"Vow of the Disciple",
+"Ghosts of the Deep"
+]
+},
+{
 "start": "2026-11-17",
 "week": 24,
 "gm": "The Arms Dealer",
